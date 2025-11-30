@@ -4,6 +4,14 @@ from datetime import datetime, date
 
 leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
 
+def parse_date(date_str):
+    if not date_str or date_str.strip() == '':
+        return None
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
 @leads_bp.route('/')
 def index():
     status_filter = request.args.get('status', '')
@@ -55,7 +63,7 @@ def create():
             source=request.form.get('source'),
             status=request.form.get('status', 'new'),
             notes=request.form.get('notes'),
-            next_action_date=request.form.get('next_action_date') or None
+            next_action_date=parse_date(request.form.get('next_action_date'))
         )
         db.session.add(lead)
         db.session.commit()
@@ -87,8 +95,7 @@ def edit(id):
         lead.source = request.form.get('source')
         lead.status = request.form.get('status')
         lead.notes = request.form.get('notes')
-        next_action = request.form.get('next_action_date')
-        lead.next_action_date = next_action if next_action else None
+        lead.next_action_date = parse_date(request.form.get('next_action_date'))
         lead.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -131,7 +138,7 @@ def convert_to_client(id):
             contact_email=request.form.get('contact_email'),
             phone=request.form.get('phone'),
             project_type=request.form.get('project_type', 'website'),
-            start_date=request.form.get('start_date') or date.today(),
+            start_date=parse_date(request.form.get('start_date')) or date.today(),
             amount_charged=request.form.get('amount_charged') or 0,
             status='active',
             hosting_active=request.form.get('hosting_active') == 'on',

@@ -4,6 +4,14 @@ from datetime import datetime, date
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
 
+def parse_date(date_str):
+    if not date_str or date_str.strip() == '':
+        return None
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
 @tasks_bp.route('/')
 def index():
     today = date.today()
@@ -54,7 +62,7 @@ def create():
     task = Task(
         title=request.form.get('title'),
         description=request.form.get('description'),
-        due_date=request.form.get('due_date') or None,
+        due_date=parse_date(request.form.get('due_date')),
         status=request.form.get('status', 'open'),
         related_lead_id=request.form.get('related_lead_id') or None,
         related_client_id=request.form.get('related_client_id') or None
@@ -71,7 +79,7 @@ def edit(id):
     if request.method == 'POST':
         task.title = request.form.get('title')
         task.description = request.form.get('description')
-        task.due_date = request.form.get('due_date') or None
+        task.due_date = parse_date(request.form.get('due_date'))
         task.status = request.form.get('status')
         task.related_lead_id = request.form.get('related_lead_id') or None
         task.related_client_id = request.form.get('related_client_id') or None

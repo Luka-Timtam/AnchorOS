@@ -4,6 +4,14 @@ from datetime import datetime, date
 
 clients_bp = Blueprint('clients', __name__, url_prefix='/clients')
 
+def parse_date(date_str):
+    if not date_str or date_str.strip() == '':
+        return None
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
 @clients_bp.route('/')
 def index():
     status_filter = request.args.get('status', '')
@@ -43,7 +51,7 @@ def create():
             contact_email=request.form.get('contact_email'),
             phone=request.form.get('phone'),
             project_type=request.form.get('project_type', 'website'),
-            start_date=request.form.get('start_date') or date.today(),
+            start_date=parse_date(request.form.get('start_date')) or date.today(),
             amount_charged=request.form.get('amount_charged') or 0,
             status=request.form.get('status', 'active'),
             hosting_active=request.form.get('hosting_active') == 'on',
@@ -81,7 +89,7 @@ def edit(id):
         client.contact_email = request.form.get('contact_email')
         client.phone = request.form.get('phone')
         client.project_type = request.form.get('project_type')
-        client.start_date = request.form.get('start_date') or client.start_date
+        client.start_date = parse_date(request.form.get('start_date')) or client.start_date
         client.amount_charged = request.form.get('amount_charged') or 0
         client.status = request.form.get('status')
         client.hosting_active = request.form.get('hosting_active') == 'on'

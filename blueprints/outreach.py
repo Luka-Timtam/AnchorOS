@@ -5,6 +5,14 @@ from sqlalchemy import and_
 
 outreach_bp = Blueprint('outreach', __name__, url_prefix='/outreach')
 
+def parse_date(date_str):
+    if not date_str or date_str.strip() == '':
+        return None
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return None
+
 def get_week_start(d):
     return d - timedelta(days=d.weekday())
 
@@ -58,7 +66,7 @@ def index():
 @outreach_bp.route('/create', methods=['POST'])
 def create():
     log = OutreachLog(
-        date=request.form.get('date') or date.today(),
+        date=parse_date(request.form.get('date')) or date.today(),
         type=request.form.get('type', 'email'),
         lead_id=request.form.get('lead_id') or None,
         outcome=request.form.get('outcome', 'contacted'),
