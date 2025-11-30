@@ -1,0 +1,245 @@
+You are building a full-stack personal CRM web application using:
+
+- Python 3
+- Flask
+- SQLite (via SQLAlchemy)
+- Server-rendered HTML templates (Jinja2)
+- Minimal CSS (Tailwind CDN or a simple custom stylesheet)
+- Vanilla JS where needed
+- A SINGLE-PASSWORD login system stored in environment variables
+
+This is a private, single-user internal tool.  
+No user accounts.  
+No signup.  
+No multi-user logic.
+
+========================================
+==  AUTHENTICATION REQUIREMENTS  ==
+========================================
+
+Implement a very simple login system:
+
+1. Use an environment variable called CRM_PASSWORD.
+   The password should NOT be hardcoded.
+
+2. Create a login page at "/login":
+   - Password input field
+   - Submit button
+   - If password incorrect, show “Invalid password.”
+
+3. When the login is correct:
+   - Store a session cookie: session["authenticated"] = True
+   - Cookie must last for **30 days**
+   - Redirect to the dashboard
+
+4. Protect all routes except "/login" and "/static/*":
+   - Use a decorator or a simple before_request hook
+
+5. Implement logout at "/logout":
+   - session.pop("authenticated")
+   - redirect to "/login"
+
+6. Keep me logged in across browser restarts:
+   - Use `session.permanent = True`
+   - Set `app.permanent_session_lifetime = timedelta(days=30)`
+
+This is the only authentication in the app.
+
+========================================
+==  DATABASE SCHEMA / MODELS ==
+========================================
+
+Use SQLAlchemy or Flask SQLAlchemy.
+Create an SQLite database file named: `database.db`.
+
+Four tables:
+
+1) leads
+- id (pk)
+- name (string)
+- business_name (string)
+- niche (string)
+- email (string)
+- phone (string)
+- source (string)
+- status (string enum: "new", "contacted", "call_booked", "follow_up", "proposal_sent", "closed_won", "closed_lost")
+- notes (text)
+- created_at (datetime)
+- updated_at (datetime)
+- last_contacted_at (datetime, nullable)
+- next_action_date (date, nullable)
+
+2) clients
+- id (pk)
+- name
+- business_name
+- contact_email
+- phone
+- project_type (string enum: "website", "hosting_only", "saas_only", "bundle")
+- start_date (date)
+- amount_charged (numeric)
+- status (string enum: "active", "completed", "paused", "cancelled")
+- hosting_active (boolean)
+- monthly_hosting_fee (numeric)
+- saas_active (boolean)
+- monthly_saas_fee (numeric)
+- notes (text)
+- created_at (datetime)
+- updated_at (datetime)
+
+3) outreach_logs
+- id (pk)
+- date (date)
+- type (string enum: "email", "call", "dm", "in_person", "other")
+- lead_id (fk → leads.id, nullable)
+- notes (text)
+- outcome (string enum: "contacted", "booked_call", "no_response", "closed_won", "closed_lost", "follow_up_set")
+- created_at (datetime)
+
+4) tasks
+- id (pk)
+- title (string)
+- description (text)
+- due_date (date)
+- status (string enum: "open", "in_progress", "done")
+- related_lead_id (fk → leads.id, nullable)
+- related_client_id (fk → clients.id, nullable)
+- created_at (datetime)
+
+========================================
+==  PAGE ROUTES / FEATURES ==
+========================================
+
+NAVBAR:
+Dashboard | Leads | Clients | Outreach | Tasks | Logout
+
+----------------------------------------
+1. DASHBOARD ("/")
+----------------------------------------
+Show:
+
+• Counts of leads by status  
+• New leads created this week + month  
+• Outreach stats (today, this week, this month)  
+• New clients started this month  
+• Project revenue this month (sum of amount_charged where start_date in current month)  
+• Current MRR:
+   - hosting MRR = sum(monthly_hosting_fee where hosting_active = true)
+   - saas MRR = sum(monthly_saas_fee where saas_active = true)
+   - total MRR
+
+• Revenue forecast next 3 months:
+   total MRR + average of last 3 months of project revenue
+
+Include two small charts using Chart.js (via CDN):
+- Outreach per week (last 12 weeks)
+- Deals closed (closed_won) per week (last 12 weeks)
+
+----------------------------------------
+2. LEADS ("/leads")
+----------------------------------------
+- Table of all leads  
+- Filters:
+  - status
+  - niche
+  - source
+  - text search (name or business_name)
+
+- Actions:
+  - Create new lead
+  - Edit lead
+  - Delete lead
+  - Quick status update dropdown
+  - Convert lead to client (prefilled client form)
+
+Lead detail page:
+- Full info
+- Notes
+- Related outreach logs
+- Button to add outreach log linked to this lead
+
+----------------------------------------
+3. CLIENTS ("/clients")
+----------------------------------------
+- Table of all clients  
+- Filters:
+  - status
+  - project_type
+  - hosting_active yes/no
+  - saas_active yes/no
+
+- Actions:
+  - Create client manually
+  - Edit client
+  - Delete client
+
+Client detail page:
+- Full info
+- Total project revenue from this client
+- Recurring revenue summary (hosting + SaaS)
+- Related lead if applicable
+- Notes section
+
+----------------------------------------
+4. OUTREACH LOGS ("/outreach")
+----------------------------------------
+- Form to log outreach:
+  - date (default today)
+  - type (email, call, etc)
+  - optional lead_id dropdown
+  - outcome
+  - notes
+
+- Table of recent outreach logs
+- Filters: date range, outcome, type
+
+- Stats at top:
+  outreach today / this week / this month
+
+----------------------------------------
+5. TASKS ("/tasks")
+----------------------------------------
+- Add tasks:
+  - title
+  - description
+  - due_date
+  - status
+  - related_lead_id optional
+  - related_client_id optional
+
+- Table of tasks
+- Filters by status and due date
+- Show “Overdue” and “Due today” sections
+
+========================================
+==  IMPLEMENTATION DETAILS ==
+========================================
+
+• Use Flask Blueprints for clean structure  
+• app.py should set:
+    from datetime import timedelta
+    app.permanent_session_lifetime = timedelta(days=30)
+
+• On successful login:
+    session.permanent = True
+
+• Use `flask.flash` for create/update/delete success messages  
+• Include a /initdb route or a function to auto-create tables on startup  
+• Store database.db in the root directory of the repl  
+• No tailwind config needed — use CDN for simplicity
+
+========================================
+==  GOAL ==
+========================================
+
+Build a clean, functional, fast personal CRM that:
+
+• Tracks all leads  
+• Tracks all outreach  
+• Tracks all clients + project revenue  
+• Tracks hosting + SaaS recurring revenue  
+• Gives me a dashboard with weekly and monthly momentum  
+• Keeps me logged in for 30 days  
+• Requires only a single password (via environment variable)  
+
+Focus on correct data structure, simple UI, and reliable functionality.
