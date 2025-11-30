@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Outreach - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Outreach</h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Today</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ outreach_today }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">This Week</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ outreach_week }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">This Month</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ outreach_month }}</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow p-4 mb-6">
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select name="type" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">All Types</option>
+                        {% for t in types %}
+                        <option value="{{ t }}" {% if current_type == t %}selected{% endif %}>{{ t.replace('_', ' ').title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
+                    <select name="outcome" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">All Outcomes</option>
+                        {% for o in outcomes %}
+                        <option value="{{ o }}" {% if current_outcome == o %}selected{% endif %}>{{ o.replace('_', ' ').title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">From</label>
+                    <input type="date" name="date_from" value="{{ current_date_from }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">To</label>
+                    <input type="date" name="date_to" value="{{ current_date_to }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Filter</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-gray-600">{{ log.date }}</td>
+                        <td class="px-6 py-4 text-gray-600 capitalize">{{ log.type.replace('_', ' ') }}</td>
+                        <td class="px-6 py-4">
+                            {% if log.lead %}
+                            <a href="{{ url_for('leads.detail', id=log.lead.id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                {{ log.lead.name }}
+                            </a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full capitalize
+                                {% if log.outcome == 'closed_won' %}bg-green-100 text-green-800
+                                {% elif log.outcome == 'closed_lost' %}bg-red-100 text-red-800
+                                {% elif log.outcome == 'booked_call' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ log.outcome.replace('_', ' ') }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 max-w-xs truncate">{{ log.notes or '-' }}</td>
+                        <td class="px-6 py-4">
+                            <form method="POST" action="{{ url_for('outreach.delete', id=log.id) }}" class="inline" onsubmit="return confirm('Delete this log?')">
+                                <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">No outreach logs found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Log New Outreach</h2>
+            <form method="POST" action="{{ url_for('outreach.create') }}">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" name="date" value="{{ today }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select name="type" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        {% for t in types %}
+                        <option value="{{ t }}">{{ t.replace('_', ' ').title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lead (optional)</label>
+                    <select name="lead_id" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">-- No Lead --</option>
+                        {% for lead in leads %}
+                        <option value="{{ lead.id }}">{{ lead.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
+                    <select name="outcome" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        {% for o in outcomes %}
+                        <option value="{{ o }}">{{ o.replace('_', ' ').title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    Log Outreach
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

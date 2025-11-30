@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Client - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">{{ action }} Client</h1>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-2xl">
+    <form method="POST">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input type="text" name="name" value="{{ client.name if client else '' }}" required
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                <input type="text" name="business_name" value="{{ client.business_name if client else '' }}"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" name="contact_email" value="{{ client.contact_email if client else '' }}"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input type="tel" name="phone" value="{{ client.phone if client else '' }}"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Project Type</label>
+                <select name="project_type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    {% for pt in project_types %}
+                    <option value="{{ pt }}" {% if client and client.project_type == pt %}selected{% endif %}>
+                        {{ pt.replace('_', ' ').title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    {% for status in statuses %}
+                    <option value="{{ status }}" {% if client and client.status == status %}selected{% endif %}>
+                        {{ status.title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input type="date" name="start_date" value="{{ client.start_date if client else today }}"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Project Amount Charged ($)</label>
+            <input type="number" step="0.01" name="amount_charged" value="{{ client.amount_charged if client else 0 }}"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        
+        <div class="border-t pt-4 mb-4">
+            <h3 class="font-medium text-gray-900 mb-3">Recurring Revenue</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="flex items-center mb-2">
+                        <input type="checkbox" name="hosting_active" class="mr-2" {% if client and client.hosting_active %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">Hosting Active</span>
+                    </label>
+                    <input type="number" step="0.01" name="monthly_hosting_fee" value="{{ client.monthly_hosting_fee if client else 0 }}" placeholder="Monthly fee"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="flex items-center mb-2">
+                        <input type="checkbox" name="saas_active" class="mr-2" {% if client and client.saas_active %}checked{% endif %}>
+                        <span class="text-sm font-medium text-gray-700">SaaS Active</span>
+                    </label>
+                    <input type="number" step="0.01" name="monthly_saas_fee" value="{{ client.monthly_saas_fee if client else 0 }}" placeholder="Monthly fee"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea name="notes" rows="4" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ client.notes if client else '' }}</textarea>
+        </div>
+        
+        <div class="flex space-x-4">
+            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+                {{ action }} Client
+            </button>
+            <a href="{{ url_for('clients.index') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

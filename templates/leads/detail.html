@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lead.name }} - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">{{ lead.name }}</h1>
+        {% if lead.business_name %}
+        <p class="text-gray-600">{{ lead.business_name }}</p>
+        {% endif %}
+    </div>
+    <div class="space-x-2">
+        <a href="{{ url_for('leads.edit', id=lead.id) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Edit</a>
+        {% if lead.status != 'closed_won' %}
+        <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Convert to Client</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Lead Information</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    <p class="font-medium capitalize 
+                        {% if lead.status == 'closed_won' %}text-green-600
+                        {% elif lead.status == 'closed_lost' %}text-red-600
+                        {% else %}text-gray-900{% endif %}">
+                        {{ lead.status.replace('_', ' ') }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Email</p>
+                    <p class="font-medium">{{ lead.email or '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Phone</p>
+                    <p class="font-medium">{{ lead.phone or '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Niche</p>
+                    <p class="font-medium">{{ lead.niche or '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Source</p>
+                    <p class="font-medium">{{ lead.source or '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Next Action Date</p>
+                    <p class="font-medium">{{ lead.next_action_date or '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Last Contacted</p>
+                    <p class="font-medium">{{ lead.last_contacted_at.strftime('%Y-%m-%d %H:%M') if lead.last_contacted_at else '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Created</p>
+                    <p class="font-medium">{{ lead.created_at.strftime('%Y-%m-%d') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        {% if lead.notes %}
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
+            <p class="text-gray-700 whitespace-pre-wrap">{{ lead.notes }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Outreach History</h2>
+            {% if outreach_logs %}
+            <div class="space-y-4">
+                {% for log in outreach_logs %}
+                <div class="border-l-4 border-indigo-500 pl-4 py-2">
+                    <div class="flex justify-between">
+                        <span class="font-medium capitalize">{{ log.type }}</span>
+                        <span class="text-gray-500">{{ log.date }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 capitalize">Outcome: {{ log.outcome.replace('_', ' ') }}</p>
+                    {% if log.notes %}
+                    <p class="text-gray-700 mt-1">{{ log.notes }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No outreach logged yet</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Log Outreach</h2>
+            <form method="POST" action="{{ url_for('outreach.create') }}">
+                <input type="hidden" name="lead_id" value="{{ lead.id }}">
+                <input type="hidden" name="redirect_url" value="{{ url_for('leads.detail', id=lead.id) }}">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" name="date" value="{{ today if today else '' }}"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select name="type" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="email">Email</option>
+                        <option value="call">Call</option>
+                        <option value="dm">DM</option>
+                        <option value="in_person">In Person</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
+                    <select name="outcome" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="contacted">Contacted</option>
+                        <option value="booked_call">Booked Call</option>
+                        <option value="no_response">No Response</option>
+                        <option value="closed_won">Closed Won</option>
+                        <option value="closed_lost">Closed Lost</option>
+                        <option value="follow_up_set">Follow Up Set</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    Log Outreach
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

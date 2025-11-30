@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Leads - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Leads</h1>
+    <a href="{{ url_for('leads.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+        + New Lead
+    </a>
+</div>
+
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">All Statuses</option>
+                {% for status in statuses %}
+                <option value="{{ status }}" {% if current_status == status %}selected{% endif %}>{{ status.replace('_', ' ').title() }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Niche</label>
+            <select name="niche" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">All Niches</option>
+                {% for niche in niches %}
+                <option value="{{ niche }}" {% if current_niche == niche %}selected{% endif %}>{{ niche }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
+            <select name="source" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">All Sources</option>
+                {% for source in sources %}
+                <option value="{{ source }}" {% if current_source == source %}selected{% endif %}>{{ source }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" name="search" value="{{ current_search }}" placeholder="Name or Business" 
+                class="w-full border border-gray-300 rounded-md px-3 py-2">
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Action</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for lead in leads %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
+                        {{ lead.name }}
+                    </a>
+                </td>
+                <td class="px-6 py-4 text-gray-600">{{ lead.business_name or '-' }}</td>
+                <td class="px-6 py-4">
+                    <form method="POST" action="{{ url_for('leads.update_status', id=lead.id) }}" class="inline">
+                        <select name="status" onchange="this.form.submit()" 
+                            class="text-sm border border-gray-300 rounded px-2 py-1 
+                            {% if lead.status == 'closed_won' %}bg-green-100 text-green-800
+                            {% elif lead.status == 'closed_lost' %}bg-red-100 text-red-800
+                            {% elif lead.status == 'new' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {% for status in statuses %}
+                            <option value="{{ status }}" {% if lead.status == status %}selected{% endif %}>
+                                {{ status.replace('_', ' ').title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+                <td class="px-6 py-4 text-gray-600">{{ lead.source or '-' }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ lead.next_action_date or '-' }}</td>
+                <td class="px-6 py-4 space-x-2">
+                    <a href="{{ url_for('leads.edit', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</a>
+                    {% if lead.status != 'closed_won' %}
+                    <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="text-green-600 hover:text-green-900 text-sm">Convert</a>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('leads.delete', id=lead.id) }}" class="inline" onsubmit="return confirm('Delete this lead?')">
+                        <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500">No leads found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
