@@ -1,0 +1,158 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from models import db, Lead, OutreachLog, Client
+from datetime import datetime, date
+
+leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
+
+@leads_bp.route('/')
+def index():
+    status_filter = request.args.get('status', '')
+    niche_filter = request.args.get('niche', '')
+    source_filter = request.args.get('source', '')
+    search = request.args.get('search', '')
+    
+    query = Lead.query
+    
+    if status_filter:
+        query = query.filter(Lead.status == status_filter)
+    if niche_filter:
+        query = query.filter(Lead.niche == niche_filter)
+    if source_filter:
+        query = query.filter(Lead.source == source_filter)
+    if search:
+        query = query.filter(
+            db.or_(
+                Lead.name.ilike(f'%{search}%'),
+                Lead.business_name.ilike(f'%{search}%')
+            )
+        )
+    
+    leads = query.order_by(Lead.created_at.desc()).all()
+    
+    niches = db.session.query(Lead.niche).distinct().filter(Lead.niche.isnot(None), Lead.niche != '').all()
+    sources = db.session.query(Lead.source).distinct().filter(Lead.source.isnot(None), Lead.source != '').all()
+    
+    return render_template('leads/index.html',
+        leads=leads,
+        statuses=Lead.status_choices(),
+        niches=[n[0] for n in niches],
+        sources=[s[0] for s in sources],
+        current_status=status_filter,
+        current_niche=niche_filter,
+        current_source=source_filter,
+        current_search=search
+    )
+
+@leads_bp.route('/create', methods=['GET', 'POST'])
+def create():
+    if request.method == 'POST':
+        lead = Lead(
+            name=request.form.get('name'),
+            business_name=request.form.get('business_name'),
+            niche=request.form.get('niche'),
+            email=request.form.get('email'),
+            phone=request.form.get('phone'),
+            source=request.form.get('source'),
+            status=request.form.get('status', 'new'),
+            notes=request.form.get('notes'),
+            next_action_date=request.form.get('next_action_date') or None
+        )
+        db.session.add(lead)
+        db.session.commit()
+        flash('Lead created successfully!', 'success')
+        return redirect(url_for('leads.index'))
+    
+    return render_template('leads/form.html', 
+        lead=None, 
+        statuses=Lead.status_choices(),
+        action='Create'
+    )
+
+@leads_bp.route('/<int:id>')
+def detail(id):
+    lead = Lead.query.get_or_404(id)
+    outreach_logs = OutreachLog.query.filter_by(lead_id=id).order_by(OutreachLog.date.desc()).all()
+    return render_template('leads/detail.html', lead=lead, outreach_logs=outreach_logs)
+
+@leads_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
+def edit(id):
+    lead = Lead.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        lead.name = request.form.get('name')
+        lead.business_name = request.form.get('business_name')
+        lead.niche = request.form.get('niche')
+        lead.email = request.form.get('email')
+        lead.phone = request.form.get('phone')
+        lead.source = request.form.get('source')
+        lead.status = request.form.get('status')
+        lead.notes = request.form.get('notes')
+        next_action = request.form.get('next_action_date')
+        lead.next_action_date = next_action if next_action else None
+        lead.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        flash('Lead updated successfully!', 'success')
+        return redirect(url_for('leads.detail', id=id))
+    
+    return render_template('leads/form.html', 
+        lead=lead, 
+        statuses=Lead.status_choices(),
+        action='Edit'
+    )
+
+@leads_bp.route('/<int:id>/delete', methods=['POST'])
+def delete(id):
+    lead = Lead.query.get_or_404(id)
+    db.session.delete(lead)
+    db.session.commit()
+    flash('Lead deleted successfully!', 'success')
+    return redirect(url_for('leads.index'))
+
+@leads_bp.route('/<int:id>/update-status', methods=['POST'])
+def update_status(id):
+    lead = Lead.query.get_or_404(id)
+    new_status = request.form.get('status')
+    if new_status in Lead.status_choices():
+        lead.status = new_status
+        lead.updated_at = datetime.utcnow()
+        db.session.commit()
+        flash('Status updated!', 'success')
+    return redirect(request.referrer or url_for('leads.index'))
+
+@leads_bp.route('/<int:id>/convert', methods=['GET', 'POST'])
+def convert_to_client(id):
+    lead = Lead.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        client = Client(
+            name=request.form.get('name'),
+            business_name=request.form.get('business_name'),
+            contact_email=request.form.get('contact_email'),
+            phone=request.form.get('phone'),
+            project_type=request.form.get('project_type', 'website'),
+            start_date=request.form.get('start_date') or date.today(),
+            amount_charged=request.form.get('amount_charged') or 0,
+            status='active',
+            hosting_active=request.form.get('hosting_active') == 'on',
+            monthly_hosting_fee=request.form.get('monthly_hosting_fee') or 0,
+            saas_active=request.form.get('saas_active') == 'on',
+            monthly_saas_fee=request.form.get('monthly_saas_fee') or 0,
+            notes=request.form.get('notes'),
+            related_lead_id=lead.id
+        )
+        
+        lead.status = 'closed_won'
+        lead.updated_at = datetime.utcnow()
+        
+        db.session.add(client)
+        db.session.commit()
+        
+        flash('Lead converted to client successfully!', 'success')
+        return redirect(url_for('clients.detail', id=client.id))
+    
+    return render_template('leads/convert.html',
+        lead=lead,
+        project_types=Client.project_type_choices(),
+        today=date.today().isoformat()
+    )

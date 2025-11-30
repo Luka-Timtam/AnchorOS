@@ -1,0 +1,45 @@
+import os
+from datetime import timedelta
+from flask import Flask, redirect, url_for, session, request
+from models import db
+
+def create_app():
+    app = Flask(__name__)
+    
+    app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'dev-secret-key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.permanent_session_lifetime = timedelta(days=30)
+    
+    db.init_app(app)
+    
+    from blueprints.auth import auth_bp
+    from blueprints.dashboard import dashboard_bp
+    from blueprints.leads import leads_bp
+    from blueprints.clients import clients_bp
+    from blueprints.outreach import outreach_bp
+    from blueprints.tasks import tasks_bp
+    
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(leads_bp)
+    app.register_blueprint(clients_bp)
+    app.register_blueprint(outreach_bp)
+    app.register_blueprint(tasks_bp)
+    
+    @app.before_request
+    def require_login():
+        allowed_routes = ['auth.login', 'static']
+        if request.endpoint and request.endpoint not in allowed_routes:
+            if not session.get('authenticated'):
+                return redirect(url_for('auth.login'))
+    
+    with app.app_context():
+        db.create_all()
+    
+    return app
+
+app = create_app()
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
