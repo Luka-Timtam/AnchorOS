@@ -121,6 +121,9 @@ def update_status(id):
     lead = Lead.query.get_or_404(id)
     new_status = request.form.get('status')
     if new_status in Lead.status_choices():
+        if new_status == 'closed_won':
+            flash('Lead marked as won! Convert to client below.', 'success')
+            return redirect(url_for('leads.convert_to_client', id=id))
         lead.status = new_status
         lead.updated_at = datetime.utcnow()
         db.session.commit()
