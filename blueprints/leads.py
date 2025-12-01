@@ -58,6 +58,9 @@ def index():
 def create():
     if request.method == 'POST':
         has_website = request.form.get('has_website') == 'yes'
+        quality_issues = request.form.getlist('website_quality') if has_website else []
+        website_quality = ','.join(quality_issues) if quality_issues else ('no_website' if not has_website else '')
+        
         lead = Lead(
             name=request.form.get('name'),
             business_name=request.form.get('business_name'),
@@ -69,7 +72,7 @@ def create():
             notes=request.form.get('notes'),
             next_action_date=parse_date(request.form.get('next_action_date')),
             has_website=has_website,
-            website_quality=request.form.get('website_quality') if has_website else 'no_website',
+            website_quality=website_quality,
             demo_site_built=request.form.get('demo_site_built') == 'on'
         )
         db.session.add(lead)
@@ -96,6 +99,9 @@ def edit(id):
     
     if request.method == 'POST':
         has_website = request.form.get('has_website') == 'yes'
+        quality_issues = request.form.getlist('website_quality') if has_website else []
+        website_quality = ','.join(quality_issues) if quality_issues else ('no_website' if not has_website else '')
+        
         lead.name = request.form.get('name')
         lead.business_name = request.form.get('business_name')
         lead.niche = request.form.get('niche')
@@ -106,7 +112,7 @@ def edit(id):
         lead.notes = request.form.get('notes')
         lead.next_action_date = parse_date(request.form.get('next_action_date'))
         lead.has_website = has_website
-        lead.website_quality = request.form.get('website_quality') if has_website else 'no_website'
+        lead.website_quality = website_quality
         lead.demo_site_built = request.form.get('demo_site_built') == 'on'
         lead.updated_at = datetime.utcnow()
         

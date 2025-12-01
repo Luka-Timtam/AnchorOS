@@ -60,30 +60,33 @@
         
         <div class="bg-gray-50 rounded-lg p-4 mb-4">
             <h3 class="text-sm font-semibold text-gray-700 mb-3">Website Status</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Has Website?</label>
-                    <select name="has_website" id="has_website" onchange="toggleWebsiteQuality()"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="no" {% if not lead or not lead.has_website %}selected{% endif %}>No Website</option>
-                        <option value="yes" {% if lead and lead.has_website %}selected{% endif %}>Has Website</option>
-                    </select>
-                </div>
-                <div id="website_quality_container" class="{% if not lead or not lead.has_website %}hidden{% endif %}">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Website Quality Issue</label>
-                    <select name="website_quality" id="website_quality"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        {% for quality in website_qualities %}
-                        {% if quality != 'no_website' %}
-                        <option value="{{ quality }}" {% if lead and lead.website_quality == quality %}selected{% endif %}>
-                            {{ quality.replace('_', ' ').title() }}
-                        </option>
-                        {% endif %}
-                        {% endfor %}
-                    </select>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Has Website?</label>
+                <select name="has_website" id="has_website" onchange="toggleWebsiteQuality()"
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="no" {% if not lead or not lead.has_website %}selected{% endif %}>No Website</option>
+                    <option value="yes" {% if lead and lead.has_website %}selected{% endif %}>Has Website</option>
+                </select>
+            </div>
+            
+            <div id="website_quality_container" class="{% if not lead or not lead.has_website %}hidden{% endif %} mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Website Quality Issues (select all that apply)</label>
+                <div class="space-y-2">
+                    {% set current_issues = (lead.website_quality.split(',') if lead and lead.website_quality else []) %}
+                    {% for quality in website_qualities %}
+                    {% if quality != 'no_website' %}
+                    <label class="flex items-center">
+                        <input type="checkbox" name="website_quality" value="{{ quality }}"
+                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            {% if quality in current_issues %}checked{% endif %}>
+                        <span class="ml-2 text-sm text-gray-700">{{ quality.replace('_', ' ').title() }}</span>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
-            <div class="mt-3">
+            
+            <div>
                 <label class="flex items-center">
                     <input type="checkbox" name="demo_site_built" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         {% if lead and lead.demo_site_built %}checked{% endif %}>

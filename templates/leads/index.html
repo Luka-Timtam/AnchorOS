@@ -74,9 +74,13 @@
                 <td class="px-6 py-4 text-gray-600">{{ lead.business_name or '-' }}</td>
                 <td class="px-6 py-4">
                     {% if lead.has_website %}
-                    <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                        {{ (lead.website_quality or 'poor').replace('_', ' ').title() }}
-                    </span>
+                    <div class="space-y-1">
+                        {% for issue in lead.website_quality.split(',') %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 block">
+                            {{ issue.strip().replace('_', ' ').title() }}
+                        </span>
+                        {% endfor %}
+                    </div>
                     {% else %}
                     <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">No Website</span>
                     {% endif %}
@@ -150,9 +154,13 @@
                     <td class="px-6 py-4 text-gray-600">{{ lead.business_name or '-' }}</td>
                     <td class="px-6 py-4">
                         {% if lead.has_website %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                            {{ (lead.website_quality or 'poor').replace('_', ' ').title() }}
-                        </span>
+                        <div class="space-y-1">
+                            {% for issue in lead.website_quality.split(',') %}
+                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 block">
+                                {{ issue.strip().replace('_', ' ').title() }}
+                            </span>
+                            {% endfor %}
+                        </div>
                         {% else %}
                         <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">No Website</span>
                         {% endif %}

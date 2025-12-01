@@ -70,7 +70,13 @@
                     <p class="text-sm text-gray-500">Has Website</p>
                     <p class="font-medium">
                         {% if lead.has_website %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Yes - {{ (lead.website_quality or 'poor').replace('_', ' ').title() }}</span>
+                        <div class="space-y-1">
+                            {% for issue in lead.website_quality.split(',') %}
+                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 inline-block mr-2">
+                                {{ issue.strip().replace('_', ' ').title() }}
+                            </span>
+                            {% endfor %}
+                        </div>
                         {% else %}
                         <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">No Website</span>
                         {% endif %}
