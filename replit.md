@@ -36,6 +36,10 @@ This is a private, single-user CRM tool built with:
 - Quick status update dropdown
 - Convert lead to client functionality
 - Lead detail page with outreach history
+- Website tracking: has_website (yes/no), website_quality (no_website, outdated, poor_design, not_mobile_friendly, slow_loading, broken_features)
+- Demo site built tracker visible on leads index
+- Converted leads shown in separate section at bottom of page
+- Auto-redirect to conversion form when status set to "closed_won"
 
 ### Clients (/clients)
 - Full CRUD operations

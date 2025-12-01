@@ -19,7 +19,7 @@ def index():
     source_filter = request.args.get('source', '')
     search = request.args.get('search', '')
     
-    query = Lead.query
+    query = Lead.query.filter(Lead.converted_at.is_(None))
     
     if status_filter:
         query = query.filter(Lead.status == status_filter)
@@ -37,11 +37,14 @@ def index():
     
     leads = query.order_by(Lead.created_at.desc()).all()
     
+    converted_leads = Lead.query.filter(Lead.converted_at.isnot(None)).order_by(Lead.converted_at.desc()).all()
+    
     niches = db.session.query(Lead.niche).distinct().filter(Lead.niche.isnot(None), Lead.niche != '').all()
     sources = db.session.query(Lead.source).distinct().filter(Lead.source.isnot(None), Lead.source != '').all()
     
     return render_template('leads/index.html',
         leads=leads,
+        converted_leads=converted_leads,
         statuses=Lead.status_choices(),
         niches=[n[0] for n in niches],
         sources=[s[0] for s in sources],
@@ -54,6 +57,7 @@ def index():
 @leads_bp.route('/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'POST':
+        has_website = request.form.get('has_website') == 'yes'
         lead = Lead(
             name=request.form.get('name'),
             business_name=request.form.get('business_name'),
@@ -63,7 +67,10 @@ def create():
             source=request.form.get('source'),
             status=request.form.get('status', 'new'),
             notes=request.form.get('notes'),
-            next_action_date=parse_date(request.form.get('next_action_date'))
+            next_action_date=parse_date(request.form.get('next_action_date')),
+            has_website=has_website,
+            website_quality=request.form.get('website_quality') if has_website else 'no_website',
+            demo_site_built=request.form.get('demo_site_built') == 'on'
         )
         db.session.add(lead)
         db.session.commit()
@@ -73,6 +80,7 @@ def create():
     return render_template('leads/form.html', 
         lead=None, 
         statuses=Lead.status_choices(),
+        website_qualities=Lead.website_quality_choices(),
         action='Create'
     )
 
@@ -87,6 +95,7 @@ def edit(id):
     lead = Lead.query.get_or_404(id)
     
     if request.method == 'POST':
+        has_website = request.form.get('has_website') == 'yes'
         lead.name = request.form.get('name')
         lead.business_name = request.form.get('business_name')
         lead.niche = request.form.get('niche')
@@ -96,6 +105,9 @@ def edit(id):
         lead.status = request.form.get('status')
         lead.notes = request.form.get('notes')
         lead.next_action_date = parse_date(request.form.get('next_action_date'))
+        lead.has_website = has_website
+        lead.website_quality = request.form.get('website_quality') if has_website else 'no_website'
+        lead.demo_site_built = request.form.get('demo_site_built') == 'on'
         lead.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -105,6 +117,7 @@ def edit(id):
     return render_template('leads/form.html', 
         lead=lead, 
         statuses=Lead.status_choices(),
+        website_qualities=Lead.website_quality_choices(),
         action='Edit'
     )
 
@@ -153,6 +166,7 @@ def convert_to_client(id):
         )
         
         lead.status = 'closed_won'
+        lead.converted_at = datetime.utcnow()
         lead.updated_at = datetime.utcnow()
         
         db.session.add(client)

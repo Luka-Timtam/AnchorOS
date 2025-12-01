@@ -58,6 +58,40 @@
             </div>
         </div>
         
+        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Website Status</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Has Website?</label>
+                    <select name="has_website" id="has_website" onchange="toggleWebsiteQuality()"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="no" {% if not lead or not lead.has_website %}selected{% endif %}>No Website</option>
+                        <option value="yes" {% if lead and lead.has_website %}selected{% endif %}>Has Website</option>
+                    </select>
+                </div>
+                <div id="website_quality_container" class="{% if not lead or not lead.has_website %}hidden{% endif %}">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Website Quality Issue</label>
+                    <select name="website_quality" id="website_quality"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        {% for quality in website_qualities %}
+                        {% if quality != 'no_website' %}
+                        <option value="{{ quality }}" {% if lead and lead.website_quality == quality %}selected{% endif %}>
+                            {{ quality.replace('_', ' ').title() }}
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-3">
+                <label class="flex items-center">
+                    <input type="checkbox" name="demo_site_built" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        {% if lead and lead.demo_site_built %}checked{% endif %}>
+                    <span class="ml-2 text-sm text-gray-700">Demo site built for this lead</span>
+                </label>
+            </div>
+        </div>
+        
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Next Action Date</label>
             <input type="date" name="next_action_date" value="{{ lead.next_action_date if lead and lead.next_action_date else '' }}"
@@ -80,4 +114,17 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleWebsiteQuality() {
+    const hasWebsite = document.getElementById('has_website').value === 'yes';
+    const qualityContainer = document.getElementById('website_quality_container');
+    
+    if (hasWebsite) {
+        qualityContainer.classList.remove('hidden');
+    } else {
+        qualityContainer.classList.add('hidden');
+    }
+}
+</script>
 {% endblock %}

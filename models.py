@@ -20,12 +20,21 @@ class Lead(db.Model):
     last_contacted_at = db.Column(db.DateTime, nullable=True)
     next_action_date = db.Column(db.Date, nullable=True)
     
+    has_website = db.Column(db.Boolean, default=False)
+    website_quality = db.Column(db.String(50), nullable=True)
+    demo_site_built = db.Column(db.Boolean, default=False)
+    converted_at = db.Column(db.DateTime, nullable=True)
+    
     outreach_logs = db.relationship('OutreachLog', backref='lead', lazy=True)
     tasks = db.relationship('Task', backref='lead', lazy=True, foreign_keys='Task.related_lead_id')
 
     @staticmethod
     def status_choices():
         return ['new', 'contacted', 'call_booked', 'follow_up', 'proposal_sent', 'closed_won', 'closed_lost']
+    
+    @staticmethod
+    def website_quality_choices():
+        return ['no_website', 'outdated', 'poor_design', 'not_mobile_friendly', 'slow_loading', 'broken_features']
 
 
 class Client(db.Model):
