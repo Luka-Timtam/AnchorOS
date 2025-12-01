@@ -72,7 +72,7 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <div class="bg-white rounded-lg shadow p-4">
         <h3 class="text-base font-semibold text-gray-900 mb-3">Outreach (Last 12 Weeks)</h3>
         <canvas id="outreachChart" height="120"></canvas>
@@ -83,11 +83,28 @@
     </div>
 </div>
 
+<div class="bg-white rounded-lg shadow p-4">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-gray-900" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
+        <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600" id="toggleLabel">Revenue</span>
+            <button type="button" id="revenueToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-indigo-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false">
+                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggleKnob"></span>
+            </button>
+            <span class="text-sm text-gray-600">MRR</span>
+        </div>
+    </div>
+    <canvas id="revenueChart" height="120"></canvas>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const weekLabels = {{ week_labels | tojson }};
     const outreachData = {{ outreach_weekly_data | tojson }};
     const dealsData = {{ deals_weekly_data | tojson }};
+    const monthLabels = {{ month_labels | tojson }};
+    const monthlyRevenueData = {{ monthly_revenue_data | tojson }};
+    const monthlyMrrData = {{ monthly_mrr_data | tojson }};
     
     new Chart(document.getElementById('outreachChart'), {
         type: 'bar',
@@ -133,6 +150,77 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    });
+    
+    let showMrr = false;
+    const revenueChart = new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Revenue',
+                data: monthlyRevenueData,
+                backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                borderColor: 'rgba(34, 197, 94, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '$' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    const toggleBtn = document.getElementById('revenueToggle');
+    const toggleKnob = document.getElementById('toggleKnob');
+    const chartTitle = document.getElementById('revenueChartTitle');
+    
+    toggleBtn.addEventListener('click', function() {
+        showMrr = !showMrr;
+        
+        if (showMrr) {
+            toggleKnob.classList.remove('translate-x-0');
+            toggleKnob.classList.add('translate-x-5');
+            toggleBtn.classList.remove('bg-indigo-600');
+            toggleBtn.classList.add('bg-purple-600');
+            chartTitle.textContent = 'Monthly Recurring Revenue (Last 12 Months)';
+            revenueChart.data.datasets[0].label = 'MRR';
+            revenueChart.data.datasets[0].data = monthlyMrrData;
+            revenueChart.data.datasets[0].backgroundColor = 'rgba(147, 51, 234, 0.2)';
+            revenueChart.data.datasets[0].borderColor = 'rgba(147, 51, 234, 1)';
+        } else {
+            toggleKnob.classList.remove('translate-x-5');
+            toggleKnob.classList.add('translate-x-0');
+            toggleBtn.classList.remove('bg-purple-600');
+            toggleBtn.classList.add('bg-indigo-600');
+            chartTitle.textContent = 'Monthly Revenue (Last 12 Months)';
+            revenueChart.data.datasets[0].label = 'Revenue';
+            revenueChart.data.datasets[0].data = monthlyRevenueData;
+            revenueChart.data.datasets[0].backgroundColor = 'rgba(34, 197, 94, 0.2)';
+            revenueChart.data.datasets[0].borderColor = 'rgba(34, 197, 94, 1)';
+        }
+        
+        revenueChart.update();
     });
 });
 </script>

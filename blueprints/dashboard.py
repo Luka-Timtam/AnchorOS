@@ -102,6 +102,42 @@ def index():
         ).count()
         deals_weekly_data.append(deals_count)
     
+    monthly_revenue_data = []
+    monthly_mrr_data = []
+    month_labels = []
+    
+    for i in range(11, -1, -1):
+        m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+        if m_start.month == 12:
+            m_end = m_start.replace(year=m_start.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
+        
+        month_labels.append(m_start.strftime('%b %Y'))
+        
+        month_revenue = db.session.query(
+            func.coalesce(func.sum(Client.amount_charged), 0)
+        ).filter(
+            and_(Client.start_date >= m_start, Client.start_date <= m_end)
+        ).scalar() or Decimal('0')
+        monthly_revenue_data.append(float(month_revenue))
+        
+        hosting_at_month = db.session.query(
+            func.coalesce(func.sum(Client.monthly_hosting_fee), 0)
+        ).filter(
+            Client.hosting_active == True,
+            Client.start_date <= m_end
+        ).scalar() or Decimal('0')
+        
+        saas_at_month = db.session.query(
+            func.coalesce(func.sum(Client.monthly_saas_fee), 0)
+        ).filter(
+            Client.saas_active == True,
+            Client.start_date <= m_end
+        ).scalar() or Decimal('0')
+        
+        monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
+    
     return render_template('dashboard.html',
         lead_counts=lead_counts_dict,
         lead_statuses=Lead.status_choices(),
@@ -119,5 +155,8 @@ def index():
         forecast_3_months=forecast_3_months,
         week_labels=week_labels,
         outreach_weekly_data=outreach_weekly_data,
-        deals_weekly_data=deals_weekly_data
+        deals_weekly_data=deals_weekly_data,
+        month_labels=month_labels,
+        monthly_revenue_data=monthly_revenue_data,
+        monthly_mrr_data=monthly_mrr_data
     )
