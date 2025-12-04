@@ -91,21 +91,40 @@ This is a private, single-user CRM tool built with:
 - Manual override with "Keep manual" option
 - Reset to recommended functionality
 
+### Outreach Templates (/outreach-templates)
+- Full CRUD for email, DM, and call script templates
+- Categories: email, dm, call
+- Subcategories: cold_outreach, follow_up, cold_call_script, objection_handling, booking_confirmation, proposal, other
+- Filters by category, subcategory, and text search
+- Copy to clipboard functionality
+- Favourite toggle for quick access
+- Templates sorted by favourite status and last updated
+
+### Daily Summary Email
+- Automated endpoint: GET /internal/run-daily-summary
+- Sends Mon-Fri at scheduled time (via external scheduler)
+- Includes: follow-ups due, overdue, tasks due, outreach stats, streak/XP/level, MRR snapshot
+- Monday emails include weekly summary: outreach count, deals closed, revenue
+- Requires CRM_EMAIL env var for recipient
+- Optional INTERNAL_API_TOKEN for automated access
+
 ## Project Structure
 
 ```
 ├── app.py                 # Main Flask application
 ├── models.py              # SQLAlchemy database models
 ├── blueprints/
-│   ├── auth.py           # Authentication routes
-│   ├── dashboard.py      # Dashboard with stats
-│   ├── leads.py          # Lead management
-│   ├── clients.py        # Client management
-│   ├── outreach.py       # Outreach logging
-│   ├── tasks.py          # Task management
-│   ├── analytics.py      # Analytics and settings
-│   ├── gamification.py   # XP, streaks, achievements
-│   └── goals.py          # Goal setting and tracking
+│   ├── auth.py              # Authentication routes
+│   ├── dashboard.py         # Dashboard with stats
+│   ├── leads.py             # Lead management
+│   ├── clients.py           # Client management
+│   ├── outreach.py          # Outreach logging
+│   ├── tasks.py             # Task management
+│   ├── analytics.py         # Analytics and settings
+│   ├── gamification.py      # XP, streaks, achievements
+│   ├── goals.py             # Goal setting and tracking
+│   ├── outreach_templates.py # Email/DM/Call templates
+│   └── internal.py          # Internal API endpoints
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page
@@ -114,10 +133,11 @@ This is a private, single-user CRM tool built with:
 │   ├── clients/          # Client templates
 │   ├── outreach/         # Outreach templates
 │   ├── tasks/            # Task templates
-│   ├── analytics/        # Analytics templates
-│   ├── gamification/     # Gamification templates
-│   └── goals/            # Goals templates
-└── database.db           # SQLite database (auto-created)
+│   ├── analytics/           # Analytics templates
+│   ├── gamification/        # Gamification templates
+│   ├── goals/               # Goals templates
+│   └── outreach_templates/  # Template management pages
+└── database.db              # SQLite database (auto-created)
 ```
 
 ## Environment Variables
@@ -135,7 +155,7 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 9 tables:
+SQLite database with 10 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
@@ -145,5 +165,6 @@ SQLite database with 9 tables:
 - achievements: Achievement definitions and unlock status
 - goals: Goal targets (daily outreach, weekly outreach, monthly revenue, monthly deals)
 - xp_logs: XP gain history for tracking
+- outreach_templates: Email, DM, and call script templates
 
 Tables are auto-created on first run.
