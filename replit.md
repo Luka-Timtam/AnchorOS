@@ -76,6 +76,21 @@ This is a private, single-user CRM tool built with:
 - Completed tasks shown in separate section at bottom
 - Filters: status, due date
 
+### Gamification (/gamification)
+- XP system with levels (1-10)
+- XP earned from: outreach (+5), lead status changes (+3/7/10), deals closed (+20), tasks completed (+8)
+- Outreach streak tracking (current and longest)
+- Consistency score (0-100) based on last 7 days
+- Achievements system with unlock tracking
+- Charts: XP gained this week, consistency breakdown
+
+### Goals (/goals)
+- Set daily/weekly/monthly targets
+- Goal types: daily outreach, weekly outreach, monthly revenue, monthly deals
+- Auto-generated recommended goals based on historical data
+- Manual override with "Keep manual" option
+- Reset to recommended functionality
+
 ## Project Structure
 
 ```
@@ -88,7 +103,9 @@ This is a private, single-user CRM tool built with:
 │   ├── clients.py        # Client management
 │   ├── outreach.py       # Outreach logging
 │   ├── tasks.py          # Task management
-│   └── analytics.py      # Analytics and settings
+│   ├── analytics.py      # Analytics and settings
+│   ├── gamification.py   # XP, streaks, achievements
+│   └── goals.py          # Goal setting and tracking
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page
@@ -97,7 +114,9 @@ This is a private, single-user CRM tool built with:
 │   ├── clients/          # Client templates
 │   ├── outreach/         # Outreach templates
 │   ├── tasks/            # Task templates
-│   └── analytics/        # Analytics templates
+│   ├── analytics/        # Analytics templates
+│   ├── gamification/     # Gamification templates
+│   └── goals/            # Goals templates
 └── database.db           # SQLite database (auto-created)
 ```
 
@@ -116,11 +135,15 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 5 tables:
+SQLite database with 9 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
 - tasks: Task management with due dates
 - user_settings: Dashboard widget visibility preferences
+- user_stats: XP, level, streak tracking (single row)
+- achievements: Achievement definitions and unlock status
+- goals: Goal targets (daily outreach, weekly outreach, monthly revenue, monthly deals)
+- xp_logs: XP gain history for tracking
 
 Tables are auto-created on first run.
