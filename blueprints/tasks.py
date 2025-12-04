@@ -33,7 +33,7 @@ def index():
     
     tasks = query.order_by(Task.due_date.asc().nullslast(), Task.created_at.desc()).all()
     
-    completed_tasks = Task.query.filter(Task.status == 'done').order_by(Task.updated_at.desc()).all()
+    completed_tasks = Task.query.filter(Task.status == 'done').order_by(Task.created_at.desc()).all()
     
     overdue_tasks = Task.query.filter(
         Task.due_date < today,
