@@ -230,3 +230,24 @@ class XPLog(db.Model):
     amount = db.Column(db.Integer, nullable=False)
     reason = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class OutreachTemplate(db.Model):
+    __tablename__ = 'outreach_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    subcategory = db.Column(db.String(100), nullable=True)
+    content = db.Column(db.Text, nullable=False)
+    is_favourite = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    @staticmethod
+    def category_choices():
+        return ['email', 'dm', 'call']
+    
+    @staticmethod
+    def subcategory_choices():
+        return ['cold_outreach', 'follow_up', 'cold_call_script', 'objection_handling', 'booking_confirmation', 'proposal', 'other']

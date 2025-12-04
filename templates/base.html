@@ -23,6 +23,7 @@
                         <a href="{{ url_for('outreach.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach' in request.endpoint %}bg-indigo-700{% endif %}">Outreach</a>
                         <a href="{{ url_for('tasks.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'tasks' in request.endpoint %}bg-indigo-700{% endif %}">Tasks</a>
                         <a href="{{ url_for('analytics.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'analytics' in request.endpoint %}bg-indigo-700{% endif %}">Analytics</a>
+                        <a href="{{ url_for('outreach_templates.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach_templates' in request.endpoint %}bg-indigo-700{% endif %}">Templates</a>
                         <a href="{{ url_for('gamification.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'gamification' in request.endpoint %}bg-indigo-700{% endif %}">Gamification</a>
                         <a href="{{ url_for('goals.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'goals' in request.endpoint %}bg-indigo-700{% endif %}">Goals</a>
                     </div>
@@ -39,6 +40,7 @@
             <a href="{{ url_for('outreach.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Outreach</a>
             <a href="{{ url_for('tasks.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Tasks</a>
             <a href="{{ url_for('analytics.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Analytics</a>
+            <a href="{{ url_for('outreach_templates.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Templates</a>
             <a href="{{ url_for('gamification.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Gamification</a>
             <a href="{{ url_for('goals.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Goals</a>
         </div>

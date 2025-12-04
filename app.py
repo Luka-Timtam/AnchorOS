@@ -22,6 +22,8 @@ def create_app():
     from blueprints.analytics import analytics_bp
     from blueprints.gamification import gamification_bp
     from blueprints.goals import goals_bp
+    from blueprints.outreach_templates import outreach_templates_bp
+    from blueprints.internal import internal_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -32,10 +34,12 @@ def create_app():
     app.register_blueprint(analytics_bp)
     app.register_blueprint(gamification_bp)
     app.register_blueprint(goals_bp)
+    app.register_blueprint(outreach_templates_bp)
+    app.register_blueprint(internal_bp)
     
     @app.before_request
     def require_login():
-        allowed_routes = ['auth.login', 'static']
+        allowed_routes = ['auth.login', 'static', 'internal.run_daily_summary']
         if request.endpoint and request.endpoint not in allowed_routes:
             if not session.get('authenticated'):
                 return redirect(url_for('auth.login'))

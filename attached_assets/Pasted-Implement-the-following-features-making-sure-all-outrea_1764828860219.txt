@@ -1,0 +1,130 @@
+Implement the following features, making sure all outreach templates and cold call scripts exist on their own dedicated page separate from the main app sections.
+
+====================================
+1. OUTREACH TEMPLATES PAGE (NEW PAGE)
+====================================
+
+Create a new Blueprint called "templates" or "outreach_templates" with route prefix "/outreach-templates".
+
+This MUST be its own standalone page in the navigation:
+- Add a navbar link labeled “Templates”.
+- Clicking it opens the full outreach template manager page.
+
+====================================
+PAGE STRUCTURE
+====================================
+
+GET /outreach-templates  
+This page should act as a full template management interface.
+
+Sections to include (clearly separated on the page):
+
+1) Email Templates  
+2) DM Templates  
+3) Call Scripts (cold call + objections)  
+4) Create New Template button
+
+For each template row:
+- name
+- category (email, dm, call)
+- subcategory (e.g. cold_call_script, follow_up, objection_handling)
+- preview of content
+- buttons/icons:
+  - View
+  - Edit
+  - Delete
+  - Copy to clipboard
+  - Toggle favourite
+
+Add filters at the top:
+- category filter
+- subcategory filter
+- text search (name or content)
+
+====================================
+TEMPLATE STORAGE
+====================================
+
+Create a table: outreach_templates
+
+Fields:
+- id (pk)
+- name (string)
+- category (email, dm, call)
+- subcategory (string: cold_call_script, follow_up, objection_handling, etc.)
+- content (text)
+- is_favourite (boolean)
+- created_at
+- updated_at
+
+All cold calling scripts MUST be stored in this table under:
+- category = "call"
+- appropriate subcategory values.
+
+====================================
+TEMPLATE DETAILS
+====================================
+
+GET /outreach-templates/<id>
+- Show full template content
+- Buttons for:
+  - Edit
+  - Copy to clipboard
+  - Back
+
+GET + POST /outreach-templates/new
+GET + POST /outreach-templates/<id>/edit
+POST /outreach-templates/<id>/delete
+
+====================================
+COPY BEHAVIOUR
+====================================
+
+Copy-to-clipboard should be implemented via a simple JS snippet on the frontend.
+
+====================================
+2. DAILY SUMMARY EMAIL (WEEKDAYS ONLY)
+====================================
+
+At ~9:30am Mon–Fri, send a daily summary email to CRM_EMAIL (env variable).
+
+Include:
+
+• Follow-ups due today  
+• Overdue follow-ups  
+• Tasks due today  
+• Outreach yesterday vs daily outreach goal  
+• Current streak, XP, level, consistency score  
+• New leads created yesterday  
+• MRR snapshot: hosting + SaaS + total  
+
+====================================
+3. WEEKLY SUMMARY (INCLUDED IN MONDAY EMAIL)
+====================================
+
+On Mondays, extend the daily email with a weekly summary:
+
+• Outreach count last week vs weekly goal  
+• Deals closed last week  
+• Revenue last week  
+• MRR change vs previous week  
+
+No extra email — add this section inside the Monday message.
+
+====================================
+4. EMAIL SCHEDULING ENDPOINT
+====================================
+
+Create route: GET /internal/run-daily-summary
+
+This endpoint should:
+
+• Accept either login session OR a secret token for automated access  
+• Check day of week:  
+  - If Saturday or Sunday → send nothing  
+  - If Monday → send daily + weekly summary  
+  - Otherwise → send daily summary  
+
+Return JSON describing whether email was sent.
+
+This endpoint will be called daily at ~9:30am by an external scheduler.
