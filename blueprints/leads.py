@@ -67,6 +67,14 @@ def index():
         current_next_action=next_action_filter
     )
 
+def get_existing_niches():
+    niches = db.session.query(Lead.niche).distinct().filter(Lead.niche.isnot(None), Lead.niche != '').all()
+    return [n[0] for n in niches]
+
+def get_existing_sources():
+    sources = db.session.query(Lead.source).distinct().filter(Lead.source.isnot(None), Lead.source != '').all()
+    return [s[0] for s in sources]
+
 @leads_bp.route('/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'POST':
@@ -97,6 +105,8 @@ def create():
         lead=None, 
         statuses=Lead.status_choices(),
         website_qualities=Lead.website_quality_choices(),
+        niches=get_existing_niches(),
+        sources=get_existing_sources(),
         action='Create'
     )
 
@@ -137,6 +147,8 @@ def edit(id):
         lead=lead, 
         statuses=Lead.status_choices(),
         website_qualities=Lead.website_quality_choices(),
+        niches=get_existing_niches(),
+        sources=get_existing_sources(),
         action='Edit'
     )
 
