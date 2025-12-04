@@ -19,7 +19,7 @@ def index():
     status_filter = request.args.get('status', '')
     due_filter = request.args.get('due', '')
     
-    query = Task.query
+    query = Task.query.filter(Task.status != 'done')
     
     if status_filter:
         query = query.filter(Task.status == status_filter)
@@ -32,6 +32,8 @@ def index():
         query = query.filter(Task.due_date > today)
     
     tasks = query.order_by(Task.due_date.asc().nullslast(), Task.created_at.desc()).all()
+    
+    completed_tasks = Task.query.filter(Task.status == 'done').order_by(Task.updated_at.desc()).all()
     
     overdue_tasks = Task.query.filter(
         Task.due_date < today,
@@ -47,6 +49,7 @@ def index():
     
     return render_template('tasks/index.html',
         tasks=tasks,
+        completed_tasks=completed_tasks,
         overdue_tasks=overdue_tasks,
         today_tasks=today_tasks,
         leads=leads,

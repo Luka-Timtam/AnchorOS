@@ -212,12 +212,63 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500">No tasks found</td>
+                <td colspan="5" class="px-6 py-8 text-center text-gray-500">No open or in-progress tasks found</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+{% if completed_tasks %}
+<div class="bg-gray-50 rounded-lg shadow overflow-hidden mt-6">
+    <div class="bg-gray-200 px-6 py-3">
+        <h2 class="text-lg font-semibold text-gray-800">Completed Tasks ({{ completed_tasks|length }})</h2>
+    </div>
+    <table class="min-w-full divide-y divide-gray-200">
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for task in completed_tasks %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <span class="line-through text-gray-500">{{ task.title }}</span>
+                    {% if task.description %}
+                    <p class="text-sm text-gray-400 truncate max-w-xs">{{ task.description }}</p>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-sm">
+                    {% if task.due_date %}
+                    <span class="text-gray-600">{{ task.due_date }}</span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">Done</span>
+                </td>
+                <td class="px-6 py-4 text-sm">
+                    {% if task.lead %}
+                    <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-indigo-600 hover:text-indigo-900">
+                        Lead: {{ task.lead.name }}
+                    </a>
+                    {% elif task.client %}
+                    <a href="{{ url_for('clients.detail', id=task.client.id) }}" class="text-indigo-600 hover:text-indigo-900">
+                        Client: {{ task.client.name }}
+                    </a>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 space-x-2">
+                    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</a>
+                    <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
+                        <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
