@@ -29,17 +29,31 @@ This is a private, single-user CRM tool built with:
 - MRR tracking (hosting + SaaS)
 - 3-month revenue forecast
 - Charts: Outreach per week, Deals closed per week (last 12 weeks)
+- Follow-up reminders: Today and Overdue counts (clickable)
+- Customizable widgets via settings
+
+### Analytics (/analytics)
+- Advanced charts with filters (date range, niche, source, status)
+- Monthly project revenue chart (bar, last 12 months)
+- MRR growth chart (line, hosting/SaaS/total, last 12 months)
+- Outreach volume per week (last 12 weeks)
+- Deals closed per week (last 12 weeks)
+- Lead pipeline chart (by status)
+- 3-month revenue forecast breakdown
+- Follow-up reminders: Today and Overdue counts
+- Dashboard widget settings page (/analytics/settings)
 
 ### Leads (/leads)
 - Full CRUD operations
-- Filters: status, niche, source, text search
+- Filters: status, niche, source, text search, follow-up (today/overdue)
 - Quick status update dropdown
 - Convert lead to client functionality
 - Lead detail page with outreach history
-- Website tracking: has_website (yes/no), website_quality (no_website, outdated, poor_design, not_mobile_friendly, slow_loading, broken_features)
+- Website tracking: has_website (yes/no), website_quality (multiple issues: outdated, poor_design, not_mobile_friendly, slow_loading, broken_features)
 - Demo site built tracker visible on leads index
 - Converted leads shown in separate section at bottom of page
 - Auto-redirect to conversion form when status set to "closed_won"
+- Next action date for follow-up scheduling
 
 ### Clients (/clients)
 - Full CRUD operations
@@ -59,6 +73,7 @@ This is a private, single-user CRM tool built with:
 - Link to leads or clients (optional)
 - Status tracking (open, in_progress, done)
 - Overdue and Due Today sections highlighted
+- Completed tasks shown in separate section at bottom
 - Filters: status, due date
 
 ## Project Structure
@@ -72,7 +87,8 @@ This is a private, single-user CRM tool built with:
 │   ├── leads.py          # Lead management
 │   ├── clients.py        # Client management
 │   ├── outreach.py       # Outreach logging
-│   └── tasks.py          # Task management
+│   ├── tasks.py          # Task management
+│   └── analytics.py      # Analytics and settings
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page
@@ -80,7 +96,8 @@ This is a private, single-user CRM tool built with:
 │   ├── leads/            # Lead templates
 │   ├── clients/          # Client templates
 │   ├── outreach/         # Outreach templates
-│   └── tasks/            # Task templates
+│   ├── tasks/            # Task templates
+│   └── analytics/        # Analytics templates
 └── database.db           # SQLite database (auto-created)
 ```
 
@@ -99,10 +116,11 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 4 tables:
+SQLite database with 5 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
 - tasks: Task management with due dates
+- user_settings: Dashboard widget visibility preferences
 
 Tables are auto-created on first run.
