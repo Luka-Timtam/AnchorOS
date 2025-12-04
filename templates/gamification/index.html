@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Gamification - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Gamification</h1>
+    <p class="text-gray-600 mt-1">Track your progress, streaks, and achievements</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow p-6 text-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold opacity-90">Level {{ current_level }}</h3>
+            <span class="text-3xl">&#x1F3C6;</span>
+        </div>
+        <div class="text-4xl font-bold mb-2">{{ stats.current_xp }} XP</div>
+        {% if xp_for_next %}
+        <div class="text-sm opacity-80 mb-2">{{ xp_for_next - stats.current_xp }} XP to Level {{ current_level + 1 }}</div>
+        <div class="w-full bg-white/30 rounded-full h-2">
+            <div class="bg-white rounded-full h-2" style="width: {{ xp_progress }}%"></div>
+        </div>
+        {% else %}
+        <div class="text-sm opacity-80">Max level reached!</div>
+        {% endif %}
+    </div>
+    
+    <div class="bg-gradient-to-br from-orange-400 to-red-500 rounded-lg shadow p-6 text-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold opacity-90">Outreach Streak</h3>
+            <span class="text-3xl">&#x1F525;</span>
+        </div>
+        <div class="text-4xl font-bold mb-2">{{ stats.current_outreach_streak_days }} days</div>
+        <div class="text-sm opacity-80">Longest: {{ stats.longest_outreach_streak_days }} days</div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg shadow p-6 text-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold opacity-90">Consistency Score</h3>
+            <span class="text-3xl">&#x1F4C8;</span>
+        </div>
+        <div class="text-4xl font-bold mb-2">{{ consistency.score }}%</div>
+        <div class="text-sm opacity-80">Based on last 7 days</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">XP Gained This Week</h3>
+        <canvas id="xpChart" height="180"></canvas>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Consistency Breakdown</h3>
+        <div class="space-y-4">
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Outreach</span>
+                    <span class="font-medium">{{ consistency.outreach_pct }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-indigo-500 rounded-full h-3" style="width: {{ consistency.outreach_pct }}%"></div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">{{ consistency.outreach_count }} of {{ consistency.outreach_goal }} target</div>
+            </div>
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Follow-ups</span>
+                    <span class="font-medium">{{ consistency.followup_pct }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-orange-500 rounded-full h-3" style="width: {{ consistency.followup_pct }}%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-gray-600">Tasks Completed</span>
+                    <span class="font-medium">{{ consistency.task_pct }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-emerald-500 rounded-full h-3" style="width: {{ consistency.task_pct }}%"></div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">{{ consistency.tasks_done }} of {{ consistency.tasks_due }} due</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Achievements</h3>
+    
+    {% if unlocked_achievements %}
+    <div class="mb-6">
+        <h4 class="text-sm font-medium text-gray-600 mb-3">Unlocked</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for achievement in unlocked_achievements %}
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <span class="text-2xl mr-3">&#x1F3C5;</span>
+                    <div>
+                        <div class="font-semibold text-gray-900">{{ achievement.name }}</div>
+                        <div class="text-xs text-gray-500">Unlocked {{ achievement.unlocked_at.strftime('%b %d, %Y') }}</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">{{ achievement.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if locked_achievements %}
+    <div>
+        <h4 class="text-sm font-medium text-gray-600 mb-3">Locked</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for achievement in locked_achievements %}
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 opacity-60">
+                <div class="flex items-center mb-2">
+                    <span class="text-2xl mr-3 grayscale">&#x1F512;</span>
+                    <div>
+                        <div class="font-semibold text-gray-700">{{ achievement.name }}</div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500">{{ achievement.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const xpData = {{ xp_this_week | tojson }};
+const today = new Date();
+const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const currentDay = (today.getDay() + 6) % 7;
+
+const labels = [];
+for (let i = 0; i < 7; i++) {
+    labels.push(dayNames[i]);
+}
+
+new Chart(document.getElementById('xpChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'XP Earned',
+            data: xpData,
+            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 10 }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template
-from models import db, Lead, Client, OutreachLog, UserSettings
+from models import db, Lead, Client, OutreachLog, UserSettings, UserStats
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
+from blueprints.gamification import calculate_consistency_score
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -104,6 +105,9 @@ def index():
     
     settings = UserSettings.get_settings()
     
+    user_stats = UserStats.get_stats()
+    consistency = calculate_consistency_score()
+    
     followup_today = Lead.query.filter(
         Lead.next_action_date == today,
         Lead.status.notin_(['closed_won', 'closed_lost']),
@@ -154,6 +158,8 @@ def index():
     
     return render_template('dashboard.html',
         settings=settings,
+        user_stats=user_stats,
+        consistency_score=consistency['score'],
         followup_today=followup_today,
         followup_overdue=followup_overdue,
         lead_counts=lead_counts_dict,

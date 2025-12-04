@@ -127,3 +127,106 @@ class UserSettings(db.Model):
             db.session.add(settings)
             db.session.commit()
         return settings
+
+
+class UserStats(db.Model):
+    __tablename__ = 'user_stats'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    current_xp = db.Column(db.Integer, default=0)
+    current_level = db.Column(db.Integer, default=1)
+    current_outreach_streak_days = db.Column(db.Integer, default=0)
+    longest_outreach_streak_days = db.Column(db.Integer, default=0)
+    last_outreach_date = db.Column(db.Date, nullable=True)
+    last_consistency_score = db.Column(db.Integer, default=0)
+    last_consistency_calculated_at = db.Column(db.DateTime, nullable=True)
+    
+    @staticmethod
+    def get_stats():
+        stats = UserStats.query.first()
+        if not stats:
+            stats = UserStats()
+            db.session.add(stats)
+            db.session.commit()
+        return stats
+    
+    def get_level_from_xp(self):
+        xp = self.current_xp
+        if xp >= 10000: return 10
+        if xp >= 7500: return 9
+        if xp >= 5000: return 8
+        if xp >= 3500: return 7
+        if xp >= 2500: return 6
+        if xp >= 1500: return 5
+        if xp >= 1000: return 4
+        if xp >= 500: return 3
+        if xp >= 200: return 2
+        return 1
+    
+    def xp_for_next_level(self):
+        levels = [0, 200, 500, 1000, 1500, 2500, 3500, 5000, 7500, 10000, float('inf')]
+        current = self.get_level_from_xp()
+        if current >= 10:
+            return None
+        return levels[current]
+
+
+class Achievement(db.Model):
+    __tablename__ = 'achievements'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    unlocked_at = db.Column(db.DateTime, nullable=True)
+    
+    @staticmethod
+    def seed_defaults():
+        defaults = [
+            {'key': 'streak_7', 'name': 'Week Warrior', 'description': 'Maintain a 7-day outreach streak'},
+            {'key': 'streak_30', 'name': 'Consistency King', 'description': 'Maintain a 30-day outreach streak'},
+            {'key': 'xp_1000', 'name': 'Rising Star', 'description': 'Earn 1,000 XP'},
+            {'key': 'xp_5000', 'name': 'Power Player', 'description': 'Earn 5,000 XP'},
+            {'key': 'outreach_100', 'name': 'Outreach Machine', 'description': 'Log 100 outreach activities'},
+            {'key': 'deals_10', 'name': 'Deal Closer', 'description': 'Close 10 deals'},
+        ]
+        for item in defaults:
+            existing = Achievement.query.filter_by(key=item['key']).first()
+            if not existing:
+                achievement = Achievement(**item)
+                db.session.add(achievement)
+        db.session.commit()
+
+
+class Goal(db.Model):
+    __tablename__ = 'goals'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    goal_type = db.Column(db.String(50), nullable=False)
+    period = db.Column(db.String(20), nullable=False)
+    target_value = db.Column(db.Integer, default=0)
+    is_manual = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    @staticmethod
+    def goal_types():
+        return ['daily_outreach', 'weekly_outreach', 'monthly_revenue', 'monthly_deals']
+    
+    @staticmethod
+    def get_or_create(goal_type, period):
+        goal = Goal.query.filter_by(goal_type=goal_type, period=period).first()
+        if not goal:
+            goal = Goal(goal_type=goal_type, period=period, target_value=0, is_manual=False)
+            db.session.add(goal)
+            db.session.commit()
+        return goal
+
+
+class XPLog(db.Model):
+    __tablename__ = 'xp_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -32,6 +32,41 @@
     </a>
 </div>
 
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 hover:from-indigo-100 hover:to-purple-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-indigo-800">XP</h3>
+                <p class="text-sm text-indigo-600">Level {{ user_stats.get_level_from_xp() }}</p>
+            </div>
+            <span class="text-3xl font-bold text-indigo-700">{{ user_stats.current_xp }}</span>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 hover:from-orange-100 hover:to-red-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-orange-800">Streak</h3>
+                <p class="text-sm text-orange-600">Outreach days</p>
+            </div>
+            <div class="flex items-center">
+                <span class="text-3xl font-bold text-orange-700">{{ user_stats.current_outreach_streak_days }}</span>
+                <span class="text-2xl ml-1">&#x1F525;</span>
+            </div>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4 hover:from-emerald-100 hover:to-teal-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-emerald-800">Consistency</h3>
+                <p class="text-sm text-emerald-600">Last 7 days</p>
+            </div>
+            <span class="text-3xl font-bold text-emerald-700">{{ consistency_score }}%</span>
+        </div>
+    </a>
+</div>
+
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-sm font-medium text-gray-500">New Leads (Week)</h3>

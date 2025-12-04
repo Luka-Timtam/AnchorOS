@@ -1,0 +1,158 @@
+Implement the following features. Gamification elements should live primarily on a dedicated page, with only minimal summary numbers shown on the dashboard.
+
+====================================
+1. GAMIFICATION SYSTEM
+====================================
+
+Add tables:
+
+user_stats (single row):
+- current_xp
+- current_level
+- current_outreach_streak_days
+- longest_outreach_streak_days
+- last_outreach_date
+- last_consistency_score
+- last_consistency_calculated_at
+
+achievements:
+- key
+- name
+- description
+- unlocked_at (nullable)
+
+XP RULES:
+Give XP when:
+- outreach_log created (+5)
+- lead status → contacted (+3)
+- lead status → call_booked (+7)
+- lead status → proposal_sent (+10)
+- lead status → closed_won (+20)
+- task marked done (+8)
+
+Add helper functions:
+- add_xp(amount)
+- update_outreach_streak()
+- calculate_consistency_score()
+- check_and_unlock_achievements()
+
+OUTREACH STREAK:
+- If outreach today and last_outreach_date is yesterday → streak += 1
+- If last_outreach_date is today → do nothing
+- If older than yesterday → reset streak to 1
+- longest streak updates automatically
+
+ACHIEVEMENTS:
+Seed defaults:
+- Streak 7 days
+- Streak 30 days
+- XP 1000
+- XP 5000
+- 100 outreach logs
+- 10 deals closed
+
+Unlock when criteria met.
+
+CONSISTENCY SCORE (0–100):
+Based on previous 7 days:
+- outreach vs daily goal * 7
+- follow-ups performed
+- tasks completed
+Average percentages → score saved in user_stats.
+
+====================================
+2. GAMIFICATION PAGE
+====================================
+
+Create a new Blueprint: "gamification" with route prefix "/gamification".
+
+Main page: GET /gamification  
+Show full detail of all gamification elements:
+
+SECTIONS TO DISPLAY:
+
+1) XP & Level
+- Current XP
+- XP gained this week (small chart)
+- Level (if levels are used)
+
+2) Outreach Streak
+- Current streak
+- Longest streak
+- Streak history chart (line graph of streak length by day)
+
+3) Achievements
+- Grid/list of unlocked achievements with dates
+- Locked achievements displayed faded/greyed out
+
+4) Consistency Score
+- Current score (big number)
+- Score history (last 30 days line chart)
+- Breakdown of consistency components:
+  - outreach consistency %
+  - follow-up consistency %
+  - task completion consistency %
+
+Charts should use Chart.js.
+
+====================================
+3. DASHBOARD INTEGRATION (MINIMAL)
+====================================
+
+Dashboard should display ONLY:
+- XP (small card)
+- Current streak (small card)
+- Consistency Score (small card)
+
+Each card links to /gamification for full details.
+
+No achievements, no charts, no streak history on the dashboard.  
+Keep it clean.
+
+====================================
+4. GOALS SYSTEM
+====================================
+
+Add table: goals  
+Fields:
+- goal_type (daily_outreach, weekly_outreach, monthly_revenue, monthly_deals)
+- period (“daily”, “weekly”, “monthly”)
+- target_value
+- is_manual (boolean)
+- timestamps
+
+AUTO-GENERATED GOALS (default when no manual goal exists):
+- daily_outreach = avg last 30 days → rounded up
+- weekly_outreach = avg last 8 weeks → rounded up
+- monthly_revenue = avg last 3 months → rounded up
+- monthly_deals = avg last 3 months → rounded up
+
+GOALS PAGE (/goals):
+- Show recommended value
+- Show current active goal
+- Provide input field for manual override
+- Checkbox: “Keep manual goal”
+- Button: “Reset to recommended”
+
+If manual goal is deleted or reset → revert to recommended.
+
+====================================
+5. UI HOOKS
+====================================
+
+Add navbar link: “Gamification”.
+
+On /gamification:
+- Show XP, streak, achievements, consistency metrics, charts.
+
+On /dashboard:
+- ONLY show:
+  - XP
+  - Streak
+  - Consistency score
+- Link all three to the Gamification page.
+
+Ensure goals integrate with:
+- streak scoring  
+- consistency scoring  
+- XP updates  

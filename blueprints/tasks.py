@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Task, Lead, Client
 from datetime import datetime, date
+from blueprints.gamification import add_xp, XP_RULES
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
 
@@ -104,10 +105,15 @@ def edit(id):
 @tasks_bp.route('/<int:id>/update-status', methods=['POST'])
 def update_status(id):
     task = Task.query.get_or_404(id)
+    old_status = task.status
     new_status = request.form.get('status')
     if new_status in Task.status_choices():
         task.status = new_status
         db.session.commit()
+        
+        if new_status == 'done' and old_status != 'done':
+            add_xp(XP_RULES['task_done'], 'Task completed')
+        
         flash('Task status updated!', 'success')
     return redirect(request.referrer or url_for('tasks.index'))
 

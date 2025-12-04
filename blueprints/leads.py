@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Lead, OutreachLog, Client
 from datetime import datetime, date
+from blueprints.gamification import add_xp, XP_RULES
 
 leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
 
@@ -163,6 +164,7 @@ def delete(id):
 @leads_bp.route('/<int:id>/update-status', methods=['POST'])
 def update_status(id):
     lead = Lead.query.get_or_404(id)
+    old_status = lead.status
     new_status = request.form.get('status')
     if new_status in Lead.status_choices():
         if new_status == 'closed_won':
@@ -171,6 +173,15 @@ def update_status(id):
         lead.status = new_status
         lead.updated_at = datetime.utcnow()
         db.session.commit()
+        
+        if old_status != new_status:
+            if new_status == 'contacted':
+                add_xp(XP_RULES['lead_contacted'], 'Lead contacted')
+            elif new_status == 'call_booked':
+                add_xp(XP_RULES['lead_call_booked'], 'Call booked')
+            elif new_status == 'proposal_sent':
+                add_xp(XP_RULES['lead_proposal_sent'], 'Proposal sent')
+        
         flash('Status updated!', 'success')
     return redirect(request.referrer or url_for('leads.index'))
 
@@ -202,6 +213,8 @@ def convert_to_client(id):
         
         db.session.add(client)
         db.session.commit()
+        
+        add_xp(XP_RULES['lead_closed_won'], 'Deal closed')
         
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))
