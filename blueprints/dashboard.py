@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from models import db, Lead, Client, OutreachLog
+from models import db, Lead, Client, OutreachLog, UserSettings
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
@@ -102,6 +102,20 @@ def index():
         ).count()
         deals_weekly_data.append(deals_count)
     
+    settings = UserSettings.get_settings()
+    
+    followup_today = Lead.query.filter(
+        Lead.next_action_date == today,
+        Lead.status.notin_(['closed_won', 'closed_lost']),
+        Lead.converted_at.is_(None)
+    ).count()
+    
+    followup_overdue = Lead.query.filter(
+        Lead.next_action_date < today,
+        Lead.status.notin_(['closed_won', 'closed_lost']),
+        Lead.converted_at.is_(None)
+    ).count()
+    
     monthly_revenue_data = []
     monthly_mrr_data = []
     month_labels = []
@@ -139,6 +153,9 @@ def index():
         monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
     
     return render_template('dashboard.html',
+        settings=settings,
+        followup_today=followup_today,
+        followup_overdue=followup_overdue,
         lead_counts=lead_counts_dict,
         lead_statuses=Lead.status_choices(),
         new_leads_week=new_leads_week,

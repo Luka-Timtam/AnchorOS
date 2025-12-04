@@ -3,9 +3,40 @@
 {% block title %}Dashboard - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="mb-6">
+<div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+    <a href="{{ url_for('analytics.settings') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+        Customize Widgets
+    </a>
 </div>
+
+{% if settings.show_followup_widget and (followup_today > 0 or followup_overdue > 0) %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    {% if followup_today > 0 %}
+    <a href="{{ url_for('leads.index', next_action='today') }}" class="block bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-yellow-800">Follow Up Today</h3>
+                <p class="text-sm text-yellow-600">Leads needing attention</p>
+            </div>
+            <span class="text-3xl font-bold text-yellow-700">{{ followup_today }}</span>
+        </div>
+    </a>
+    {% endif %}
+    
+    {% if followup_overdue > 0 %}
+    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="block bg-red-50 border border-red-200 rounded-lg p-4 hover:bg-red-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-red-800">Overdue Follow Ups</h3>
+                <p class="text-sm text-red-600">Past due date</p>
+            </div>
+            <span class="text-3xl font-bold text-red-700">{{ followup_overdue }}</span>
+        </div>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-lg shadow p-6">
@@ -20,12 +51,15 @@
         <h3 class="text-sm font-medium text-gray-500">New Clients (Month)</h3>
         <p class="text-3xl font-bold text-green-600">{{ new_clients_month }}</p>
     </div>
+    {% if settings.show_project_revenue_widget %}
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-sm font-medium text-gray-500">Project Revenue (Month)</h3>
         <p class="text-3xl font-bold text-green-600">${{ "%.2f"|format(project_revenue_month) }}</p>
     </div>
+    {% endif %}
 </div>
 
+{% if settings.show_outreach_widget %}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-sm font-medium text-gray-500">Outreach Today</h3>
@@ -40,8 +74,11 @@
         <p class="text-3xl font-bold text-blue-600">{{ outreach_month }}</p>
     </div>
 </div>
+{% endif %}
 
+{% if settings.show_mrr_widget or settings.show_forecast_widget %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {% if settings.show_mrr_widget %}
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-sm font-medium text-gray-500">Hosting MRR</h3>
         <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(hosting_mrr) }}</p>
@@ -54,11 +91,15 @@
         <h3 class="text-sm font-medium text-gray-500">Total MRR</h3>
         <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(total_mrr) }}</p>
     </div>
+    {% endif %}
+    {% if settings.show_forecast_widget %}
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-sm font-medium text-gray-500">3-Month Forecast</h3>
         <p class="text-3xl font-bold text-yellow-600">${{ "%.2f"|format(forecast_3_months) }}</p>
     </div>
+    {% endif %}
 </div>
+{% endif %}
 
 <div class="bg-white rounded-lg shadow p-6 mb-8">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Leads by Status</h3>
@@ -72,17 +113,24 @@
     </div>
 </div>
 
+{% if settings.show_outreach_widget or settings.show_deals_widget %}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    {% if settings.show_outreach_widget %}
     <div class="bg-white rounded-lg shadow p-4">
         <h3 class="text-base font-semibold text-gray-900 mb-3">Outreach (Last 12 Weeks)</h3>
         <canvas id="outreachChart" height="120"></canvas>
     </div>
+    {% endif %}
+    {% if settings.show_deals_widget %}
     <div class="bg-white rounded-lg shadow p-4">
         <h3 class="text-base font-semibold text-gray-900 mb-3">Deals Closed (Last 12 Weeks)</h3>
         <canvas id="dealsChart" height="120"></canvas>
     </div>
+    {% endif %}
 </div>
+{% endif %}
 
+{% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
 <div class="bg-white rounded-lg shadow p-4">
     <div class="flex items-center justify-between mb-3">
         <h3 class="text-base font-semibold text-gray-900" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
@@ -96,6 +144,7 @@
     </div>
     <canvas id="revenueChart" height="120"></canvas>
 </div>
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -106,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthlyRevenueData = {{ monthly_revenue_data | tojson }};
     const monthlyMrrData = {{ monthly_mrr_data | tojson }};
     
+    {% if settings.show_outreach_widget %}
     new Chart(document.getElementById('outreachChart'), {
         type: 'bar',
         data: {
@@ -128,7 +178,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    {% endif %}
     
+    {% if settings.show_deals_widget %}
     new Chart(document.getElementById('dealsChart'), {
         type: 'bar',
         data: {
@@ -151,7 +203,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    {% endif %}
     
+    {% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
     let showMrr = false;
     const revenueChart = new Chart(document.getElementById('revenueChart'), {
         type: 'line',
@@ -222,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         revenueChart.update();
     });
+    {% endif %}
 });
 </script>
 {% endblock %}

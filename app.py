@@ -19,6 +19,7 @@ def create_app():
     from blueprints.clients import clients_bp
     from blueprints.outreach import outreach_bp
     from blueprints.tasks import tasks_bp
+    from blueprints.analytics import analytics_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -26,6 +27,7 @@ def create_app():
     app.register_blueprint(clients_bp)
     app.register_blueprint(outreach_bp)
     app.register_blueprint(tasks_bp)
+    app.register_blueprint(analytics_bp)
     
     @app.before_request
     def require_login():

@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-gray-900">Analytics</h1>
+    <a href="{{ url_for('analytics.settings') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+        Dashboard Settings
+    </a>
+</div>
+
+{% if followup_today > 0 or followup_overdue > 0 %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    {% if followup_today > 0 %}
+    <a href="{{ url_for('leads.index', next_action='today') }}" class="block bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-yellow-800">Follow Up Today</h3>
+                <p class="text-sm text-yellow-600">Leads needing attention</p>
+            </div>
+            <span class="text-3xl font-bold text-yellow-700">{{ followup_today }}</span>
+        </div>
+    </a>
+    {% endif %}
+    
+    {% if followup_overdue > 0 %}
+    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="block bg-red-50 border border-red-200 rounded-lg p-4 hover:bg-red-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-red-800">Overdue Follow Ups</h3>
+                <p class="text-sm text-red-600">Past due date</p>
+            </div>
+            <span class="text-3xl font-bold text-red-700">{{ followup_overdue }}</span>
+        </div>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input type="date" name="start_date" value="{{ start_date }}"
+                class="w-full border border-gray-300 rounded-md px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input type="date" name="end_date" value="{{ end_date }}"
+                class="w-full border border-gray-300 rounded-md px-3 py-2">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Niche</label>
+            <select name="niche" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">All Niches</option>
+                {% for niche in niches %}
+                <option value="{{ niche }}" {% if current_niche == niche %}selected{% endif %}>{{ niche }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
+            <select name="source" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">All Sources</option>
+                {% for source in sources %}
+                <option value="{{ source }}" {% if current_source == source %}selected{% endif %}>{{ source }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex items-end">
+            <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-bold text-indigo-900 mb-4">3-Month Revenue Forecast</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg p-4 text-center">
+            <p class="text-sm text-gray-600">Current MRR</p>
+            <p class="text-2xl font-bold text-indigo-600">${{ "%.2f"|format(current_mrr) }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-4 text-center">
+            <p class="text-sm text-gray-600">Avg Project Revenue (3mo)</p>
+            <p class="text-2xl font-bold text-indigo-600">${{ "%.2f"|format(avg_project_revenue) }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-4 text-center">
+            <p class="text-sm text-gray-600">Monthly Forecast</p>
+            <p class="text-2xl font-bold text-green-600">${{ "%.2f"|format(forecast_monthly) }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-4 text-center">
+            <p class="text-sm text-gray-600">3-Month Forecast</p>
+            <p class="text-2xl font-bold text-green-600">${{ "%.2f"|format(forecast_3_months) }}</p>
+        </div>
+    </div>
+    {% if settings.show_forecast_widget %}
+    <p class="text-xs text-indigo-600 mt-2">Enabled on Dashboard</p>
+    {% else %}
+    <p class="text-xs text-gray-400 mt-2">Not shown on Dashboard</p>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Monthly Project Revenue</h2>
+            {% if settings.show_project_revenue_widget %}
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">On Dashboard</span>
+            {% endif %}
+        </div>
+        <canvas id="revenueChart" height="250"></canvas>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">MRR Growth</h2>
+            {% if settings.show_mrr_widget %}
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">On Dashboard</span>
+            {% endif %}
+        </div>
+        <canvas id="mrrChart" height="250"></canvas>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Outreach Volume (Last 12 Weeks)</h2>
+            {% if settings.show_outreach_widget %}
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">On Dashboard</span>
+            {% endif %}
+        </div>
+        <canvas id="outreachChart" height="250"></canvas>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Deals Closed (Last 12 Weeks)</h2>
+            {% if settings.show_deals_widget %}
+            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">On Dashboard</span>
+            {% endif %}
+        </div>
+        <canvas id="dealsChart" height="250"></canvas>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Lead Pipeline</h2>
+    <canvas id="pipelineChart" height="150"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = {{ chart_data|safe }};
+
+new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+        labels: chartData.monthLabels,
+        datasets: [{
+            label: 'Project Revenue',
+            data: chartData.monthlyRevenue,
+            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+            borderColor: 'rgb(99, 102, 241)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) { return '$' + value; }
+                }
+            }
+        }
+    }
+});
+
+new Chart(document.getElementById('mrrChart'), {
+    type: 'line',
+    data: {
+        labels: chartData.monthLabels,
+        datasets: [{
+            label: 'Hosting MRR',
+            data: chartData.hostingMrr,
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            tension: 0.3
+        }, {
+            label: 'SaaS MRR',
+            data: chartData.saasMrr,
+            borderColor: 'rgb(168, 85, 247)',
+            backgroundColor: 'rgba(168, 85, 247, 0.1)',
+            tension: 0.3
+        }, {
+            label: 'Total MRR',
+            data: chartData.totalMrr,
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.3,
+            borderWidth: 3
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) { return '$' + value; }
+                }
+            }
+        }
+    }
+});
+
+new Chart(document.getElementById('outreachChart'), {
+    type: 'bar',
+    data: {
+        labels: chartData.weekLabels,
+        datasets: [{
+            label: 'Outreach',
+            data: chartData.outreachWeekly,
+            backgroundColor: 'rgba(234, 179, 8, 0.8)',
+            borderColor: 'rgb(234, 179, 8)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+new Chart(document.getElementById('dealsChart'), {
+    type: 'bar',
+    data: {
+        labels: chartData.weekLabels,
+        datasets: [{
+            label: 'Deals Closed',
+            data: chartData.dealsWeekly,
+            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+            borderColor: 'rgb(34, 197, 94)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+new Chart(document.getElementById('pipelineChart'), {
+    type: 'bar',
+    data: {
+        labels: chartData.pipelineLabels,
+        datasets: [{
+            label: 'Leads',
+            data: chartData.pipelineData,
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(234, 179, 8, 0.8)',
+                'rgba(168, 85, 247, 0.8)',
+                'rgba(249, 115, 22, 0.8)',
+                'rgba(236, 72, 153, 0.8)',
+                'rgba(34, 197, 94, 0.8)',
+                'rgba(239, 68, 68, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            x: { beginAtZero: true }
+        }
+    }
+});
+</script>
+{% endblock %}

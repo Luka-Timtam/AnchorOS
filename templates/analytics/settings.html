@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Settings - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Dashboard Widget Settings</h1>
+    <p class="text-gray-600 mt-2">Choose which widgets to display on your dashboard.</p>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-2xl">
+    <form method="POST">
+        <div class="space-y-4">
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_mrr_widget" value="1" 
+                    {% if settings.show_mrr_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">MRR Widget</span>
+                    <p class="text-sm text-gray-500">Shows hosting and SaaS monthly recurring revenue</p>
+                </div>
+            </label>
+            
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_project_revenue_widget" value="1"
+                    {% if settings.show_project_revenue_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">Project Revenue Widget</span>
+                    <p class="text-sm text-gray-500">Shows monthly project revenue chart</p>
+                </div>
+            </label>
+            
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_outreach_widget" value="1"
+                    {% if settings.show_outreach_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">Outreach Widget</span>
+                    <p class="text-sm text-gray-500">Shows weekly outreach volume chart</p>
+                </div>
+            </label>
+            
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_deals_widget" value="1"
+                    {% if settings.show_deals_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">Deals Widget</span>
+                    <p class="text-sm text-gray-500">Shows weekly deals closed chart</p>
+                </div>
+            </label>
+            
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_consistency_score_widget" value="1"
+                    {% if settings.show_consistency_score_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">Consistency Score Widget</span>
+                    <p class="text-sm text-gray-500">Shows outreach consistency metrics</p>
+                </div>
+            </label>
+            
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_forecast_widget" value="1"
+                    {% if settings.show_forecast_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">Forecast Widget</span>
+                    <p class="text-sm text-gray-500">Shows 3-month revenue forecast</p>
+                </div>
+            </label>
+            
+            <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" name="show_followup_widget" value="1"
+                    {% if settings.show_followup_widget %}checked{% endif %}
+                    class="h-5 w-5 text-indigo-600 rounded">
+                <div>
+                    <span class="font-medium text-gray-900">Follow-up Widget</span>
+                    <p class="text-sm text-gray-500">Shows leads needing follow-up today and overdue</p>
+                </div>
+            </label>
+        </div>
+        
+        <div class="mt-6 flex space-x-4">
+            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+                Save Settings
+            </button>
+            <a href="{{ url_for('analytics.index') }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
+                Back to Analytics
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

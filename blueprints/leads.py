@@ -14,10 +14,12 @@ def parse_date(date_str):
 
 @leads_bp.route('/')
 def index():
+    today = date.today()
     status_filter = request.args.get('status', '')
     niche_filter = request.args.get('niche', '')
     source_filter = request.args.get('source', '')
     search = request.args.get('search', '')
+    next_action_filter = request.args.get('next_action', '')
     
     query = Lead.query.filter(Lead.converted_at.is_(None))
     
@@ -33,6 +35,16 @@ def index():
                 Lead.name.ilike(f'%{search}%'),
                 Lead.business_name.ilike(f'%{search}%')
             )
+        )
+    if next_action_filter == 'today':
+        query = query.filter(
+            Lead.next_action_date == today,
+            Lead.status.notin_(['closed_won', 'closed_lost'])
+        )
+    elif next_action_filter == 'overdue':
+        query = query.filter(
+            Lead.next_action_date < today,
+            Lead.status.notin_(['closed_won', 'closed_lost'])
         )
     
     leads = query.order_by(Lead.created_at.desc()).all()
@@ -51,7 +63,8 @@ def index():
         current_status=status_filter,
         current_niche=niche_filter,
         current_source=source_filter,
-        current_search=search
+        current_search=search,
+        current_next_action=next_action_filter
     )
 
 @leads_bp.route('/create', methods=['GET', 'POST'])

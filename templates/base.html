@@ -22,6 +22,7 @@
                         <a href="{{ url_for('clients.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'clients' in request.endpoint %}bg-indigo-700{% endif %}">Clients</a>
                         <a href="{{ url_for('outreach.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach' in request.endpoint %}bg-indigo-700{% endif %}">Outreach</a>
                         <a href="{{ url_for('tasks.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'tasks' in request.endpoint %}bg-indigo-700{% endif %}">Tasks</a>
+                        <a href="{{ url_for('analytics.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'analytics' in request.endpoint %}bg-indigo-700{% endif %}">Analytics</a>
                     </div>
                 </div>
                 <div class="flex items-center">
@@ -35,6 +36,7 @@
             <a href="{{ url_for('clients.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Clients</a>
             <a href="{{ url_for('outreach.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Outreach</a>
             <a href="{{ url_for('tasks.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Tasks</a>
+            <a href="{{ url_for('analytics.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Analytics</a>
         </div>
     </nav>
 

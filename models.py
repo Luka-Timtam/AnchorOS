@@ -105,3 +105,25 @@ class Task(db.Model):
     @staticmethod
     def status_choices():
         return ['open', 'in_progress', 'done']
+
+
+class UserSettings(db.Model):
+    __tablename__ = 'user_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    show_mrr_widget = db.Column(db.Boolean, default=True)
+    show_project_revenue_widget = db.Column(db.Boolean, default=True)
+    show_outreach_widget = db.Column(db.Boolean, default=True)
+    show_deals_widget = db.Column(db.Boolean, default=True)
+    show_consistency_score_widget = db.Column(db.Boolean, default=True)
+    show_forecast_widget = db.Column(db.Boolean, default=True)
+    show_followup_widget = db.Column(db.Boolean, default=True)
+    
+    @staticmethod
+    def get_settings():
+        settings = UserSettings.query.first()
+        if not settings:
+            settings = UserSettings()
+            db.session.add(settings)
+            db.session.commit()
+        return settings

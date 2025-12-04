@@ -1,0 +1,80 @@
+Implement the following features:
+
+====================================
+1. ANALYTICS PAGE
+====================================
+
+Create a new Blueprint named "analytics" with route prefix "/analytics".
+Templates go in templates/analytics/.
+
+Main route: GET /analytics  
+Should display:
+
+• Filters:
+  - Date range (start_date, end_date)
+  - Lead niche (from leads table)
+  - Lead source
+  - Optional lead status
+
+If no filters selected, default to last 90 days.
+
+Compute and display the following charts using Chart.js:
+
+1) Monthly project revenue (bar chart, last 12 months)
+2) MRR growth (line chart, last 12 months)
+   - hosting MRR, SaaS MRR, total MRR
+3) Outreach volume per week (last 12 weeks)
+4) Deals closed per week (last 12 weeks)
+5) Lead pipeline (counts by status)
+6) 3-month revenue forecast:
+   forecast = current MRR + avg(last 3 months of project revenue)
+
+Pass all chart data as JSON from Flask to the Jinja template.
+
+====================================
+2. FOLLOW-UP REMINDERS (Version 1)
+====================================
+
+On the dashboard AND analytics page:
+
+• “Follow Up Today”
+  - leads where next_action_date = today AND status not in ["closed_won","closed_lost"]
+
+• “Overdue Follow Ups”
+  - leads where next_action_date < today AND status not closed
+
+Display clickable counters on the Dashboard:
+
+- “Follow up today: X”
+- “Overdue: Y”
+
+Clicking opens the Leads page with appropriate filters applied.
+
+Do NOT create tasks automatically.
+
+====================================
+3. DASHBOARD WIDGET SELECTION
+====================================
+
+Create a single-row table: user_settings
+
+Fields:
+- show_mrr_widget
+- show_project_revenue_widget
+- show_outreach_widget
+- show_deals_widget
+- show_consistency_score_widget
+- show_forecast_widget
+- show_followup_widget
+
+Defaults = True.
+
+Add a settings page at /analytics/settings:
+- Checkboxes for each widget
+- POST updates user_settings
+
+On the Dashboard:
+- Conditionally render widgets based on user_settings.
+- Analytics page should show all graphs, with an indicator for which ones are enabled for Dashboard.
+
+Auto-create default user_settings row if missing.
