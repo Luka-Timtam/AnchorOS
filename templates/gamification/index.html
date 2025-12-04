@@ -47,7 +47,9 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">XP Gained This Week</h3>
-        <canvas id="xpChart" height="180"></canvas>
+        <div style="height: 200px; position: relative;">
+            <canvas id="xpChart"></canvas>
+        </div>
     </div>
     
     <div class="bg-white rounded-lg shadow p-6">
@@ -141,30 +143,34 @@ for (let i = 0; i < 7; i++) {
     labels.push(dayNames[i]);
 }
 
-new Chart(document.getElementById('xpChart'), {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'XP Earned',
-            data: xpData,
-            backgroundColor: 'rgba(99, 102, 241, 0.8)',
-            borderRadius: 4
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false }
+const xpCtx = document.getElementById('xpChart');
+if (xpCtx) {
+    const xpContainer = xpCtx.parentElement;
+    new Chart(xpCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'XP Earned',
+                data: xpData,
+                backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                borderRadius: 4
+            }]
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: { stepSize: 10 }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 10 }
+                }
             }
         }
-    }
-});
+    });
+}
 </script>
 {% endblock %}
