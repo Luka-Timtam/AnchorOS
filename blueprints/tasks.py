@@ -54,7 +54,7 @@ def index():
         statuses=Task.status_choices(),
         current_status=status_filter,
         current_due=due_filter,
-        today=today.isoformat()
+        today=today
     )
 
 @tasks_bp.route('/create', methods=['POST'])
