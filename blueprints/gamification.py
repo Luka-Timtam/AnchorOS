@@ -7,18 +7,56 @@ gamification_bp = Blueprint('gamification', __name__, url_prefix='/gamification'
 
 XP_RULES = {
     'outreach_log': 5,
-    'lead_contacted': 3,
-    'lead_call_booked': 7,
-    'lead_proposal_sent': 10,
-    'lead_closed_won': 20,
+    'lead_contacted': 4,
+    'lead_call_booked': 8,
+    'lead_proposal_sent': 12,
+    'lead_closed_won': 30,
     'task_done': 8,
+    'daily_goal_hit': 10,
+    'weekly_goal_hit': 25,
+    'monthly_revenue_goal_hit': 50,
+    'streak_10': 20,
+    'streak_30': 50,
 }
+
+LEVELS = [
+    (1, 0),
+    (2, 150),
+    (3, 400),
+    (4, 800),
+    (5, 1400),
+    (6, 2200),
+    (7, 3200),
+    (8, 4500),
+    (9, 6500),
+    (10, 9000),
+    (11, 12000),
+    (12, 16000),
+    (13, 20000),
+    (14, 25000),
+    (15, 30000),
+]
+
+def get_level_from_xp(xp):
+    level = 1
+    for lvl, threshold in LEVELS:
+        if xp >= threshold:
+            level = lvl
+        else:
+            break
+    return level
+
+def get_xp_for_next_level(current_level):
+    for lvl, threshold in LEVELS:
+        if lvl == current_level + 1:
+            return threshold
+    return None
 
 def add_xp(amount, reason=""):
     stats = UserStats.get_stats()
     old_level = stats.current_level
     stats.current_xp += amount
-    new_level = stats.get_level_from_xp()
+    new_level = get_level_from_xp(stats.current_xp)
     stats.current_level = new_level
     
     log = XPLog(amount=amount, reason=reason)
@@ -28,6 +66,7 @@ def add_xp(amount, reason=""):
     check_and_unlock_achievements()
     
     if new_level > old_level:
+        flash(f'Level Up! You are now Level {new_level}!', 'success')
         check_level_interval_rewards(new_level)
         check_milestone_rewards(new_level)
     
@@ -114,6 +153,8 @@ def update_outreach_streak():
     if stats.last_outreach_date == today:
         return stats.current_outreach_streak_days
     
+    old_streak = stats.current_outreach_streak_days
+    
     if stats.last_outreach_date == yesterday:
         stats.current_outreach_streak_days += 1
     elif stats.last_outreach_date is None or stats.last_outreach_date < yesterday:
@@ -125,8 +166,95 @@ def update_outreach_streak():
         stats.longest_outreach_streak_days = stats.current_outreach_streak_days
     
     db.session.commit()
+    
+    new_streak = stats.current_outreach_streak_days
+    if old_streak < 10 and new_streak >= 10:
+        add_xp(XP_RULES['streak_10'], "10-day outreach streak!")
+        flash('10-day streak bonus: +20 XP!', 'success')
+    if old_streak < 30 and new_streak >= 30:
+        add_xp(XP_RULES['streak_30'], "30-day outreach streak!")
+        flash('30-day streak bonus: +50 XP!', 'success')
+    
     check_and_unlock_achievements()
     return stats.current_outreach_streak_days
+
+
+def check_daily_goal():
+    today = date.today()
+    stats = UserStats.get_stats()
+    
+    if hasattr(stats, 'last_daily_goal_date') and stats.last_daily_goal_date == today:
+        return False
+    
+    daily_goal = Goal.query.filter_by(goal_type='daily_outreach').first()
+    if not daily_goal or daily_goal.target_value <= 0:
+        return False
+    
+    today_outreach = OutreachLog.query.filter(OutreachLog.date == today).count()
+    
+    if today_outreach >= daily_goal.target_value:
+        add_xp(XP_RULES['daily_goal_hit'], "Daily outreach goal hit!")
+        flash('Daily goal hit: +10 XP!', 'success')
+        return True
+    
+    return False
+
+
+def check_weekly_goal():
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    
+    weekly_goal = Goal.query.filter_by(goal_type='weekly_outreach').first()
+    if not weekly_goal or weekly_goal.target_value <= 0:
+        return False
+    
+    week_outreach = OutreachLog.query.filter(OutreachLog.date >= week_start).count()
+    
+    existing_log = XPLog.query.filter(
+        XPLog.reason == "Weekly outreach goal hit!",
+        func.date(XPLog.created_at) >= week_start
+    ).first()
+    
+    if week_outreach >= weekly_goal.target_value and not existing_log:
+        add_xp(XP_RULES['weekly_goal_hit'], "Weekly outreach goal hit!")
+        flash('Weekly goal hit: +25 XP!', 'success')
+        return True
+    
+    return False
+
+
+def check_monthly_revenue_goal():
+    today = date.today()
+    month_start = today.replace(day=1)
+    
+    from models import Client
+    
+    monthly_goal = Goal.query.filter_by(goal_type='monthly_revenue').first()
+    if not monthly_goal or monthly_goal.target_value <= 0:
+        return False
+    
+    monthly_revenue = db.session.query(func.sum(Client.amount_charged)).filter(
+        Client.start_date >= month_start,
+        Client.start_date <= today
+    ).scalar() or 0
+    
+    existing_log = XPLog.query.filter(
+        XPLog.reason == "Monthly revenue goal hit!",
+        func.date(XPLog.created_at) >= month_start
+    ).first()
+    
+    if float(monthly_revenue) >= monthly_goal.target_value and not existing_log:
+        add_xp(XP_RULES['monthly_revenue_goal_hit'], "Monthly revenue goal hit!")
+        flash('Monthly revenue goal hit: +50 XP!', 'success')
+        return True
+    
+    return False
+
+
+def check_all_goals():
+    check_daily_goal()
+    check_weekly_goal()
+    check_monthly_revenue_goal()
 
 def calculate_consistency_score():
     stats = UserStats.get_stats()
@@ -287,6 +415,8 @@ def index():
     LevelReward.seed_defaults()
     MilestoneReward.seed_defaults()
     
+    check_all_goals()
+    
     achievements = Achievement.query.all()
     unlocked = [a for a in achievements if a.unlocked_at]
     locked = [a for a in achievements if not a.unlocked_at]
@@ -295,10 +425,10 @@ def index():
     
     xp_this_week = get_xp_this_week()
     
-    xp_for_next = stats.xp_for_next_level()
-    levels = [0, 200, 500, 1000, 1500, 2500, 3500, 5000, 7500, 10000]
     current_level = stats.get_level_from_xp()
-    current_level_xp = levels[current_level - 1] if current_level > 1 else 0
+    xp_for_next = stats.xp_for_next_level()
+    current_level_xp = stats.xp_for_current_level()
+    
     xp_progress = 0
     if xp_for_next:
         xp_in_level = stats.current_xp - current_level_xp
@@ -311,6 +441,8 @@ def index():
     level_rewards = LevelReward.query.order_by(LevelReward.level_interval).all()
     milestone_rewards = MilestoneReward.query.order_by(MilestoneReward.target_level).all()
     
+    max_level = 15
+    
     return render_template('gamification/index.html',
         stats=stats,
         unlocked_achievements=unlocked,
@@ -320,6 +452,7 @@ def index():
         xp_for_next=xp_for_next,
         xp_progress=xp_progress,
         current_level=current_level,
+        max_level=max_level,
         upcoming_rewards=upcoming_rewards,
         unlocked_rewards=unlocked_rewards,
         level_rewards=level_rewards,

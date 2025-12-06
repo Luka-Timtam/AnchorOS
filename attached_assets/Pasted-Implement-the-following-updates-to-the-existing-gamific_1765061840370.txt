@@ -1,0 +1,101 @@
+Implement the following updates to the existing gamification system.
+
+====================================
+1. UPDATE XP VALUE TABLE
+====================================
+
+Replace the existing XP values with:
+
+XP_VALUES = {
+    'outreach_log': 5,
+    'lead_contacted': 4,
+    'lead_call_booked': 8,
+    'lead_proposal_sent': 12,
+    'lead_closed_won': 30,
+    'task_done': 8,
+    'daily_goal_hit': 10,
+    'weekly_goal_hit': 25,
+    'monthly_revenue_goal_hit': 50,
+    'streak_10': 20,
+    'streak_30': 50,
+}
+
+====================================
+2. ADD NEW XP-EARNING ACTIONS
+====================================
+
+Ensure the system *automatically adds XP* when any of these occur:
+
+- When daily_outreach_goal is hit → fire XP event "daily_goal_hit"
+- When weekly_outreach_goal is hit → fire XP event "weekly_goal_hit"
+- When monthly_revenue_goal is hit → fire XP event "monthly_revenue_goal_hit"
+- When outreach streak reaches 10 days → fire "streak_10"
+- When outreach streak reaches 30 days → fire "streak_30"
+
+Each of these new XP event types must be wired into:
+- add_xp()
+- XP increments
+- level recalculation
+- reward checking (if implemented)
+
+====================================
+3. UPDATE LEVEL THRESHOLDS
+====================================
+
+Replace the old level thresholds with the following LEVELS structure:
+
+LEVELS = [
+    (1, 0),
+    (2, 150),
+    (3, 400),
+    (4, 800),
+    (5, 1400),
+    (6, 2200),
+    (7, 3200),
+    (8, 4500),
+    (9, 6500),
+    (10, 9000),
+    (11, 12000),
+    (12, 16000),
+    (13, 20000),
+    (14, 25000),
+    (15, 30000),
+]
+
+Add a helper function get_level_from_xp(xp) that:
+- iterates LEVELS
+- returns the correct level for the user
+- updates user_stats.current_level if it has changed
+- triggers reward checks (if present)
+
+====================================
+4. WIRE NEW XP EVENTS INTO THE SYSTEM
+====================================
+
+For each of the new XP triggers:
+
+A) daily_goal_hit  
+Fire event on the daily/goal check (usually when the dashboard loads or when logging outreach).
+
+B) weekly_goal_hit  
+Fire event when weekly summaries or weekly counters are calculated.
+
+C) monthly_revenue_goal_hit  
+Compute monthly project revenue; if >= goal, award XP event.
+
+D) streak_10 and streak_30  
+Fire XP events based on streak length inside your streak update logic.
+
+====================================
+5. ENSURE THE GAMIFICATION PAGE SHOWS UPDATED XP + LEVEL
+====================================
+
+On /gamification:
+- Show updated level
+- Show XP progression
+- Show XP needed for next level
+- Update progress bar accordingly
+
+====================================
+END OF PROMPT
+====================================

@@ -150,25 +150,47 @@ class UserStats(db.Model):
             db.session.commit()
         return stats
     
+    LEVELS = [
+        (1, 0),
+        (2, 150),
+        (3, 400),
+        (4, 800),
+        (5, 1400),
+        (6, 2200),
+        (7, 3200),
+        (8, 4500),
+        (9, 6500),
+        (10, 9000),
+        (11, 12000),
+        (12, 16000),
+        (13, 20000),
+        (14, 25000),
+        (15, 30000),
+    ]
+    
     def get_level_from_xp(self):
         xp = self.current_xp
-        if xp >= 10000: return 10
-        if xp >= 7500: return 9
-        if xp >= 5000: return 8
-        if xp >= 3500: return 7
-        if xp >= 2500: return 6
-        if xp >= 1500: return 5
-        if xp >= 1000: return 4
-        if xp >= 500: return 3
-        if xp >= 200: return 2
-        return 1
+        level = 1
+        for lvl, threshold in self.LEVELS:
+            if xp >= threshold:
+                level = lvl
+            else:
+                break
+        return level
     
     def xp_for_next_level(self):
-        levels = [0, 200, 500, 1000, 1500, 2500, 3500, 5000, 7500, 10000, float('inf')]
         current = self.get_level_from_xp()
-        if current >= 10:
-            return None
-        return levels[current]
+        for lvl, threshold in self.LEVELS:
+            if lvl == current + 1:
+                return threshold
+        return None
+    
+    def xp_for_current_level(self):
+        current = self.get_level_from_xp()
+        for lvl, threshold in self.LEVELS:
+            if lvl == current:
+                return threshold
+        return 0
 
 
 class Achievement(db.Model):
