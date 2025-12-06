@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Lead, OutreachLog, Client
 from datetime import datetime, date
-from blueprints.gamification import add_xp, XP_RULES
+from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 
 leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
 
@@ -177,12 +177,20 @@ def update_status(id):
         if old_status != new_status:
             if new_status == 'contacted':
                 add_xp(XP_RULES['lead_contacted'], 'Lead contacted')
+                add_tokens(TOKEN_RULES['lead_contacted'], 'Lead contacted')
+                update_mission_progress('contact_lead')
+                flash('Status updated! +4 XP, +1 token', 'success')
             elif new_status == 'call_booked':
                 add_xp(XP_RULES['lead_call_booked'], 'Call booked')
+                flash('Status updated! +8 XP', 'success')
             elif new_status == 'proposal_sent':
                 add_xp(XP_RULES['lead_proposal_sent'], 'Proposal sent')
-        
-        flash('Status updated!', 'success')
+                add_tokens(TOKEN_RULES['proposal_sent'], 'Proposal sent')
+                flash('Status updated! +12 XP, +2 tokens', 'success')
+            else:
+                flash('Status updated!', 'success')
+        else:
+            flash('Status updated!', 'success')
     return redirect(request.referrer or url_for('leads.index'))
 
 @leads_bp.route('/<int:id>/convert', methods=['GET', 'POST'])

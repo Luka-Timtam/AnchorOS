@@ -341,3 +341,142 @@ class UnlockedReward(db.Model):
         self.reward_text = reward_text
         if unlocked_at:
             self.unlocked_at = unlocked_at
+
+
+class UserTokens(db.Model):
+    __tablename__ = 'user_tokens'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    total_tokens = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    @staticmethod
+    def get_tokens():
+        tokens = UserTokens.query.first()
+        if not tokens:
+            tokens = UserTokens()
+            db.session.add(tokens)
+            db.session.commit()
+        return tokens
+    
+    @staticmethod
+    def get_balance():
+        tokens = UserTokens.get_tokens()
+        return tokens.total_tokens
+    
+    @staticmethod
+    def add_tokens(amount, reason):
+        tokens = UserTokens.get_tokens()
+        tokens.total_tokens += amount
+        transaction = TokenTransaction(amount=amount, reason=reason)
+        db.session.add(transaction)
+        db.session.commit()
+        return tokens.total_tokens
+    
+    @staticmethod
+    def spend_tokens(amount, reason):
+        tokens = UserTokens.get_tokens()
+        if tokens.total_tokens >= amount:
+            tokens.total_tokens -= amount
+            transaction = TokenTransaction(amount=-amount, reason=reason)
+            db.session.add(transaction)
+            db.session.commit()
+            return True
+        return False
+
+
+class TokenTransaction(db.Model):
+    __tablename__ = 'token_transactions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class RewardItem(db.Model):
+    __tablename__ = 'reward_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    cost = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def seed_defaults():
+        defaults = [
+            {'name': 'Bag of favourite lollies', 'cost': 8, 'description': 'Treat yourself to your favourite sweets'},
+            {'name': 'Coffee or drink', 'cost': 10, 'description': 'A nice coffee or beverage of your choice'},
+            {'name': '1 hour guilt-free gaming', 'cost': 12, 'description': 'Take a break and play your favourite game'},
+            {'name': 'Nice lunch treat', 'cost': 20, 'description': 'Enjoy a nice lunch out'},
+            {'name': 'Car care item', 'cost': 50, 'description': 'Something nice for your car'},
+            {'name': 'T-shirt', 'cost': 75, 'description': 'Buy yourself a new t-shirt'},
+        ]
+        for item in defaults:
+            existing = RewardItem.query.filter_by(name=item['name']).first()
+            if not existing:
+                reward = RewardItem(**item)
+                db.session.add(reward)
+        db.session.commit()
+
+
+class DailyMission(db.Model):
+    __tablename__ = 'daily_missions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    mission_date = db.Column(db.Date, nullable=False)
+    description = db.Column(db.String(200), nullable=False)
+    mission_type = db.Column(db.String(50), nullable=False)
+    target_count = db.Column(db.Integer, nullable=False)
+    reward_tokens = db.Column(db.Integer, nullable=False)
+    is_completed = db.Column(db.Boolean, default=False)
+    progress_count = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def get_today_mission():
+        today = date.today()
+        mission = DailyMission.query.filter_by(mission_date=today).first()
+        if not mission:
+            mission = DailyMission.generate_mission(today)
+        return mission
+    
+    @staticmethod
+    def generate_mission(mission_date):
+        import random
+        mission_templates = [
+            {'type': 'outreach', 'description': 'Send {count} outreaches today', 'targets': [3, 4, 5], 'rewards': [4, 5, 6]},
+            {'type': 'contact_lead', 'description': 'Contact {count} lead(s)', 'targets': [1, 2], 'rewards': [3, 4]},
+            {'type': 'complete_tasks', 'description': 'Complete {count} task(s) today', 'targets': [1, 2, 3], 'rewards': [4, 5, 6]},
+            {'type': 'message_old_leads', 'description': 'Message {count} old lead(s)', 'targets': [1, 2], 'rewards': [6, 8]},
+        ]
+        
+        template = random.choice(mission_templates)
+        idx = random.randint(0, len(template['targets']) - 1)
+        target = template['targets'][idx]
+        reward = template['rewards'][idx]
+        
+        mission = DailyMission(
+            mission_date=mission_date,
+            description=template['description'].format(count=target),
+            mission_type=template['type'],
+            target_count=target,
+            reward_tokens=reward
+        )
+        db.session.add(mission)
+        db.session.commit()
+        return mission
+    
+    def check_completion(self):
+        if self.is_completed:
+            return False
+        
+        if self.progress_count >= self.target_count:
+            self.is_completed = True
+            UserTokens.add_tokens(self.reward_tokens, f"Daily mission: {self.description}")
+            db.session.commit()
+            return True
+        return False

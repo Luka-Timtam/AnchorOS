@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Reward Shop - CRM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Reward Shop</h1>
+        <div class="flex items-center space-x-4">
+            <div class="bg-yellow-100 border border-yellow-300 rounded-lg px-4 py-2">
+                <span class="text-yellow-800 font-bold text-xl">{{ token_balance }} Tokens</span>
+            </div>
+            <a href="{{ url_for('missions.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                Daily Missions
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for reward in rewards %}
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-2">
+                <h3 class="text-lg font-semibold text-gray-900">{{ reward.name }}</h3>
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-bold">{{ reward.cost }} tokens</span>
+            </div>
+            {% if reward.description %}
+            <p class="text-gray-600 text-sm mb-4">{{ reward.description }}</p>
+            {% endif %}
+            <div class="flex space-x-2">
+                {% if token_balance >= reward.cost %}
+                <form action="{{ url_for('rewards.redeem', id=reward.id) }}" method="POST" class="flex-1">
+                    <button type="submit" onclick="return confirm('Redeem {{ reward.name }} for {{ reward.cost }} tokens?')"
+                            class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-medium">
+                        Redeem
+                    </button>
+                </form>
+                {% else %}
+                <button disabled class="flex-1 bg-gray-300 text-gray-500 px-4 py-2 rounded cursor-not-allowed font-medium">
+                    Need {{ reward.cost - token_balance }} more
+                </button>
+                {% endif %}
+                <form action="{{ url_for('rewards.toggle_reward', id=reward.id) }}" method="POST">
+                    <button type="submit" class="text-gray-500 hover:text-gray-700 px-2 py-2">
+                        {% if reward.is_active %}Hide{% else %}Show{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Add New Reward</h2>
+        <form action="{{ url_for('rewards.add_reward') }}" method="POST" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Reward Name</label>
+                <input type="text" name="name" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div class="w-32">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cost (tokens)</label>
+                <input type="number" name="cost" min="1" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+                <input type="text" name="description"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                Add Reward
+            </button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Redemptions</h2>
+            {% if redeemed %}
+            <div class="space-y-2">
+                {% for t in redeemed %}
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="text-gray-700">{{ t.reason }}</span>
+                    <div class="text-right">
+                        <span class="text-red-600 font-medium">{{ t.amount }} tokens</span>
+                        <div class="text-xs text-gray-500">{{ t.created_at.strftime('%b %d, %Y') }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No redemptions yet. Start earning tokens!</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Token Activity</h2>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+                {% for t in recent_transactions %}
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="text-gray-700 text-sm">{{ t.reason }}</span>
+                    <div class="text-right">
+                        <span class="{% if t.amount > 0 %}text-green-600{% else %}text-red-600{% endif %} font-medium">
+                            {% if t.amount > 0 %}+{% endif %}{{ t.amount }}
+                        </span>
+                        <div class="text-xs text-gray-500">{{ t.created_at.strftime('%b %d') }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

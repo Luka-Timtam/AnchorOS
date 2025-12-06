@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Missions - CRM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Daily Missions</h1>
+        <div class="flex items-center space-x-4">
+            <div class="bg-yellow-100 border border-yellow-300 rounded-lg px-4 py-2">
+                <span class="text-yellow-800 font-bold text-xl">{{ token_balance }} Tokens</span>
+            </div>
+            <a href="{{ url_for('rewards.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                Reward Shop
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">Today's Mission</h2>
+            <span class="px-3 py-1 rounded-full text-sm font-medium
+                {% if status == 'Completed' %}bg-green-100 text-green-800
+                {% elif status == 'Expired' %}bg-gray-100 text-gray-800
+                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                {{ status }}
+            </span>
+        </div>
+
+        <div class="mb-6">
+            <p class="text-lg text-gray-700 mb-2">{{ mission.description }}</p>
+            <div class="flex items-center space-x-2">
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium">
+                    Reward: {{ mission.reward_tokens }} tokens
+                </span>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Progress</span>
+                <span>{{ mission.progress_count }} / {{ mission.target_count }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="h-4 rounded-full transition-all duration-300
+                    {% if status == 'Completed' %}bg-green-500{% else %}bg-indigo-600{% endif %}"
+                     style="width: {{ progress_pct }}%"></div>
+            </div>
+        </div>
+
+        {% if status == 'Completed' %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+            <p class="text-green-800 font-medium">Mission Complete! You earned {{ mission.reward_tokens }} tokens!</p>
+        </div>
+        {% elif status == 'In Progress' %}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-blue-800 text-sm">
+                {% if mission.mission_type == 'outreach' %}
+                Log outreach activities to make progress on this mission.
+                {% elif mission.mission_type == 'contact_lead' %}
+                Change a lead's status to "Contacted" to make progress.
+                {% elif mission.mission_type == 'complete_tasks' %}
+                Mark tasks as done to make progress on this mission.
+                {% elif mission.mission_type == 'message_old_leads' %}
+                Reach out to leads you haven't contacted recently.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Past 7 Days</h2>
+        {% if past_missions %}
+        <div class="space-y-3">
+            {% for m in past_missions %}
+            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                <div>
+                    <p class="text-gray-700">{{ m.description }}</p>
+                    <p class="text-sm text-gray-500">{{ m.mission_date.strftime('%A, %b %d') }}</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">{{ m.progress_count }} / {{ m.target_count }}</span>
+                    {% if m.is_completed %}
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                        +{{ m.reward_tokens }} tokens
+                    </span>
+                    {% else %}
+                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm">
+                        Incomplete
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No past missions yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-indigo-900 mb-3">How to Earn Tokens</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+1 token</p>
+                <p class="text-gray-600">Log outreach</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+1 token</p>
+                <p class="text-gray-600">Contact a lead</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+1 token</p>
+                <p class="text-gray-600">Complete a task</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+2 tokens</p>
+                <p class="text-gray-600">Send proposal</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+3 tokens</p>
+                <p class="text-gray-600">Daily goal hit</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+7 tokens</p>
+                <p class="text-gray-600">Weekly goal hit</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+5-30 tokens</p>
+                <p class="text-gray-600">Streak bonuses</p>
+            </div>
+            <div class="bg-white rounded p-3">
+                <p class="font-medium text-gray-900">+4-8 tokens</p>
+                <p class="text-gray-600">Daily missions</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

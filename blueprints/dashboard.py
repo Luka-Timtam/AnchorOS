@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from models import db, Lead, Client, OutreachLog, UserSettings, UserStats
+from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
@@ -156,6 +156,13 @@ def index():
         
         monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
     
+    token_balance = UserTokens.get_balance()
+    
+    daily_mission = DailyMission.get_today_mission()
+    mission_progress_pct = 0
+    if daily_mission.target_count > 0:
+        mission_progress_pct = min(100, int((daily_mission.progress_count / daily_mission.target_count) * 100))
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -181,5 +188,8 @@ def index():
         deals_weekly_data=deals_weekly_data,
         month_labels=month_labels,
         monthly_revenue_data=monthly_revenue_data,
-        monthly_mrr_data=monthly_mrr_data
+        monthly_mrr_data=monthly_mrr_data,
+        token_balance=token_balance,
+        daily_mission=daily_mission,
+        mission_progress_pct=mission_progress_pct
     )

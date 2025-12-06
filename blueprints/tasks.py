@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Task, Lead, Client
 from datetime import datetime, date
-from blueprints.gamification import add_xp, XP_RULES
+from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
 
@@ -113,8 +113,11 @@ def update_status(id):
         
         if new_status == 'done' and old_status != 'done':
             add_xp(XP_RULES['task_done'], 'Task completed')
-        
-        flash('Task status updated!', 'success')
+            add_tokens(TOKEN_RULES['task_done'], 'Task completed')
+            update_mission_progress('complete_tasks')
+            flash('Task completed! +8 XP, +1 token', 'success')
+        else:
+            flash('Task status updated!', 'success')
     return redirect(request.referrer or url_for('tasks.index'))
 
 @tasks_bp.route('/<int:id>/delete', methods=['POST'])

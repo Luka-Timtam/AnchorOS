@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -17,6 +17,20 @@ XP_RULES = {
     'monthly_revenue_goal_hit': 50,
     'streak_10': 20,
     'streak_30': 50,
+}
+
+TOKEN_RULES = {
+    'outreach_log': 1,
+    'lead_contacted': 1,
+    'task_done': 1,
+    'proposal_sent': 2,
+    'daily_goal_hit': 3,
+    'weekly_goal_hit': 7,
+    'streak_3': 5,
+    'streak_7': 10,
+    'streak_14': 20,
+    'streak_30': 30,
+    'cold_lead_revived': 5,
 }
 
 LEVELS = [
@@ -51,6 +65,21 @@ def get_xp_for_next_level(current_level):
         if lvl == current_level + 1:
             return threshold
     return None
+
+
+def add_tokens(amount, reason=""):
+    return UserTokens.add_tokens(amount, reason)
+
+
+def update_mission_progress(mission_type, count=1):
+    today = date.today()
+    mission = DailyMission.query.filter_by(mission_date=today, mission_type=mission_type).first()
+    if mission and not mission.is_completed:
+        mission.progress_count += count
+        db.session.commit()
+        if mission.check_completion():
+            flash(f'Mission complete! +{mission.reward_tokens} tokens!', 'success')
+
 
 def add_xp(amount, reason=""):
     stats = UserStats.get_stats()
@@ -168,12 +197,29 @@ def update_outreach_streak():
     db.session.commit()
     
     new_streak = stats.current_outreach_streak_days
+    
     if old_streak < 10 and new_streak >= 10:
         add_xp(XP_RULES['streak_10'], "10-day outreach streak!")
         flash('10-day streak bonus: +20 XP!', 'success')
     if old_streak < 30 and new_streak >= 30:
         add_xp(XP_RULES['streak_30'], "30-day outreach streak!")
         flash('30-day streak bonus: +50 XP!', 'success')
+    
+    streak_token_milestones = [
+        (3, 'streak_3', '3-day streak bonus'),
+        (7, 'streak_7', '7-day streak bonus'),
+        (14, 'streak_14', '14-day streak bonus'),
+        (30, 'streak_30', '30-day streak bonus'),
+    ]
+    
+    for milestone, rule_key, reason in streak_token_milestones:
+        if old_streak < milestone and new_streak >= milestone:
+            existing = TokenTransaction.query.filter(
+                TokenTransaction.reason == reason
+            ).first()
+            if not existing:
+                add_tokens(TOKEN_RULES[rule_key], reason)
+                flash(f'{reason}: +{TOKEN_RULES[rule_key]} tokens!', 'success')
     
     check_and_unlock_achievements()
     return stats.current_outreach_streak_days
@@ -195,7 +241,8 @@ def check_daily_goal():
     
     if today_outreach >= daily_goal.target_value and not existing_log:
         add_xp(XP_RULES['daily_goal_hit'], "Daily outreach goal hit!")
-        flash('Daily goal hit: +10 XP!', 'success')
+        add_tokens(TOKEN_RULES['daily_goal_hit'], "Daily goal hit!")
+        flash('Daily goal hit: +10 XP, +3 tokens!', 'success')
         return True
     
     return False
@@ -218,7 +265,8 @@ def check_weekly_goal():
     
     if week_outreach >= weekly_goal.target_value and not existing_log:
         add_xp(XP_RULES['weekly_goal_hit'], "Weekly outreach goal hit!")
-        flash('Weekly goal hit: +25 XP!', 'success')
+        add_tokens(TOKEN_RULES['weekly_goal_hit'], "Weekly goal hit!")
+        flash('Weekly goal hit: +25 XP, +7 tokens!', 'success')
         return True
     
     return False

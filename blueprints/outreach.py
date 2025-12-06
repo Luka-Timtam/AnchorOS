@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, OutreachLog, Lead
 from datetime import datetime, date, timedelta
 from sqlalchemy import and_
-from blueprints.gamification import add_xp, update_outreach_streak, XP_RULES
+from blueprints.gamification import add_xp, update_outreach_streak, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 
 outreach_bp = Blueprint('outreach', __name__, url_prefix='/outreach')
 
@@ -84,9 +84,11 @@ def create():
     db.session.commit()
     
     add_xp(XP_RULES['outreach_log'], 'Outreach logged')
+    add_tokens(TOKEN_RULES['outreach_log'], 'Outreach logged')
     update_outreach_streak()
+    update_mission_progress('outreach')
     
-    flash('Outreach logged successfully!', 'success')
+    flash('Outreach logged successfully! +5 XP, +1 token', 'success')
     
     return redirect(request.form.get('redirect_url') or url_for('outreach.index'))
 

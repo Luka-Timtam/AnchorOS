@@ -102,6 +102,30 @@ This is a private, single-user CRM tool built with:
   - Unlocked rewards history
   - Reward settings: Add, toggle, delete level and milestone rewards
 
+### Token System & Reward Shop (/rewards)
+- Separate token currency from XP for purchasing rewards
+- Token earning:
+  - Outreach log: +1 token
+  - Lead contacted: +1 token
+  - Task completed: +1 token
+  - Proposal sent: +2 tokens
+  - Daily goal hit: +3 tokens
+  - Weekly goal hit: +7 tokens
+  - Streak bonuses: +5/+10/+20/+30 tokens (3/7/14/30 days)
+  - Daily mission completion: variable tokens
+- Reward Shop with customizable items
+- Default rewards: lollies (8), coffee (10), gaming time (12), lunch treat (20), car care (50), t-shirt (75)
+- Add/edit/toggle/delete rewards
+- Transaction history tracking
+
+### Daily Missions (/missions)
+- One random mission generated per day
+- Mission types: outreach count, contact leads, complete tasks, message old leads
+- Progress tracking with visual progress bar
+- Token rewards upon completion (4-8 tokens)
+- Past 7 days mission history
+- Auto-reset at midnight
+
 ### Goals (/goals)
 - Set daily/weekly/monthly targets
 - Goal types: daily outreach, weekly outreach, monthly revenue, monthly deals
@@ -173,7 +197,7 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 13 tables:
+SQLite database with 17 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
@@ -187,5 +211,9 @@ SQLite database with 13 tables:
 - level_rewards: Recurring rewards at level intervals (e.g., every 2 levels)
 - milestone_rewards: One-time rewards at specific levels (e.g., level 10, 25)
 - unlocked_rewards: History of all earned rewards
+- user_tokens: Token balance tracking (single row)
+- token_transactions: Log of all token gains and spends
+- reward_items: Shop items that can be purchased with tokens
+- daily_missions: Daily mission tracking with progress
 
 Tables are auto-created on first run.

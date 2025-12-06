@@ -1,0 +1,139 @@
+Implement a Token System, Reward Shop, and Daily Missions as described below.
+
+====================================
+1. TOKEN SYSTEM
+====================================
+
+Create a new table: user_tokens
+Fields:
+- id (pk)
+- total_tokens (integer)
+- created_at
+- updated_at
+
+Ensure a single row is created on first access.
+
+Create a new table: token_transactions
+Fields:
+- id (pk)
+- amount (integer, positive or negative)
+- reason (string)
+- created_at
+
+Add helper functions:
+- add_tokens(amount, reason)
+- spend_tokens(amount, reason)
+- get_token_balance()
+
+====================================
+2. TOKEN EARNING LOGIC
+====================================
+
+Tokens are earned **in addition to XP**, not instead of XP.
+
+Award tokens as follows:
+
+- outreach_log → +1 token
+- lead_contacted → +1 token
+- task_done → +1 token
+- proposal sent → +2 tokens
+- daily_outreach_goal_hit → +3 tokens
+- weekly_outreach_goal_hit → +7 tokens
+- streak_3 → +5 tokens
+- streak_7 → +10 tokens
+- streak_14 → +20 tokens
+- streak_30 → +30 tokens
+- cold_lead_revived (status changed from old or dead to active) → +5 tokens
+
+Add logic in appropriate event points to award these tokens through add_tokens().
+
+====================================
+3. REWARD SHOP
+====================================
+
+Create a new table: reward_items
+Fields:
+- id (pk)
+- name (string)
+- cost (integer)
+- description (text)
+- is_active (boolean)
+
+Seed with defaults:
+- “Bag of favourite lollies” (8 tokens)
+- “Coffee or drink” (10 tokens)
+- “1 hour guilt-free gaming” (12 tokens)
+- “Nice lunch treat” (20 tokens)
+- “Car care item” (50 tokens)
+- “T-shirt” (75 tokens)
+
+Create a Reward Shop page with route prefix "/rewards":
+
+GET /rewards  
+- Show current token balance  
+- Show list of available rewards  
+- Each reward should have "Redeem" button if user has enough tokens  
+- Redeem deducts cost from token balance and logs in token_transactions  
+- Add a modal or confirmation screen after redeeming  
+
+OPTIONAL: Show past redeemed rewards (using token_transactions).
+
+====================================
+4. DAILY MISSIONS SYSTEM
+====================================
+
+Create table: daily_missions
+Fields:
+- id (pk)
+- mission_date (date)
+- description (string)
+- target_count (integer)
+- reward_tokens (integer)
+- is_completed (boolean)
+- progress_count (integer)
+
+System Behavior:
+- Every day at midnight or first run of the day, generate ONE mission:
+    Examples:
+    - “Send 5 outreaches today” (reward: 5 tokens)
+    - “Convert 1 lead to contacted” (reward: 4 tokens)
+    - “Complete 2 tasks today” (reward: 6 tokens)
+    - “Message 2 old leads” (reward: 8 tokens)
+
+Mission generation must:
+- Create only one mission per day
+- Avoid duplicates
+
+Mission tracking:
+- When relevant actions occur (outreach, contacts, tasks), increment progress_count
+- If progress_count >= target_count:
+    - Mark mission as completed
+    - Award reward_tokens
+    - Log transaction in token_transactions
+
+====================================
+5. DAILY MISSIONS UI
+====================================
+
+Add a new page "/missions" with:
+- Today’s mission
+- Progress bar (progress_count / target_count)
+- Status: “In progress”, “Completed”, or “Expired”
+- Token reward display
+
+Also show the last 7 days of past missions.
+
+====================================
+6. DASHBOARD INTEGRATION
+====================================
+
+Dashboard should show:
+- Token count (small card)
+- Daily mission preview:
+    - If complete: “Mission complete! +X tokens”
+    - If incomplete: show progress
+    - Clicking takes user to /missions
+
+====================================
+END OF PROMPT
+====================================

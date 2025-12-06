@@ -32,7 +32,7 @@
     </a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 hover:from-indigo-100 hover:to-purple-100 transition-colors">
         <div class="flex items-center justify-between">
             <div>
@@ -40,6 +40,16 @@
                 <p class="text-sm text-indigo-600">Level {{ user_stats.get_level_from_xp() }}</p>
             </div>
             <span class="text-3xl font-bold text-indigo-700">{{ user_stats.current_xp }}</span>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('rewards.index') }}" class="block bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 hover:from-yellow-100 hover:to-amber-100 transition-colors">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-yellow-800">Tokens</h3>
+                <p class="text-sm text-yellow-600">Reward Shop</p>
+            </div>
+            <span class="text-3xl font-bold text-yellow-700">{{ token_balance }}</span>
         </div>
     </a>
     
@@ -66,6 +76,33 @@
         </div>
     </a>
 </div>
+
+<a href="{{ url_for('missions.index') }}" class="block bg-white border border-gray-200 rounded-lg p-4 mb-6 hover:border-indigo-300 transition-colors">
+    <div class="flex items-center justify-between mb-2">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900">Daily Mission</h3>
+            <p class="text-sm text-gray-600">{{ daily_mission.description }}</p>
+        </div>
+        <div class="text-right">
+            {% if daily_mission.is_completed %}
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Complete! +{{ daily_mission.reward_tokens }} tokens
+            </span>
+            {% else %}
+            <span class="text-yellow-700 font-medium">{{ daily_mission.reward_tokens }} tokens</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="h-2 rounded-full transition-all duration-300
+            {% if daily_mission.is_completed %}bg-green-500{% else %}bg-indigo-600{% endif %}"
+             style="width: {{ mission_progress_pct }}%"></div>
+    </div>
+    <div class="flex justify-between text-xs text-gray-500 mt-1">
+        <span>{{ daily_mission.progress_count }} / {{ daily_mission.target_count }}</span>
+        <span>{{ mission_progress_pct }}%</span>
+    </div>
+</a>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-lg shadow p-6">

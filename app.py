@@ -24,6 +24,8 @@ def create_app():
     from blueprints.goals import goals_bp
     from blueprints.outreach_templates import outreach_templates_bp
     from blueprints.internal import internal_bp
+    from blueprints.rewards import rewards_bp
+    from blueprints.missions import missions_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -36,6 +38,8 @@ def create_app():
     app.register_blueprint(goals_bp)
     app.register_blueprint(outreach_templates_bp)
     app.register_blueprint(internal_bp)
+    app.register_blueprint(rewards_bp)
+    app.register_blueprint(missions_bp)
     
     @app.before_request
     def require_login():
