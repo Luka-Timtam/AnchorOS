@@ -88,6 +88,131 @@
     </div>
 </div>
 
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Upcoming Rewards</h3>
+        {% if upcoming_rewards %}
+        <div class="space-y-3">
+            {% for reward in upcoming_rewards %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    {% if reward.type == 'milestone' %}
+                    <span class="text-xl mr-3">&#127942;</span>
+                    {% else %}
+                    <span class="text-xl mr-3">&#127873;</span>
+                    {% endif %}
+                    <div>
+                        <div class="font-medium text-gray-900">{{ reward.reward_text }}</div>
+                        <div class="text-xs text-gray-500">
+                            {% if reward.type == 'milestone' %}
+                            Milestone at Level {{ reward.level }}
+                            {% else %}
+                            Every {{ reward.interval }} levels (next: Level {{ reward.level }})
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-1 rounded">Lvl {{ reward.level }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No upcoming rewards. Add some below!</p>
+        {% endif %}
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Unlocked Rewards</h3>
+        {% if unlocked_rewards %}
+        <div class="space-y-3 max-h-64 overflow-y-auto">
+            {% for reward in unlocked_rewards %}
+            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <span class="text-xl mr-3">&#127881;</span>
+                    <div>
+                        <div class="font-medium text-gray-900">{{ reward.reward_text }}</div>
+                        <div class="text-xs text-gray-500">
+                            {{ reward.reward_type|title }} reward at Level {{ reward.level_achieved }}
+                        </div>
+                    </div>
+                </div>
+                <span class="text-xs text-gray-500">{{ reward.unlocked_at.strftime('%b %d') }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No rewards unlocked yet. Keep leveling up!</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Reward Settings</h3>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+            <h4 class="text-sm font-medium text-gray-600 mb-3">Level Interval Rewards (Recurring)</h4>
+            <div class="space-y-2 mb-4">
+                {% for reward in level_rewards %}
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg {% if not reward.is_active %}opacity-50{% endif %}">
+                    <div>
+                        <span class="font-medium text-sm">Every {{ reward.level_interval }} levels:</span>
+                        <span class="text-sm text-gray-600">{{ reward.reward_text }}</span>
+                    </div>
+                    <div class="flex gap-1">
+                        <form method="POST" action="{{ url_for('gamification.toggle_level_reward', id=reward.id) }}" class="inline">
+                            <button type="submit" class="text-xs px-2 py-1 rounded {% if reward.is_active %}bg-green-100 text-green-700{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ 'On' if reward.is_active else 'Off' }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('gamification.delete_level_reward', id=reward.id) }}" class="inline" onsubmit="return confirm('Delete this reward?')">
+                            <button type="submit" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Del</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <form method="POST" action="{{ url_for('gamification.add_level_reward') }}" class="flex gap-2">
+                <input type="number" name="level_interval" min="1" placeholder="Every X levels" class="w-28 text-sm border border-gray-300 rounded px-2 py-1">
+                <input type="text" name="reward_text" placeholder="Reward description" class="flex-1 text-sm border border-gray-300 rounded px-2 py-1">
+                <button type="submit" class="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700">Add</button>
+            </form>
+        </div>
+        
+        <div>
+            <h4 class="text-sm font-medium text-gray-600 mb-3">Milestone Rewards (One-time)</h4>
+            <div class="space-y-2 mb-4">
+                {% for reward in milestone_rewards %}
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg {% if not reward.is_active %}opacity-50{% endif %} {% if reward.unlocked_at %}bg-green-50{% endif %}">
+                    <div>
+                        <span class="font-medium text-sm">Level {{ reward.target_level }}:</span>
+                        <span class="text-sm text-gray-600">{{ reward.reward_text }}</span>
+                        {% if reward.unlocked_at %}
+                        <span class="text-xs text-green-600 ml-1">(Claimed)</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex gap-1">
+                        <form method="POST" action="{{ url_for('gamification.toggle_milestone_reward', id=reward.id) }}" class="inline">
+                            <button type="submit" class="text-xs px-2 py-1 rounded {% if reward.is_active %}bg-green-100 text-green-700{% else %}bg-gray-200 text-gray-600{% endif %}">
+                                {{ 'On' if reward.is_active else 'Off' }}
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('gamification.delete_milestone_reward', id=reward.id) }}" class="inline" onsubmit="return confirm('Delete this reward?')">
+                            <button type="submit" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Del</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <form method="POST" action="{{ url_for('gamification.add_milestone_reward') }}" class="flex gap-2">
+                <input type="number" name="target_level" min="1" placeholder="At level" class="w-28 text-sm border border-gray-300 rounded px-2 py-1">
+                <input type="text" name="reward_text" placeholder="Reward description" class="flex-1 text-sm border border-gray-300 rounded px-2 py-1">
+                <button type="submit" class="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700">Add</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="bg-white rounded-lg shadow p-6">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Achievements</h3>
     

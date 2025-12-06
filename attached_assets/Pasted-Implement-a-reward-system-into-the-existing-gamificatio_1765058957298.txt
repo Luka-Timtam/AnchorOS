@@ -1,0 +1,145 @@
+Implement a reward system into the existing gamification logic with the following features.
+
+====================================
+1. REWARD MODELS
+====================================
+
+Create two new tables:
+
+1) level_rewards  
+   - id (pk)
+   - level_interval (integer)  
+       # e.g. 2 means “every 2 levels”  
+   - reward_text (string or text)  
+       # e.g. "Bag of favourite lollies"  
+   - is_active (boolean, default True)
+
+2) milestone_rewards  
+   - id (pk)
+   - target_level (integer)  
+       # e.g. 10 means “reward when reaching level 10”
+   - reward_text (string or text)
+   - is_active (boolean, default True)
+   - unlocked_at (datetime, nullable)
+
+Also create a new table:
+
+3) unlocked_rewards  
+   - id (pk)
+   - reward_type ("level" or "milestone")
+   - reward_reference_id (fk → level_rewards or milestone_rewards)
+   - level_achieved (integer)
+   - unlocked_at (datetime)
+
+This records every time a reward has been granted.
+
+====================================
+2. LEVEL SYSTEM ADJUSTMENTS
+====================================
+
+Use the existing XP system to determine levels.
+
+If not done yet, implement a simple leveling curve:
+- For example:  
+  required XP = level * 500  
+  (or keep whatever formula you already have)
+
+Whenever XP is updated and the user levels up:
+- Determine new level
+- Trigger the reward evaluation functions described below.
+
+====================================
+3. LEVEL INTERVAL REWARDS (RECURRING REWARDS)
+====================================
+
+Add support for recurring rewards such as:
+- “Every 2 levels: Bag of favourite lollies”
+- “Every 5 levels: Small treat”
+- “Every 10 levels: Full free day or special reward”
+
+For each record in level_rewards:
+- If is_active = True:
+  - Check if user_stats.current_level is divisible by level_interval.
+  - If so, and if this exact reward has not already been logged for this level in unlocked_rewards:
+      -> Create an unlocked_rewards entry
+      -> Store level_achieved and timestamp.
+
+====================================
+4. MILESTONE LEVEL REWARDS (ONE-TIME REWARDS)
+====================================
+
+For entries in milestone_rewards:
+- When user_stats.current_level reaches target_level:
+  - If is_active = True and milestone_rewards.unlocked_at is NULL:
+      -> Set milestone_rewards.unlocked_at = now
+      -> Create an unlocked_rewards entry
+      -> Store level_achieved and timestamp.
+
+Examples:
+- Level 10 → “Take yourself out for sushi”
+- Level 25 → “Buy a small gift”
+- Level 50 → “Weekend getaway fund”
+
+====================================
+5. GAMIFICATION PAGE UPDATES (/gamification)
+====================================
+
+Add a new section displaying:
+
+A) “Upcoming Rewards”
+- List:
+  - Next few level-interval rewards (e.g. “Next treat at level 22”)
+  - Next milestone rewards not yet unlocked (e.g. “Level 30 milestone reward”)
+
+B) “Unlocked Rewards”
+- Show all unlocked_rewards entries ordered by newest first:
+  - level_achieved
+  - reward_text
+  - reward_type
+  - unlocked_at timestamp
+
+C) “Reward Settings” (optional small admin block)
+- Ability to:
+  - Add new level interval rewards
+  - Add new milestone rewards
+  - Toggle is_active on/off
+  - Edit reward text
+
+KEEP all of this inside the gamification page, not on the dashboard.
+
+====================================
+6. DASHBOARD INTEGRATION (MINIMAL)
+====================================
+
+The Dashboard should show only:
+- current level
+- small badge if a reward was earned today (optional)
+
+All detailed reward activity must remain on the /gamification page.
+
+====================================
+7. BACKEND HOOKS
+====================================
+
+After every XP update that could cause a level-up:
+- Recalculate the user's current level.
+- If level changed:
+    -> run check_level_interval_rewards()
+    -> run check_milestone_rewards()
+- These helper functions should automatically create entries in unlocked_rewards.
+
+Make sure no duplicate reward entries occur for the same level/reward combination.
+
+====================================
+8. OPTIONAL NICE TOUCHES
+====================================
+
+When a reward is unlocked:
+- Store a small flash message like:  
+  “🎉 You unlocked a reward: Bag of favourite lollies!”
+
+No popups or modal windows unless you want to add them later.
+
+====================================
+END OF PROMPT
+====================================

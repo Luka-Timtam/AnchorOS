@@ -251,3 +251,63 @@ class OutreachTemplate(db.Model):
     @staticmethod
     def subcategory_choices():
         return ['cold_outreach', 'follow_up', 'cold_call_script', 'objection_handling', 'booking_confirmation', 'proposal', 'other']
+
+
+class LevelReward(db.Model):
+    __tablename__ = 'level_rewards'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    level_interval = db.Column(db.Integer, nullable=False)
+    reward_text = db.Column(db.Text, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def seed_defaults():
+        defaults = [
+            {'level_interval': 2, 'reward_text': 'Bag of favourite lollies'},
+            {'level_interval': 5, 'reward_text': 'Small treat of your choice'},
+            {'level_interval': 10, 'reward_text': 'Full free day or special reward'},
+        ]
+        for item in defaults:
+            existing = LevelReward.query.filter_by(level_interval=item['level_interval']).first()
+            if not existing:
+                reward = LevelReward(**item)
+                db.session.add(reward)
+        db.session.commit()
+
+
+class MilestoneReward(db.Model):
+    __tablename__ = 'milestone_rewards'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    target_level = db.Column(db.Integer, nullable=False, unique=True)
+    reward_text = db.Column(db.Text, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    unlocked_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def seed_defaults():
+        defaults = [
+            {'target_level': 10, 'reward_text': 'Take yourself out for sushi'},
+            {'target_level': 25, 'reward_text': 'Buy a small gift for yourself'},
+            {'target_level': 50, 'reward_text': 'Weekend getaway fund contribution'},
+        ]
+        for item in defaults:
+            existing = MilestoneReward.query.filter_by(target_level=item['target_level']).first()
+            if not existing:
+                reward = MilestoneReward(**item)
+                db.session.add(reward)
+        db.session.commit()
+
+
+class UnlockedReward(db.Model):
+    __tablename__ = 'unlocked_rewards'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    reward_type = db.Column(db.String(20), nullable=False)
+    reward_reference_id = db.Column(db.Integer, nullable=False)
+    level_achieved = db.Column(db.Integer, nullable=False)
+    reward_text = db.Column(db.Text, nullable=False)
+    unlocked_at = db.Column(db.DateTime, default=datetime.utcnow)

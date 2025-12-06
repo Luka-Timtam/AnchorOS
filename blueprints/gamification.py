@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -16,15 +16,95 @@ XP_RULES = {
 
 def add_xp(amount, reason=""):
     stats = UserStats.get_stats()
+    old_level = stats.current_level
     stats.current_xp += amount
-    stats.current_level = stats.get_level_from_xp()
+    new_level = stats.get_level_from_xp()
+    stats.current_level = new_level
     
     log = XPLog(amount=amount, reason=reason)
     db.session.add(log)
     db.session.commit()
     
     check_and_unlock_achievements()
+    
+    if new_level > old_level:
+        check_level_interval_rewards(new_level)
+        check_milestone_rewards(new_level)
+    
     return stats.current_xp
+
+
+def check_level_interval_rewards(current_level):
+    level_rewards = LevelReward.query.filter_by(is_active=True).all()
+    now = datetime.utcnow()
+    
+    for reward in level_rewards:
+        if current_level % reward.level_interval == 0:
+            existing = UnlockedReward.query.filter_by(
+                reward_type='level',
+                reward_reference_id=reward.id,
+                level_achieved=current_level
+            ).first()
+            
+            if not existing:
+                unlocked = UnlockedReward(
+                    reward_type='level',
+                    reward_reference_id=reward.id,
+                    level_achieved=current_level,
+                    reward_text=reward.reward_text,
+                    unlocked_at=now
+                )
+                db.session.add(unlocked)
+                flash(f'You unlocked a reward: {reward.reward_text}!', 'success')
+    
+    db.session.commit()
+
+
+def check_milestone_rewards(current_level):
+    milestone_rewards = MilestoneReward.query.filter_by(is_active=True, unlocked_at=None).all()
+    now = datetime.utcnow()
+    
+    for reward in milestone_rewards:
+        if current_level >= reward.target_level:
+            reward.unlocked_at = now
+            
+            unlocked = UnlockedReward(
+                reward_type='milestone',
+                reward_reference_id=reward.id,
+                level_achieved=current_level,
+                reward_text=reward.reward_text,
+                unlocked_at=now
+            )
+            db.session.add(unlocked)
+            flash(f'Milestone reward unlocked: {reward.reward_text}!', 'success')
+    
+    db.session.commit()
+
+
+def get_upcoming_rewards(current_level):
+    upcoming = []
+    
+    level_rewards = LevelReward.query.filter_by(is_active=True).order_by(LevelReward.level_interval).all()
+    for reward in level_rewards:
+        next_level = ((current_level // reward.level_interval) + 1) * reward.level_interval
+        upcoming.append({
+            'type': 'level',
+            'level': next_level,
+            'reward_text': reward.reward_text,
+            'interval': reward.level_interval
+        })
+    
+    milestone_rewards = MilestoneReward.query.filter_by(is_active=True, unlocked_at=None).order_by(MilestoneReward.target_level).all()
+    for reward in milestone_rewards:
+        if reward.target_level > current_level:
+            upcoming.append({
+                'type': 'milestone',
+                'level': reward.target_level,
+                'reward_text': reward.reward_text
+            })
+    
+    upcoming.sort(key=lambda x: x['level'])
+    return upcoming[:5]
 
 def update_outreach_streak():
     stats = UserStats.get_stats()
@@ -204,6 +284,8 @@ def get_consistency_history(days=30):
 def index():
     stats = UserStats.get_stats()
     Achievement.seed_defaults()
+    LevelReward.seed_defaults()
+    MilestoneReward.seed_defaults()
     
     achievements = Achievement.query.all()
     unlocked = [a for a in achievements if a.unlocked_at]
@@ -223,6 +305,12 @@ def index():
         xp_needed = xp_for_next - current_level_xp
         xp_progress = int((xp_in_level / xp_needed) * 100) if xp_needed > 0 else 100
     
+    upcoming_rewards = get_upcoming_rewards(current_level)
+    unlocked_rewards = UnlockedReward.query.order_by(UnlockedReward.unlocked_at.desc()).limit(10).all()
+    
+    level_rewards = LevelReward.query.order_by(LevelReward.level_interval).all()
+    milestone_rewards = MilestoneReward.query.order_by(MilestoneReward.target_level).all()
+    
     return render_template('gamification/index.html',
         stats=stats,
         unlocked_achievements=unlocked,
@@ -231,5 +319,75 @@ def index():
         xp_this_week=xp_this_week,
         xp_for_next=xp_for_next,
         xp_progress=xp_progress,
-        current_level=current_level
+        current_level=current_level,
+        upcoming_rewards=upcoming_rewards,
+        unlocked_rewards=unlocked_rewards,
+        level_rewards=level_rewards,
+        milestone_rewards=milestone_rewards
     )
+
+
+@gamification_bp.route('/rewards/level/new', methods=['POST'])
+def add_level_reward():
+    interval = request.form.get('level_interval', type=int)
+    text = request.form.get('reward_text', '')
+    
+    if interval and text:
+        reward = LevelReward(level_interval=interval, reward_text=text)
+        db.session.add(reward)
+        db.session.commit()
+        flash('Level reward added successfully!', 'success')
+    
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/rewards/milestone/new', methods=['POST'])
+def add_milestone_reward():
+    target = request.form.get('target_level', type=int)
+    text = request.form.get('reward_text', '')
+    
+    if target and text:
+        existing = MilestoneReward.query.filter_by(target_level=target).first()
+        if not existing:
+            reward = MilestoneReward(target_level=target, reward_text=text)
+            db.session.add(reward)
+            db.session.commit()
+            flash('Milestone reward added successfully!', 'success')
+        else:
+            flash('A milestone reward for this level already exists.', 'error')
+    
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/rewards/level/<int:id>/toggle', methods=['POST'])
+def toggle_level_reward(id):
+    reward = LevelReward.query.get_or_404(id)
+    reward.is_active = not reward.is_active
+    db.session.commit()
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/rewards/milestone/<int:id>/toggle', methods=['POST'])
+def toggle_milestone_reward(id):
+    reward = MilestoneReward.query.get_or_404(id)
+    reward.is_active = not reward.is_active
+    db.session.commit()
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/rewards/level/<int:id>/delete', methods=['POST'])
+def delete_level_reward(id):
+    reward = LevelReward.query.get_or_404(id)
+    db.session.delete(reward)
+    db.session.commit()
+    flash('Level reward deleted.', 'success')
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/rewards/milestone/<int:id>/delete', methods=['POST'])
+def delete_milestone_reward(id):
+    reward = MilestoneReward.query.get_or_404(id)
+    db.session.delete(reward)
+    db.session.commit()
+    flash('Milestone reward deleted.', 'success')
+    return redirect(url_for('gamification.index'))
