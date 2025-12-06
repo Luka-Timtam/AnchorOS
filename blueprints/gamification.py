@@ -181,10 +181,6 @@ def update_outreach_streak():
 
 def check_daily_goal():
     today = date.today()
-    stats = UserStats.get_stats()
-    
-    if hasattr(stats, 'last_daily_goal_date') and stats.last_daily_goal_date == today:
-        return False
     
     daily_goal = Goal.query.filter_by(goal_type='daily_outreach').first()
     if not daily_goal or daily_goal.target_value <= 0:
@@ -192,7 +188,12 @@ def check_daily_goal():
     
     today_outreach = OutreachLog.query.filter(OutreachLog.date == today).count()
     
-    if today_outreach >= daily_goal.target_value:
+    existing_log = XPLog.query.filter(
+        XPLog.reason == "Daily outreach goal hit!",
+        func.date(XPLog.created_at) == today
+    ).first()
+    
+    if today_outreach >= daily_goal.target_value and not existing_log:
         add_xp(XP_RULES['daily_goal_hit'], "Daily outreach goal hit!")
         flash('Daily goal hit: +10 XP!', 'success')
         return True

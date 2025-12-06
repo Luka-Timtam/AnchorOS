@@ -77,8 +77,20 @@ This is a private, single-user CRM tool built with:
 - Filters: status, due date
 
 ### Gamification (/gamification)
-- XP system with levels (1-10)
-- XP earned from: outreach (+5), lead status changes (+3/7/10), deals closed (+20), tasks completed (+8)
+- XP system with levels (1-15)
+- XP earned from:
+  - Outreach log: +5 XP
+  - Lead contacted: +4 XP
+  - Call booked: +8 XP
+  - Proposal sent: +12 XP
+  - Deal closed: +30 XP
+  - Task completed: +8 XP
+  - Daily goal hit: +10 XP
+  - Weekly goal hit: +25 XP
+  - Monthly revenue goal hit: +50 XP
+  - 10-day streak: +20 XP (one-time)
+  - 30-day streak: +50 XP (one-time)
+- Level thresholds: 0, 150, 400, 800, 1400, 2200, 3200, 4500, 6500, 9000, 12000, 16000, 20000, 25000, 30000
 - Outreach streak tracking (current and longest)
 - Consistency score (0-100) based on last 7 days
 - Achievements system with unlock tracking
