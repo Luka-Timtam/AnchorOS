@@ -83,6 +83,12 @@ This is a private, single-user CRM tool built with:
 - Consistency score (0-100) based on last 7 days
 - Achievements system with unlock tracking
 - Charts: XP gained this week, consistency breakdown
+- Reward System:
+  - Level interval rewards (recurring): Rewards earned every X levels (e.g., every 2 levels)
+  - Milestone rewards (one-time): Rewards for reaching specific levels (e.g., level 10, 25, 50)
+  - Upcoming rewards section shows next rewards to earn
+  - Unlocked rewards history
+  - Reward settings: Add, toggle, delete level and milestone rewards
 
 ### Goals (/goals)
 - Set daily/weekly/monthly targets
@@ -155,7 +161,7 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 10 tables:
+SQLite database with 13 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
@@ -166,5 +172,8 @@ SQLite database with 10 tables:
 - goals: Goal targets (daily outreach, weekly outreach, monthly revenue, monthly deals)
 - xp_logs: XP gain history for tracking
 - outreach_templates: Email, DM, and call script templates
+- level_rewards: Recurring rewards at level intervals (e.g., every 2 levels)
+- milestone_rewards: One-time rewards at specific levels (e.g., level 10, 25)
+- unlocked_rewards: History of all earned rewards
 
 Tables are auto-created on first run.
