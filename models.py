@@ -311,3 +311,11 @@ class UnlockedReward(db.Model):
     level_achieved = db.Column(db.Integer, nullable=False)
     reward_text = db.Column(db.Text, nullable=False)
     unlocked_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __init__(self, reward_type=None, reward_reference_id=None, level_achieved=None, reward_text=None, unlocked_at=None):
+        self.reward_type = reward_type
+        self.reward_reference_id = reward_reference_id
+        self.level_achieved = level_achieved
+        self.reward_text = reward_text
+        if unlocked_at:
+            self.unlocked_at = unlocked_at
