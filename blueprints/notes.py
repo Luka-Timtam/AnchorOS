@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Note, UserStats, ActivityLog
+from models import db, Note, UserStats, ActivityLog, XPLog
 from datetime import date
 
 notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
@@ -42,7 +42,10 @@ def new():
         
         if is_first_today:
             user_stats = UserStats.get_stats()
-            user_stats.add_xp(2, "First note of the day")
+            user_stats.current_xp += 2
+            xp_log = XPLog(amount=2, reason="First note of the day")
+            db.session.add(xp_log)
+            db.session.commit()
             ActivityLog.log_activity('note_created', f'Created note: {title}', note.id, 'note')
             flash(f'Note created! +2 XP for first note today!', 'success')
         else:
@@ -111,7 +114,10 @@ def pin(id):
         
         if not has_pinned_today:
             user_stats = UserStats.get_stats()
-            user_stats.add_xp(1, "Pinned a note")
+            user_stats.current_xp += 1
+            xp_log = XPLog(amount=1, reason="Pinned a note")
+            db.session.add(xp_log)
+            db.session.commit()
             flash(f'Note pinned! +1 XP', 'success')
         else:
             flash('Note pinned!', 'success')
