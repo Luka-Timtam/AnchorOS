@@ -72,11 +72,11 @@ def new():
         
         if not title:
             flash('Title is required', 'error')
-            return render_template('notes/new.html', title=title, content=content, tags=tags)
+            return render_template('notes/new.html', title=title, content=content, tags=tags, all_tags=Note.get_all_tags())
         
         if not content:
             flash('Content is required', 'error')
-            return render_template('notes/new.html', title=title, content=content, tags=tags)
+            return render_template('notes/new.html', title=title, content=content, tags=tags, all_tags=Note.get_all_tags())
         
         is_first_today = not Note.has_note_today()
         
@@ -102,7 +102,8 @@ def new():
         
         return redirect(url_for('notes.view', id=note.id))
     
-    return render_template('notes/new.html')
+    all_tags = Note.get_all_tags()
+    return render_template('notes/new.html', all_tags=all_tags)
 
 
 @notes_bp.route('/<int:id>')
@@ -122,11 +123,11 @@ def edit(id):
         
         if not title:
             flash('Title is required', 'error')
-            return render_template('notes/edit.html', note=note)
+            return render_template('notes/edit.html', note=note, all_tags=Note.get_all_tags())
         
         if not content:
             flash('Content is required', 'error')
-            return render_template('notes/edit.html', note=note)
+            return render_template('notes/edit.html', note=note, all_tags=Note.get_all_tags())
         
         note.title = title
         note.content = content
@@ -136,7 +137,8 @@ def edit(id):
         flash('Note updated!', 'success')
         return redirect(url_for('notes.view', id=note.id))
     
-    return render_template('notes/edit.html', note=note)
+    all_tags = Note.get_all_tags()
+    return render_template('notes/edit.html', note=note, all_tags=all_tags)
 
 
 @notes_bp.route('/<int:id>/delete', methods=['POST'])

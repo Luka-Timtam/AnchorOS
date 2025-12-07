@@ -31,6 +31,20 @@
                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                    placeholder="Enter tags separated by commas (e.g., idea, project, urgent)">
             <p class="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+            
+            {% if all_tags %}
+            <div class="mt-3">
+                <p class="text-xs text-gray-600 mb-2">Click to add existing tags:</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in all_tags %}
+                    <button type="button" onclick="addTag('{{ tag }}')" 
+                            class="inline-block bg-gray-100 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs px-2 py-1 rounded border border-gray-300 hover:border-indigo-300 transition-colors">
+                        + {{ tag }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         
         <div class="flex gap-3">
@@ -43,4 +57,19 @@
         </div>
     </form>
 </div>
+
+<script>
+function addTag(tag) {
+    const tagsInput = document.getElementById('tags');
+    const currentTags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
+    
+    if (!currentTags.includes(tag)) {
+        if (currentTags.length > 0) {
+            tagsInput.value = currentTags.join(', ') + ', ' + tag;
+        } else {
+            tagsInput.value = tag;
+        }
+    }
+}
+</script>
 {% endblock %}
