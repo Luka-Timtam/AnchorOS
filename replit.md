@@ -147,12 +147,21 @@ This is a private, single-user CRM tool built with:
 
 ### Activity Timeline (/timeline)
 - Unified feed of all important user actions
-- Events logged: outreach, lead status changes, task actions, missions, boss fights, XP/tokens, streaks, pause mode
+- Events logged: outreach, lead status changes, task actions, missions, boss fights, XP/tokens, streaks, pause mode, notes
 - Grouped by day (Today, Yesterday, Earlier this week, Last week, Older)
 - Highlighted special events (boss defeated, level ups, deals closed)
 - Pagination (50 items per page)
 - Links to related items (leads, tasks, missions, boss)
 - Dashboard widget showing last 5 activities
+
+### Mini Notebook (/notes)
+- Create, edit, and delete notes
+- Tag support with comma-separated tags
+- Pin important notes to top
+- Card layout with title and content preview
+- XP bonuses:
+  - First note of the day: +2 XP
+  - Pinning a note (once per day): +1 XP
 
 ### Goals (/goals)
 - Set daily/weekly/monthly targets
@@ -195,7 +204,8 @@ This is a private, single-user CRM tool built with:
 │   ├── goals.py             # Goal setting and tracking
 │   ├── outreach_templates.py # Email/DM/Call templates
 │   ├── internal.py          # Internal API endpoints
-│   └── timeline.py          # Activity timeline feed
+│   ├── timeline.py          # Activity timeline feed
+│   └── notes.py             # Mini notebook feature
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page
@@ -208,7 +218,8 @@ This is a private, single-user CRM tool built with:
 │   ├── gamification/        # Gamification templates
 │   ├── goals/               # Goals templates
 │   ├── outreach_templates/  # Template management pages
-│   └── timeline/            # Activity timeline templates
+│   ├── timeline/            # Activity timeline templates
+│   └── notes/               # Notebook templates
 └── database.db              # SQLite database (auto-created)
 ```
 
@@ -227,7 +238,7 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 18 tables:
+SQLite database with 19 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
@@ -248,5 +259,6 @@ SQLite database with 18 tables:
 - boss_fights: Monthly boss challenges
 - boss_fight_history: Record of defeated bosses
 - activity_log: User activity timeline entries
+- notes: Mini notebook entries with tags and pinning
 
 Tables are auto-created on first run.

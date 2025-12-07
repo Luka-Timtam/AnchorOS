@@ -29,6 +29,7 @@ def create_app():
     from blueprints.boss import boss_bp
     from blueprints.settings import settings_bp
     from blueprints.timeline import timeline_bp
+    from blueprints.notes import notes_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -46,6 +47,7 @@ def create_app():
     app.register_blueprint(boss_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(timeline_bp)
+    app.register_blueprint(notes_bp)
     
     @app.before_request
     def require_login():

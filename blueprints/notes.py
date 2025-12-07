@@ -1,0 +1,123 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from models import db, Note, UserStats, ActivityLog
+from datetime import date
+
+notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
+
+
+@notes_bp.route('/')
+def index():
+    pinned_notes = Note.query.filter(Note.pinned == True).order_by(Note.updated_at.desc()).all()
+    unpinned_notes = Note.query.filter(Note.pinned == False).order_by(Note.updated_at.desc()).all()
+    
+    return render_template('notes/index.html',
+                         pinned_notes=pinned_notes,
+                         unpinned_notes=unpinned_notes)
+
+
+@notes_bp.route('/new', methods=['GET', 'POST'])
+def new():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        tags = request.form.get('tags', '').strip()
+        
+        if not title:
+            flash('Title is required', 'error')
+            return render_template('notes/new.html', title=title, content=content, tags=tags)
+        
+        if not content:
+            flash('Content is required', 'error')
+            return render_template('notes/new.html', title=title, content=content, tags=tags)
+        
+        is_first_today = not Note.has_note_today()
+        
+        note = Note(
+            title=title,
+            content=content,
+            tags=tags if tags else None
+        )
+        db.session.add(note)
+        db.session.commit()
+        
+        if is_first_today:
+            user_stats = UserStats.get_stats()
+            user_stats.add_xp(2, "First note of the day")
+            ActivityLog.log_activity('note_created', f'Created note: {title}', note.id, 'note')
+            flash(f'Note created! +2 XP for first note today!', 'success')
+        else:
+            ActivityLog.log_activity('note_created', f'Created note: {title}', note.id, 'note')
+            flash('Note created!', 'success')
+        
+        return redirect(url_for('notes.view', id=note.id))
+    
+    return render_template('notes/new.html')
+
+
+@notes_bp.route('/<int:id>')
+def view(id):
+    note = Note.query.get_or_404(id)
+    return render_template('notes/view.html', note=note)
+
+
+@notes_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
+def edit(id):
+    note = Note.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        tags = request.form.get('tags', '').strip()
+        
+        if not title:
+            flash('Title is required', 'error')
+            return render_template('notes/edit.html', note=note)
+        
+        if not content:
+            flash('Content is required', 'error')
+            return render_template('notes/edit.html', note=note)
+        
+        note.title = title
+        note.content = content
+        note.tags = tags if tags else None
+        db.session.commit()
+        
+        flash('Note updated!', 'success')
+        return redirect(url_for('notes.view', id=note.id))
+    
+    return render_template('notes/edit.html', note=note)
+
+
+@notes_bp.route('/<int:id>/delete', methods=['POST'])
+def delete(id):
+    note = Note.query.get_or_404(id)
+    title = note.title
+    db.session.delete(note)
+    db.session.commit()
+    
+    flash(f'Note "{title}" deleted', 'success')
+    return redirect(url_for('notes.index'))
+
+
+@notes_bp.route('/<int:id>/pin', methods=['POST'])
+def pin(id):
+    note = Note.query.get_or_404(id)
+    
+    if not note.pinned:
+        has_pinned_today = Note.has_pinned_today()
+        
+        note.pinned = True
+        db.session.commit()
+        
+        if not has_pinned_today:
+            user_stats = UserStats.get_stats()
+            user_stats.add_xp(1, "Pinned a note")
+            flash(f'Note pinned! +1 XP', 'success')
+        else:
+            flash('Note pinned!', 'success')
+    else:
+        note.pinned = False
+        db.session.commit()
+        flash('Note unpinned', 'success')
+    
+    return redirect(url_for('notes.view', id=note.id))

@@ -676,6 +676,7 @@ class ActivityLog(db.Model):
             'level_up': 'star',
             'pause_activated': 'pause-circle',
             'pause_ended': 'play-circle',
+            'note_created': 'file-text',
         }
         return icons.get(self.action_type, 'activity')
     
@@ -699,8 +700,46 @@ class ActivityLog(db.Model):
             'level_up': 'yellow',
             'pause_activated': 'gray',
             'pause_ended': 'teal',
+            'note_created': 'slate',
         }
         return colors.get(self.action_type, 'gray')
     
     def is_highlight(self):
         return self.action_type in ['boss_defeated', 'level_up', 'deal_closed_won', 'xp_gained']
+
+
+class Note(db.Model):
+    __tablename__ = 'notes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    tags = db.Column(db.String(500), nullable=True)
+    pinned = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def get_tags_list(self):
+        if not self.tags:
+            return []
+        return [t.strip() for t in self.tags.split(',') if t.strip()]
+    
+    def get_preview(self, length=100):
+        if len(self.content) <= length:
+            return self.content
+        return self.content[:length] + '...'
+    
+    @staticmethod
+    def has_note_today():
+        today = date.today()
+        return Note.query.filter(
+            db.func.date(Note.created_at) == today
+        ).count() > 0
+    
+    @staticmethod
+    def has_pinned_today():
+        today = date.today()
+        return Note.query.filter(
+            Note.pinned == True,
+            db.func.date(Note.updated_at) == today
+        ).count() > 0
