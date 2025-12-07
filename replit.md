@@ -162,6 +162,14 @@ This is a private, single-user CRM tool built with:
 - Links to related items (leads, tasks, missions, boss)
 - Dashboard widget showing last 5 activities
 
+### Global Search (Ctrl+K)
+- Command palette modal triggered by Ctrl+K or search icon in navbar
+- Searches across: leads, tasks, notes, timeline, missions, boss fights
+- Instant AJAX search with 150ms throttling
+- Results grouped by category with highlighted matches
+- Keyboard navigation: Arrow keys + Enter to select
+- Dark themed modal with blurred backdrop
+
 ### Mini Notebook (/notes)
 - Create, edit, and delete notes
 - Tag support with comma-separated tags
@@ -218,7 +226,8 @@ This is a private, single-user CRM tool built with:
 │   ├── outreach_templates.py # Email/DM/Call templates
 │   ├── internal.py          # Internal API endpoints
 │   ├── timeline.py          # Activity timeline feed
-│   └── notes.py             # Mini notebook feature
+│   ├── notes.py             # Mini notebook feature
+│   └── search.py            # Global search API
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page
