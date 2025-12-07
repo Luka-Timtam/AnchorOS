@@ -146,6 +146,26 @@
     <canvas id="pipelineChart" height="120"></canvas>
 </div>
 
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Top Win Reasons</h2>
+        <div id="winReasonsEmpty" class="text-center py-8 text-gray-500 hidden">
+            <p>No win reason data yet.</p>
+            <p class="text-sm">Close deals with reasons to see insights here.</p>
+        </div>
+        <canvas id="winReasonsChart" height="200"></canvas>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Top Loss Reasons</h2>
+        <div id="lossReasonsEmpty" class="text-center py-8 text-gray-500 hidden">
+            <p>No loss reason data yet.</p>
+            <p class="text-sm">Track why deals are lost to see insights here.</p>
+        </div>
+        <canvas id="lossReasonsChart" height="200"></canvas>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const chartData = {{ chart_data|safe }};
@@ -291,5 +311,73 @@ new Chart(document.getElementById('pipelineChart'), {
         }
     }
 });
+
+if (chartData.winReasonLabels && chartData.winReasonLabels.length > 0) {
+    new Chart(document.getElementById('winReasonsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: chartData.winReasonLabels,
+            datasets: [{
+                data: chartData.winReasonData,
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(52, 211, 153, 0.8)',
+                    'rgba(110, 231, 183, 0.8)',
+                    'rgba(167, 243, 208, 0.8)',
+                    'rgba(209, 250, 229, 0.8)',
+                    'rgba(74, 222, 128, 0.8)',
+                    'rgba(134, 239, 172, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { boxWidth: 12, font: { size: 11 } }
+                }
+            }
+        }
+    });
+} else {
+    document.getElementById('winReasonsChart').style.display = 'none';
+    document.getElementById('winReasonsEmpty').classList.remove('hidden');
+}
+
+if (chartData.lossReasonLabels && chartData.lossReasonLabels.length > 0) {
+    new Chart(document.getElementById('lossReasonsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: chartData.lossReasonLabels,
+            datasets: [{
+                data: chartData.lossReasonData,
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(248, 113, 113, 0.8)',
+                    'rgba(252, 165, 165, 0.8)',
+                    'rgba(254, 202, 202, 0.8)',
+                    'rgba(254, 226, 226, 0.8)',
+                    'rgba(220, 38, 38, 0.8)',
+                    'rgba(185, 28, 28, 0.8)',
+                    'rgba(153, 27, 27, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { boxWidth: 12, font: { size: 11 } }
+                }
+            }
+        }
+    });
+} else {
+    document.getElementById('lossReasonsChart').style.display = 'none';
+    document.getElementById('lossReasonsEmpty').classList.remove('hidden');
+}
 </script>
 {% endblock %}

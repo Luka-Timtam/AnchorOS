@@ -193,8 +193,8 @@ def update_status(id):
                 ActivityLog.log_activity('proposal_sent', f'Sent proposal to {lead.name}', lead.id, 'lead')
                 flash('Status updated! +12 XP, +2 tokens', 'success')
             elif new_status == 'closed_lost':
-                ActivityLog.log_activity('deal_closed_lost', f'Closed {lead.name} (LOST)', lead.id, 'lead')
-                flash('Status updated!', 'success')
+                flash('Lead marked as lost. Please select a reason.', 'info')
+                return redirect(url_for('leads.close_lost', id=id))
             else:
                 flash('Status updated!', 'success')
         else:
@@ -206,6 +206,23 @@ def convert_to_client(id):
     lead = Lead.query.get_or_404(id)
     
     if request.method == 'POST':
+        close_reasons = request.form.getlist('close_reason')
+        other_reason = request.form.get('other_reason', '').strip()
+        
+        if not close_reasons:
+            flash('Please select at least one reason for winning this deal.', 'error')
+            return render_template('leads/convert.html',
+                lead=lead,
+                project_types=Client.project_type_choices(),
+                today=date.today().isoformat(),
+                win_reasons=Lead.win_reason_choices()
+            )
+        
+        if 'Other' in close_reasons and other_reason:
+            close_reasons = [r for r in close_reasons if r != 'Other']
+            close_reasons.append(f'Other: {other_reason}')
+        close_reason_str = ', '.join(close_reasons) if close_reasons else None
+        
         client = Client(
             name=request.form.get('name'),
             business_name=request.form.get('business_name'),
@@ -226,6 +243,8 @@ def convert_to_client(id):
         lead.status = 'closed_won'
         lead.converted_at = datetime.utcnow()
         lead.updated_at = datetime.utcnow()
+        lead.close_reason = close_reason_str
+        lead.closed_at = datetime.utcnow()
         
         db.session.add(client)
         db.session.commit()
@@ -233,7 +252,7 @@ def convert_to_client(id):
         add_xp(XP_RULES['lead_closed_won'], 'Deal closed')
         update_boss_progress('close_deals')
         
-        ActivityLog.log_activity('deal_closed_won', f'Closed {lead.name} (WON)', lead.id, 'lead')
+        ActivityLog.log_activity('deal_closed_won', f'Closed {lead.name} (WON): {close_reason_str}', lead.id, 'lead')
         
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))
@@ -241,5 +260,42 @@ def convert_to_client(id):
     return render_template('leads/convert.html',
         lead=lead,
         project_types=Client.project_type_choices(),
-        today=date.today().isoformat()
+        today=date.today().isoformat(),
+        win_reasons=Lead.win_reason_choices()
+    )
+
+@leads_bp.route('/<int:id>/close-lost', methods=['GET', 'POST'])
+def close_lost(id):
+    lead = Lead.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        close_reasons = request.form.getlist('close_reason')
+        other_reason = request.form.get('other_reason', '').strip()
+        
+        if not close_reasons:
+            flash('Please select at least one reason for losing this deal.', 'error')
+            return render_template('leads/close_lost.html',
+                lead=lead,
+                loss_reasons=Lead.loss_reason_choices()
+            )
+        
+        if 'Other' in close_reasons and other_reason:
+            close_reasons = [r for r in close_reasons if r != 'Other']
+            close_reasons.append(f'Other: {other_reason}')
+        close_reason_str = ', '.join(close_reasons) if close_reasons else None
+        
+        lead.status = 'closed_lost'
+        lead.close_reason = close_reason_str
+        lead.closed_at = datetime.utcnow()
+        lead.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        ActivityLog.log_activity('deal_closed_lost', f'Closed {lead.name} (LOST): {close_reason_str}', lead.id, 'lead')
+        
+        flash('Lead marked as lost.', 'info')
+        return redirect(url_for('leads.detail', id=id))
+    
+    return render_template('leads/close_lost.html',
+        lead=lead,
+        loss_reasons=Lead.loss_reason_choices()
     )

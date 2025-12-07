@@ -151,6 +151,31 @@ def index():
             query = query.filter(Lead.status == status_filter)
         lead_pipeline[status] = query.count()
     
+    win_reasons_count = {}
+    won_leads = Lead.query.filter(
+        Lead.status == 'closed_won',
+        Lead.close_reason.isnot(None),
+        Lead.close_reason != ''
+    ).all()
+    for lead in won_leads:
+        for reason in lead.get_close_reasons_list():
+            reason_key = reason.split(':')[0].strip() if reason.startswith('Other:') else reason
+            win_reasons_count[reason_key] = win_reasons_count.get(reason_key, 0) + 1
+    
+    loss_reasons_count = {}
+    lost_leads = Lead.query.filter(
+        Lead.status == 'closed_lost',
+        Lead.close_reason.isnot(None),
+        Lead.close_reason != ''
+    ).all()
+    for lead in lost_leads:
+        for reason in lead.get_close_reasons_list():
+            reason_key = reason.split(':')[0].strip() if reason.startswith('Other:') else reason
+            loss_reasons_count[reason_key] = loss_reasons_count.get(reason_key, 0) + 1
+    
+    win_reasons_sorted = sorted(win_reasons_count.items(), key=lambda x: x[1], reverse=True)
+    loss_reasons_sorted = sorted(loss_reasons_count.items(), key=lambda x: x[1], reverse=True)
+    
     current_mrr = total_mrr_data[-1] if total_mrr_data else 0
     last_3_months_revenue = monthly_revenue_data[-3:] if len(monthly_revenue_data) >= 3 else monthly_revenue_data
     avg_project_revenue = sum(last_3_months_revenue) / len(last_3_months_revenue) if last_3_months_revenue else 0
@@ -168,7 +193,11 @@ def index():
         'dealsWeekly': deals_weekly_data,
         'leadPipeline': lead_pipeline,
         'pipelineLabels': [s.replace('_', ' ').title() for s in Lead.status_choices()],
-        'pipelineData': [lead_pipeline.get(s, 0) for s in Lead.status_choices()]
+        'pipelineData': [lead_pipeline.get(s, 0) for s in Lead.status_choices()],
+        'winReasonLabels': [r[0] for r in win_reasons_sorted[:8]],
+        'winReasonData': [r[1] for r in win_reasons_sorted[:8]],
+        'lossReasonLabels': [r[0] for r in loss_reasons_sorted[:8]],
+        'lossReasonData': [r[1] for r in loss_reasons_sorted[:8]]
     }
     
     return render_template('analytics/index.html',

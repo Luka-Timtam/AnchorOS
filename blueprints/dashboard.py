@@ -173,6 +173,12 @@ def index():
     
     recent_activities = ActivityLog.get_recent(5)
     
+    deals_closed_today = Lead.query.filter(
+        Lead.closed_at.isnot(None),
+        func.date(Lead.closed_at) == today,
+        Lead.status.in_(['closed_won', 'closed_lost'])
+    ).all()
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -206,5 +212,6 @@ def index():
         boss_progress_pct=boss_progress_pct,
         pause_active=pause_active,
         pause_end=pause_end,
-        recent_activities=recent_activities
+        recent_activities=recent_activities,
+        deals_closed_today=deals_closed_today
     )

@@ -80,6 +80,27 @@
             </div>
         </div>
         
+        <div class="mb-4 border-t pt-4">
+            <h3 class="font-medium text-gray-900 mb-3">Why did you win this deal? *</h3>
+            <p class="text-sm text-gray-600 mb-3">Select all that apply:</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {% for reason in win_reasons %}
+                <label class="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="close_reason" value="{{ reason }}" class="mr-2 text-green-600">
+                    <span class="text-sm">{{ reason }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div class="mt-3">
+                <label class="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="close_reason" value="Other" id="other_reason_checkbox" class="mr-2 text-green-600" onchange="toggleOtherInput()">
+                    <span class="text-sm">Other</span>
+                </label>
+                <input type="text" name="other_reason" id="other_reason_input" placeholder="Specify other reason..."
+                    class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 hidden">
+            </div>
+        </div>
+        
         <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
             <textarea name="notes" rows="3" 
@@ -96,4 +117,18 @@
         </div>
     </form>
 </div>
+
+<script>
+function toggleOtherInput() {
+    const checkbox = document.getElementById('other_reason_checkbox');
+    const input = document.getElementById('other_reason_input');
+    if (checkbox.checked) {
+        input.classList.remove('hidden');
+        input.focus();
+    } else {
+        input.classList.add('hidden');
+        input.value = '';
+    }
+}
+</script>
 {% endblock %}

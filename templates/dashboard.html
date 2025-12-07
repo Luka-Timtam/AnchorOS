@@ -22,6 +22,42 @@
 </div>
 {% endif %}
 
+{% if deals_closed_today %}
+<div class="mb-6 space-y-2">
+    {% for deal in deals_closed_today %}
+    {% if deal.status == 'closed_won' %}
+    <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-lg">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <p class="font-semibold text-green-800">Deal Won: {{ deal.name }}</p>
+                {% if deal.close_reason %}
+                <p class="text-sm text-green-700">{{ deal.close_reason }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-red-100 border-l-4 border-red-400 p-4 rounded-r-lg">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <p class="font-semibold text-red-700">Deal Lost: {{ deal.name }}</p>
+                {% if deal.close_reason %}
+                <p class="text-sm text-red-600">{{ deal.close_reason }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
     <a href="{{ url_for('analytics.settings') }}" class="text-sm text-indigo-600 hover:text-indigo-800">

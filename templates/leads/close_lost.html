@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Close Lead (Lost) - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Close Lead as Lost</h1>
+    <p class="text-gray-600">Lead: {{ lead.name }} {% if lead.business_name %}({{ lead.business_name }}){% endif %}</p>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-xl">
+    <form method="POST">
+        <div class="mb-6">
+            <h3 class="font-medium text-gray-900 mb-3">Why did you lose this deal? *</h3>
+            <p class="text-sm text-gray-600 mb-3">Select all that apply:</p>
+            <div class="space-y-2">
+                {% for reason in loss_reasons %}
+                <label class="flex items-center p-3 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="close_reason" value="{{ reason }}" class="mr-3 text-red-600">
+                    <span>{{ reason }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div class="mt-3">
+                <label class="flex items-center p-3 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="close_reason" value="Other" id="other_reason_checkbox" class="mr-3 text-red-600" onchange="toggleOtherInput()">
+                    <span>Other</span>
+                </label>
+                <input type="text" name="other_reason" id="other_reason_input" placeholder="Specify other reason..."
+                    class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 hidden">
+            </div>
+        </div>
+        
+        <div class="flex space-x-4">
+            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700">
+                Mark as Lost
+            </button>
+            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleOtherInput() {
+    const checkbox = document.getElementById('other_reason_checkbox');
+    const input = document.getElementById('other_reason_input');
+    if (checkbox.checked) {
+        input.classList.remove('hidden');
+        input.focus();
+    } else {
+        input.classList.add('hidden');
+        input.value = '';
+    }
+}
+</script>
+{% endblock %}

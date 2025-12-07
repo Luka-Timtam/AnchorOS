@@ -31,6 +31,7 @@ This is a private, single-user CRM tool built with:
 - Charts: Outreach per week, Deals closed per week (last 12 weeks)
 - Follow-up reminders: Today and Overdue counts (clickable)
 - Customizable widgets via settings
+- Deal closed today banners: Shows green/red banners for deals won/lost today with reasons
 
 ### Analytics (/analytics)
 - Advanced charts with filters (date range, niche, source, status)
@@ -39,6 +40,8 @@ This is a private, single-user CRM tool built with:
 - Outreach volume per week (last 12 weeks)
 - Deals closed per week (last 12 weeks)
 - Lead pipeline chart (by status)
+- Top win reasons chart (doughnut) - shows why deals are won
+- Top loss reasons chart (doughnut) - shows why deals are lost
 - 3-month revenue forecast breakdown
 - Follow-up reminders: Today and Overdue counts
 - Dashboard widget settings page (/analytics/settings)
@@ -53,7 +56,12 @@ This is a private, single-user CRM tool built with:
 - Demo site built tracker visible on leads index
 - Converted leads shown in separate section at bottom of page
 - Auto-redirect to conversion form when status set to "closed_won"
+- Auto-redirect to loss reason form when status set to "closed_lost"
 - Next action date for follow-up scheduling
+- Deal close reason tracking:
+  - Win reasons: Good fit, Pricing match, Demo impressed, Fast response, Strong rapport, Referral, Previous interaction, Other
+  - Loss reasons: Pricing too high, Timing not right, Already working with someone, No response, Low priority, Not a good fit, Chosen competitor, Other
+  - Required multiselect when closing deals
 
 ### Clients (/clients)
 - Full CRUD operations
@@ -244,7 +252,7 @@ The application runs on port 5000.
 ## Database
 
 SQLite database with 19 tables:
-- leads: Lead tracking with status pipeline
+- leads: Lead tracking with status pipeline, close reasons, closed_at timestamp
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
 - tasks: Task management with due dates
