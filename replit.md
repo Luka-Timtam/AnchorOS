@@ -162,6 +162,17 @@ This is a private, single-user CRM tool built with:
 - Links to related items (leads, tasks, missions, boss)
 - Dashboard widget showing last 5 activities
 
+### Calendar (/calendar)
+- Full month view calendar with dark theme
+- Tasks displayed on their due dates
+- Lead follow-ups (next_action_date) shown
+- Daily missions shown with completion status
+- Monthly boss fight displayed at top
+- Clickable days open modal with day details
+- Quick mark-as-done for tasks from modal
+- Month navigation with arrows and Today button
+- Mini calendar widget on dashboard linking to full calendar
+
 ### Global Search (Ctrl+K)
 - Command palette modal triggered by Ctrl+K or search icon in navbar
 - Searches across: leads, tasks, notes, timeline, missions, boss fights
@@ -227,7 +238,8 @@ This is a private, single-user CRM tool built with:
 │   ├── internal.py          # Internal API endpoints
 │   ├── timeline.py          # Activity timeline feed
 │   ├── notes.py             # Mini notebook feature
-│   └── search.py            # Global search API
+│   ├── search.py            # Global search API
+│   └── calendar.py          # Calendar views and API
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page

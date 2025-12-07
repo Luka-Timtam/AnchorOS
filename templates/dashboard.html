@@ -257,6 +257,62 @@
     {% endif %}
 </div>
 
+<a href="{{ url_for('calendar.index') }}" class="block bg-gray-900 rounded-xl p-4 mb-6 border border-white/10 hover:border-indigo-500/50 transition-colors">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold text-white">Calendar</h3>
+        <span id="miniCalendarMonth" class="text-sm text-gray-400"></span>
+    </div>
+    <div id="miniCalendar" class="text-center">
+        <div class="grid grid-cols-7 gap-1 mb-2">
+            <div class="text-xs text-gray-500 font-medium">M</div>
+            <div class="text-xs text-gray-500 font-medium">T</div>
+            <div class="text-xs text-gray-500 font-medium">W</div>
+            <div class="text-xs text-gray-500 font-medium">T</div>
+            <div class="text-xs text-gray-500 font-medium">F</div>
+            <div class="text-xs text-gray-500 font-medium">S</div>
+            <div class="text-xs text-gray-500 font-medium">S</div>
+        </div>
+        <div id="miniCalendarDays" class="grid grid-cols-7 gap-1"></div>
+    </div>
+    <div class="mt-3 text-center">
+        <span class="text-xs text-indigo-400">Click to open full calendar &rarr;</span>
+    </div>
+</a>
+
+<script>
+(function() {
+    fetch('/calendar/mini')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('miniCalendarMonth').textContent = data.month_name + ' ' + data.year;
+            
+            let html = '';
+            data.days.forEach(day => {
+                let classes = 'w-7 h-7 text-xs rounded-full flex items-center justify-center ';
+                if (!day.current_month) {
+                    classes += 'text-gray-700';
+                } else if (day.is_today) {
+                    classes += 'bg-indigo-500 text-white font-bold ring-2 ring-indigo-400';
+                } else if (day.has_tasks || day.has_leads) {
+                    if (day.has_tasks && day.has_leads) {
+                        classes += 'bg-purple-500/30 text-purple-300';
+                    } else if (day.has_tasks) {
+                        classes += 'bg-blue-500/30 text-blue-300';
+                    } else {
+                        classes += 'bg-yellow-500/30 text-yellow-300';
+                    }
+                } else {
+                    classes += 'text-gray-400 hover:bg-white/5';
+                }
+                
+                html += `<div class="${classes}">${day.day}</div>`;
+            });
+            document.getElementById('miniCalendarDays').innerHTML = html;
+        })
+        .catch(err => console.error('Mini calendar error:', err));
+})();
+</script>
+
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-sm font-medium text-gray-500">New Leads (Week)</h3>
