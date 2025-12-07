@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, url_for
-from models import db, Lead, Task, Note, ActivityLog, BossFight, DailyMission
+from models import db, Lead, Client, Task, Note, ActivityLog, BossFight, DailyMission
 from sqlalchemy import or_
 
 search_bp = Blueprint('search', __name__, url_prefix='/search')
@@ -11,6 +11,7 @@ def search():
     if not q or len(q) < 2:
         return jsonify({
             'leads': [],
+            'clients': [],
             'tasks': [],
             'notes': [],
             'timeline': [],
@@ -36,6 +37,20 @@ def search():
         'type': 'lead',
         'link': url_for('leads.detail', id=l.id)
     } for l in leads]
+    
+    clients = Client.query.filter(
+        or_(
+            Client.name.ilike(search_term),
+            Client.business_name.ilike(search_term)
+        )
+    ).limit(20).all()
+    
+    results['clients'] = [{
+        'id': c.id,
+        'label': c.name + (f' ({c.business_name})' if c.business_name else ''),
+        'type': 'client',
+        'link': url_for('clients.detail', id=c.id)
+    } for c in clients]
     
     tasks = Task.query.filter(
         or_(
