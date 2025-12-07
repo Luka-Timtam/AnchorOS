@@ -7,12 +7,60 @@ notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
 
 @notes_bp.route('/')
 def index():
-    pinned_notes = Note.query.filter(Note.pinned == True).order_by(Note.updated_at.desc()).all()
-    unpinned_notes = Note.query.filter(Note.pinned == False).order_by(Note.updated_at.desc()).all()
+    search = request.args.get('search', '').strip()
+    tag_filter = request.args.get('tag', '').strip()
+    sort_by = request.args.get('sort', 'updated_desc')
+    
+    pinned_query = Note.query.filter(Note.pinned == True)
+    unpinned_query = Note.query.filter(Note.pinned == False)
+    
+    if search:
+        search_filter = db.or_(
+            Note.title.ilike(f'%{search}%'),
+            Note.content.ilike(f'%{search}%')
+        )
+        pinned_query = pinned_query.filter(search_filter)
+        unpinned_query = unpinned_query.filter(search_filter)
+    
+    if tag_filter:
+        tag_search = f'%{tag_filter}%'
+        pinned_query = pinned_query.filter(Note.tags.ilike(tag_search))
+        unpinned_query = unpinned_query.filter(Note.tags.ilike(tag_search))
+    
+    if sort_by == 'updated_desc':
+        pinned_query = pinned_query.order_by(Note.updated_at.desc())
+        unpinned_query = unpinned_query.order_by(Note.updated_at.desc())
+    elif sort_by == 'updated_asc':
+        pinned_query = pinned_query.order_by(Note.updated_at.asc())
+        unpinned_query = unpinned_query.order_by(Note.updated_at.asc())
+    elif sort_by == 'created_desc':
+        pinned_query = pinned_query.order_by(Note.created_at.desc())
+        unpinned_query = unpinned_query.order_by(Note.created_at.desc())
+    elif sort_by == 'created_asc':
+        pinned_query = pinned_query.order_by(Note.created_at.asc())
+        unpinned_query = unpinned_query.order_by(Note.created_at.asc())
+    elif sort_by == 'title_asc':
+        pinned_query = pinned_query.order_by(Note.title.asc())
+        unpinned_query = unpinned_query.order_by(Note.title.asc())
+    elif sort_by == 'title_desc':
+        pinned_query = pinned_query.order_by(Note.title.desc())
+        unpinned_query = unpinned_query.order_by(Note.title.desc())
+    else:
+        pinned_query = pinned_query.order_by(Note.updated_at.desc())
+        unpinned_query = unpinned_query.order_by(Note.updated_at.desc())
+    
+    pinned_notes = pinned_query.all()
+    unpinned_notes = unpinned_query.all()
+    
+    all_tags = Note.get_all_tags()
     
     return render_template('notes/index.html',
                          pinned_notes=pinned_notes,
-                         unpinned_notes=unpinned_notes)
+                         unpinned_notes=unpinned_notes,
+                         search=search,
+                         tag_filter=tag_filter,
+                         sort_by=sort_by,
+                         all_tags=all_tags)
 
 
 @notes_bp.route('/new', methods=['GET', 'POST'])

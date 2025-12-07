@@ -743,3 +743,12 @@ class Note(db.Model):
             Note.pinned == True,
             db.func.date(Note.updated_at) == today
         ).count() > 0
+    
+    @staticmethod
+    def get_all_tags():
+        notes = Note.query.filter(Note.tags.isnot(None), Note.tags != '').all()
+        all_tags = set()
+        for note in notes:
+            for tag in note.get_tags_list():
+                all_tags.add(tag)
+        return sorted(list(all_tags))

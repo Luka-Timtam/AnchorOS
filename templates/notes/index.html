@@ -10,6 +10,59 @@
     </a>
 </div>
 
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <form method="GET" action="{{ url_for('notes.index') }}" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" name="search" value="{{ search }}" placeholder="Search title or content..."
+                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        
+        <div class="min-w-[150px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tag</label>
+            <select name="tag" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">All Tags</option>
+                {% for tag in all_tags %}
+                <option value="{{ tag }}" {% if tag_filter == tag %}selected{% endif %}>{{ tag }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="min-w-[180px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <select name="sort" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="updated_desc" {% if sort_by == 'updated_desc' %}selected{% endif %}>Recently Updated</option>
+                <option value="updated_asc" {% if sort_by == 'updated_asc' %}selected{% endif %}>Oldest Updated</option>
+                <option value="created_desc" {% if sort_by == 'created_desc' %}selected{% endif %}>Newest Created</option>
+                <option value="created_asc" {% if sort_by == 'created_asc' %}selected{% endif %}>Oldest Created</option>
+                <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Title A-Z</option>
+                <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title Z-A</option>
+            </select>
+        </div>
+        
+        <div class="flex gap-2">
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                Filter
+            </button>
+            {% if search or tag_filter or sort_by != 'updated_desc' %}
+            <a href="{{ url_for('notes.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{% if search or tag_filter %}
+<div class="mb-4 text-sm text-gray-600">
+    Showing 
+    {% if search %}notes matching "{{ search }}"{% endif %}
+    {% if search and tag_filter %} with {% endif %}
+    {% if tag_filter %}tag "{{ tag_filter }}"{% endif %}
+    ({{ pinned_notes|length + unpinned_notes|length }} result{% if pinned_notes|length + unpinned_notes|length != 1 %}s{% endif %})
+</div>
+{% endif %}
+
 {% if pinned_notes %}
 <div class="mb-8">
     <h2 class="text-lg font-semibold text-gray-700 mb-3 flex items-center">
@@ -79,6 +132,15 @@
     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
     </svg>
+    {% if search or tag_filter %}
+    <h3 class="mt-2 text-sm font-medium text-gray-900">No notes found</h3>
+    <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filters.</p>
+    <div class="mt-6">
+        <a href="{{ url_for('notes.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+            Clear Filters
+        </a>
+    </div>
+    {% else %}
     <h3 class="mt-2 text-sm font-medium text-gray-900">No notes yet</h3>
     <p class="mt-1 text-sm text-gray-500">Start capturing your ideas and thoughts.</p>
     <div class="mt-6">
@@ -89,6 +151,7 @@
             New Note
         </a>
     </div>
+    {% endif %}
 </div>
 {% endif %}
 

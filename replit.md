@@ -159,6 +159,11 @@ This is a private, single-user CRM tool built with:
 - Tag support with comma-separated tags
 - Pin important notes to top
 - Card layout with title and content preview
+- Search and filter functionality:
+  - Text search across title and content
+  - Filter by tag (dropdown of all used tags)
+  - Sort options: Recently Updated, Oldest Updated, Newest Created, Oldest Created, Title A-Z, Title Z-A
+  - Clear filters button when filters are active
 - XP bonuses:
   - First note of the day: +2 XP
   - Pinning a note (once per day): +1 XP
