@@ -32,6 +32,7 @@ def create_app():
     from blueprints.notes import notes_bp
     from blueprints.search import search_bp
     from blueprints.calendar import calendar_bp
+    from blueprints.focus import focus_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -52,6 +53,7 @@ def create_app():
     app.register_blueprint(notes_bp)
     app.register_blueprint(search_bp)
     app.register_blueprint(calendar_bp)
+    app.register_blueprint(focus_bp)
     
     @app.before_request
     def require_login():
