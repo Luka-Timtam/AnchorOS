@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Lead, OutreachLog, Client
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
+from blueprints.boss import update_boss_progress
 
 leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
 
@@ -186,6 +187,7 @@ def update_status(id):
             elif new_status == 'proposal_sent':
                 add_xp(XP_RULES['lead_proposal_sent'], 'Proposal sent')
                 add_tokens(TOKEN_RULES['proposal_sent'], 'Proposal sent')
+                update_boss_progress('proposals')
                 flash('Status updated! +12 XP, +2 tokens', 'success')
             else:
                 flash('Status updated!', 'success')
@@ -223,6 +225,7 @@ def convert_to_client(id):
         db.session.commit()
         
         add_xp(XP_RULES['lead_closed_won'], 'Deal closed')
+        update_boss_progress('close_deals')
         
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))

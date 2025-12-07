@@ -126,6 +126,15 @@ This is a private, single-user CRM tool built with:
 - Past 7 days mission history
 - Auto-reset at midnight
 
+### Boss Fight Mode (/boss)
+- Monthly boss challenges with big token rewards (50-150 tokens)
+- Boss types: close deals, send outreaches, revive cold leads, send proposals
+- Auto-generated at start of each month
+- Progress tracking with visual progress bar
+- "Boss Defeated!" notification when completed
+- Past bosses history with completion status
+- Dashboard integration with boss battle card
+
 ### Goals (/goals)
 - Set daily/weekly/monthly targets
 - Goal types: daily outreach, weekly outreach, monthly revenue, monthly deals
@@ -215,5 +224,7 @@ SQLite database with 17 tables:
 - token_transactions: Log of all token gains and spends
 - reward_items: Shop items that can be purchased with tokens
 - daily_missions: Daily mission tracking with progress
+- boss_fights: Monthly boss challenges
+- boss_fight_history: Record of defeated bosses
 
 Tables are auto-created on first run.

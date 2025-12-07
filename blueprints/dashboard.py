@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission
+from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
@@ -163,6 +163,11 @@ def index():
     if daily_mission.target_count > 0:
         mission_progress_pct = min(100, int((daily_mission.progress_count / daily_mission.target_count) * 100))
     
+    current_boss = BossFight.get_current_boss()
+    boss_progress_pct = 0
+    if current_boss and current_boss.target_value > 0:
+        boss_progress_pct = min(100, int((current_boss.progress_value / current_boss.target_value) * 100))
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -191,5 +196,7 @@ def index():
         monthly_mrr_data=monthly_mrr_data,
         token_balance=token_balance,
         daily_mission=daily_mission,
-        mission_progress_pct=mission_progress_pct
+        mission_progress_pct=mission_progress_pct,
+        current_boss=current_boss,
+        boss_progress_pct=boss_progress_pct
     )

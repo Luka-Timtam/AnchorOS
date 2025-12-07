@@ -480,3 +480,88 @@ class DailyMission(db.Model):
             db.session.commit()
             return True
         return False
+
+
+class BossFight(db.Model):
+    __tablename__ = 'boss_fights'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    month = db.Column(db.String(7), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    boss_type = db.Column(db.String(50), nullable=False)
+    target_value = db.Column(db.Integer, nullable=False)
+    progress_value = db.Column(db.Integer, default=0)
+    reward_tokens = db.Column(db.Integer, nullable=False)
+    is_completed = db.Column(db.Boolean, default=False)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def get_current_month():
+        return date.today().strftime('%Y-%m')
+    
+    @staticmethod
+    def get_current_boss():
+        current_month = BossFight.get_current_month()
+        boss = BossFight.query.filter_by(month=current_month).first()
+        if not boss:
+            boss = BossFight.generate_boss(current_month)
+        return boss
+    
+    @staticmethod
+    def generate_boss(month):
+        import random
+        boss_templates = [
+            {'type': 'close_deals', 'description': 'Close {count} deals this month', 'targets': [1, 2, 3], 'rewards': [50, 80, 120]},
+            {'type': 'outreach', 'description': 'Send {count} outreaches this month', 'targets': [30, 40, 50], 'rewards': [60, 90, 120]},
+            {'type': 'revive_leads', 'description': 'Revive {count} cold leads', 'targets': [3, 5, 7], 'rewards': [70, 100, 150]},
+            {'type': 'proposals', 'description': 'Send {count} proposals this month', 'targets': [5, 8, 10], 'rewards': [60, 90, 120]},
+        ]
+        
+        template = random.choice(boss_templates)
+        idx = random.randint(0, len(template['targets']) - 1)
+        target = template['targets'][idx]
+        reward = template['rewards'][idx]
+        
+        boss = BossFight(
+            month=month,
+            description=template['description'].format(count=target),
+            boss_type=template['type'],
+            target_value=target,
+            reward_tokens=reward
+        )
+        db.session.add(boss)
+        db.session.commit()
+        return boss
+    
+    def check_completion(self):
+        if self.is_completed:
+            return False
+        
+        if self.progress_value >= self.target_value:
+            self.is_completed = True
+            self.completed_at = datetime.utcnow()
+            UserTokens.add_tokens(self.reward_tokens, f"Boss Defeated: {self.description}")
+            
+            history = BossFightHistory(
+                boss_fight_id=self.id,
+                month=self.month,
+                completed_at=self.completed_at,
+                reward_tokens=self.reward_tokens
+            )
+            db.session.add(history)
+            db.session.commit()
+            return True
+        return False
+
+
+class BossFightHistory(db.Model):
+    __tablename__ = 'boss_fight_history'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    boss_fight_id = db.Column(db.Integer, db.ForeignKey('boss_fights.id'), nullable=False)
+    month = db.Column(db.String(7), nullable=False)
+    completed_at = db.Column(db.DateTime, nullable=False)
+    reward_tokens = db.Column(db.Integer, nullable=False)
+    
+    boss_fight = db.relationship('BossFight', backref='history_entries')

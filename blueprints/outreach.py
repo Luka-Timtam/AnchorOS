@@ -3,6 +3,7 @@ from models import db, OutreachLog, Lead
 from datetime import datetime, date, timedelta
 from sqlalchemy import and_
 from blueprints.gamification import add_xp, update_outreach_streak, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
+from blueprints.boss import update_boss_progress
 
 outreach_bp = Blueprint('outreach', __name__, url_prefix='/outreach')
 
@@ -74,9 +75,15 @@ def create():
         notes=request.form.get('notes')
     )
     
+    is_cold_lead_revival = False
     if log.lead_id:
         lead = Lead.query.get(log.lead_id)
         if lead:
+            if lead.last_contacted_at:
+                if lead.last_contacted_at < datetime.utcnow() - timedelta(days=30):
+                    is_cold_lead_revival = True
+            else:
+                is_cold_lead_revival = True
             lead.last_contacted_at = datetime.utcnow()
             db.session.add(lead)
     
@@ -87,6 +94,10 @@ def create():
     add_tokens(TOKEN_RULES['outreach_log'], 'Outreach logged')
     update_outreach_streak()
     update_mission_progress('outreach')
+    update_boss_progress('outreach')
+    
+    if is_cold_lead_revival:
+        update_boss_progress('revive_leads')
     
     flash('Outreach logged successfully! +5 XP, +1 token', 'success')
     

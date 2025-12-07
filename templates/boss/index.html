@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Boss Fight{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Boss Fight</h1>
+    
+    {% if current_boss %}
+    <div class="bg-gradient-to-br {% if current_boss.is_completed %}from-green-500 to-emerald-600{% else %}from-red-500 to-orange-600{% endif %} rounded-xl shadow-lg p-6 mb-8 text-white">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <span class="text-4xl">{% if current_boss.is_completed %}🏆{% else %}👹{% endif %}</span>
+                <div>
+                    <h2 class="text-xl font-bold">{{ current_boss.month }} Boss</h2>
+                    <p class="text-white/80 text-sm">Monthly Challenge</p>
+                </div>
+            </div>
+            {% if current_boss.is_completed %}
+            <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold">
+                Defeated!
+            </span>
+            {% else %}
+            <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold">
+                In Progress
+            </span>
+            {% endif %}
+        </div>
+        
+        <p class="text-2xl font-bold mb-4">{{ current_boss.description }}</p>
+        
+        <div class="mb-4">
+            <div class="flex justify-between text-sm mb-1">
+                <span>Progress</span>
+                <span>{{ current_boss.progress_value }} / {{ current_boss.target_value }}</span>
+            </div>
+            <div class="w-full bg-white/30 rounded-full h-4">
+                <div class="{% if current_boss.is_completed %}bg-white{% else %}bg-yellow-300{% endif %} h-4 rounded-full transition-all duration-500" 
+                     style="width: {{ progress_percent }}%"></div>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🪙</span>
+                <span class="text-xl font-bold">{{ current_boss.reward_tokens }} Tokens</span>
+            </div>
+            {% if current_boss.is_completed %}
+            <span class="text-white/80 text-sm">
+                Completed {{ current_boss.completed_at.strftime('%b %d, %Y') if current_boss.completed_at else '' }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">How Boss Fights Work</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">📅</span>
+                <div>
+                    <p class="font-medium text-gray-800">Monthly Challenge</p>
+                    <p>A new boss appears at the start of each month</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">⚔️</span>
+                <div>
+                    <p class="font-medium text-gray-800">Complete Actions</p>
+                    <p>Progress by completing the required CRM actions</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">🪙</span>
+                <div>
+                    <p class="font-medium text-gray-800">Earn Big Rewards</p>
+                    <p>Defeat the boss to earn 50-150 tokens!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Past Bosses</h3>
+        
+        {% if past_bosses %}
+        <div class="space-y-3">
+            {% for boss in past_bosses %}
+            <div class="flex items-center justify-between p-4 rounded-lg {% if boss.is_completed %}bg-green-50 border border-green-200{% else %}bg-gray-50 border border-gray-200{% endif %}">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">{% if boss.is_completed %}🏆{% else %}💀{% endif %}</span>
+                    <div>
+                        <p class="font-medium text-gray-800">{{ boss.month }}</p>
+                        <p class="text-sm text-gray-600">{{ boss.description }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    {% if boss.is_completed %}
+                    <span class="inline-flex items-center gap-1 text-green-600 font-semibold">
+                        <span>+{{ boss.reward_tokens }}</span>
+                        <span class="text-lg">🪙</span>
+                    </span>
+                    <p class="text-xs text-gray-500">{{ boss.completed_at.strftime('%b %d') if boss.completed_at else '' }}</p>
+                    {% else %}
+                    <span class="text-gray-500 text-sm">Not completed</span>
+                    <p class="text-xs text-gray-400">{{ boss.progress_value }}/{{ boss.target_value }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">No past boss fights yet. This is your first month!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

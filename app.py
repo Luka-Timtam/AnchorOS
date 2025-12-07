@@ -26,6 +26,7 @@ def create_app():
     from blueprints.internal import internal_bp
     from blueprints.rewards import rewards_bp
     from blueprints.missions import missions_bp
+    from blueprints.boss import boss_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -40,6 +41,7 @@ def create_app():
     app.register_blueprint(internal_bp)
     app.register_blueprint(rewards_bp)
     app.register_blueprint(missions_bp)
+    app.register_blueprint(boss_bp)
     
     @app.before_request
     def require_login():
