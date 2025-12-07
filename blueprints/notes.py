@@ -1,51 +1,18 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from models import db, Note, UserStats, ActivityLog, XPLog
 from datetime import date
-from sqlalchemy import or_ as db_or
 
 notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
 
 
 @notes_bp.route('/')
 def index():
-    search_query = request.args.get('search', '').strip()
-    filter_tag = request.args.get('tag', '').strip()
-    filter_pinned = request.args.get('pinned', '').strip()
-    
-    query = Note.query
-    
-    if search_query:
-        search_term = f'%{search_query}%'
-        query = query.filter(
-            db.or_(
-                Note.title.ilike(search_term),
-                Note.content.ilike(search_term),
-                Note.tags.ilike(search_term)
-            )
-        )
-    
-    if filter_tag:
-        query = query.filter(Note.tags.ilike(f'%{filter_tag}%'))
-    
-    notes = query.order_by(Note.updated_at.desc()).all()
-    
-    pinned_notes = [n for n in notes if n.pinned]
-    unpinned_notes = [n for n in notes if not n.pinned]
-    
-    all_notes = Note.query.all()
-    available_tags = set()
-    for note in all_notes:
-        if note.tags:
-            available_tags.update([t.strip() for t in note.tags.split(',') if t.strip()])
-    available_tags = sorted(list(available_tags))
+    pinned_notes = Note.query.filter(Note.pinned == True).order_by(Note.updated_at.desc()).all()
+    unpinned_notes = Note.query.filter(Note.pinned == False).order_by(Note.updated_at.desc()).all()
     
     return render_template('notes/index.html',
                          pinned_notes=pinned_notes,
-                         unpinned_notes=unpinned_notes,
-                         search_query=search_query,
-                         filter_tag=filter_tag,
-                         available_tags=available_tags,
-                         has_filters=bool(search_query or filter_tag))
+                         unpinned_notes=unpinned_notes)
 
 
 @notes_bp.route('/new', methods=['GET', 'POST'])
