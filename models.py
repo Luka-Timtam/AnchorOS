@@ -155,6 +155,10 @@ class UserSettings(db.Model):
     pause_end = db.Column(db.Date, nullable=True)
     pause_reason = db.Column(db.Text, nullable=True)
     
+    focus_timer_active = db.Column(db.Boolean, default=False)
+    focus_timer_end = db.Column(db.DateTime, nullable=True)
+    focus_timer_length = db.Column(db.Integer, nullable=True)
+    
     @staticmethod
     def get_settings():
         settings = UserSettings.query.first()
@@ -783,3 +787,32 @@ class Note(db.Model):
             for tag in note.get_tags_list():
                 all_tags.add(tag)
         return sorted(list(all_tags))
+
+
+class FocusSession(db.Model):
+    __tablename__ = 'focus_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
+    duration_minutes = db.Column(db.Integer, nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def get_today_sessions():
+        today = date.today()
+        return FocusSession.query.filter(
+            db.func.date(FocusSession.start_time) == today
+        ).all()
+    
+    @staticmethod
+    def get_completed_count():
+        return FocusSession.query.filter_by(completed=True).count()
+    
+    @staticmethod
+    def get_total_focus_minutes():
+        result = db.session.query(db.func.sum(FocusSession.duration_minutes)).filter(
+            FocusSession.completed == True
+        ).scalar()
+        return result or 0
