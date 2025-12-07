@@ -24,6 +24,8 @@ class Lead(db.Model):
     website_quality = db.Column(db.String(50), nullable=True)
     demo_site_built = db.Column(db.Boolean, default=False)
     converted_at = db.Column(db.DateTime, nullable=True)
+    close_reason = db.Column(db.String(500), nullable=True)
+    closed_at = db.Column(db.DateTime, nullable=True)
     
     outreach_logs = db.relationship('OutreachLog', backref='lead', lazy=True)
     tasks = db.relationship('Task', backref='lead', lazy=True, foreign_keys='Task.related_lead_id')
@@ -35,6 +37,35 @@ class Lead(db.Model):
     @staticmethod
     def website_quality_choices():
         return ['no_website', 'outdated', 'poor_design', 'not_mobile_friendly', 'slow_loading', 'broken_features']
+    
+    @staticmethod
+    def win_reason_choices():
+        return [
+            'Good fit for product',
+            'Pricing match',
+            'Pre-built demo impressed them',
+            'Fast response time',
+            'Strong rapport / relationship',
+            'Referral',
+            'Previous positive interaction'
+        ]
+    
+    @staticmethod
+    def loss_reason_choices():
+        return [
+            'Pricing too high',
+            'Timing not right',
+            'Already working with someone',
+            'No response / ghosted',
+            'Low priority for client',
+            'Not a good fit',
+            'Chosen competitor'
+        ]
+    
+    def get_close_reasons_list(self):
+        if not self.close_reason:
+            return []
+        return [r.strip() for r in self.close_reason.split(',') if r.strip()]
 
 
 class Client(db.Model):
