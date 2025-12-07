@@ -153,6 +153,16 @@ This is a private, single-user CRM tool built with:
 - Sound Settings (coming soon)
 - Notifications (coming soon)
 
+### Focus Session Timer (Dashboard)
+- Pomodoro-style focus timer on dashboard
+- Duration options: 25, 30, 45, or 60 minutes
+- Timer card with start/cancel controls
+- Live countdown display during active session
+- Navbar timer indicator when session active (visible on all pages)
+- Completion rewards: +3 tokens and +5 XP
+- Activity log entries for started/completed/cancelled sessions
+- Sessions tracked in focus_sessions table for history
+
 ### Activity Timeline (/timeline)
 - Unified feed of all important user actions
 - Events logged: outreach, lead status changes, task actions, missions, boss fights, XP/tokens, streaks, pause mode, notes
@@ -274,12 +284,12 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 19 tables:
+SQLite database with 20 tables:
 - leads: Lead tracking with status pipeline, close reasons, closed_at timestamp
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
 - tasks: Task management with due dates
-- user_settings: Dashboard widget visibility preferences
+- user_settings: Dashboard widget visibility preferences (includes focus timer fields)
 - user_stats: XP, level, streak tracking (single row)
 - achievements: Achievement definitions and unlock status
 - goals: Goal targets (daily outreach, weekly outreach, monthly revenue, monthly deals)
@@ -296,5 +306,6 @@ SQLite database with 19 tables:
 - boss_fight_history: Record of defeated bosses
 - activity_log: User activity timeline entries
 - notes: Mini notebook entries with tags and pinning
+- focus_sessions: Focus session history (start/end time, duration, completed status)
 
 Tables are auto-created on first run.
