@@ -161,6 +161,39 @@ def index():
     
     return render_template('calendar/index.html', **data)
 
+@calendar_bp.route('/data')
+def calendar_data():
+    year = request.args.get('year', type=int, default=date.today().year)
+    month = request.args.get('month', type=int, default=date.today().month)
+    
+    if month < 1:
+        month = 12
+        year -= 1
+    elif month > 12:
+        month = 1
+        year += 1
+    
+    data = get_month_data(year, month)
+    
+    boss_data = None
+    if data['current_boss']:
+        boss = data['current_boss']
+        boss_data = {
+            'description': boss.description,
+            'progress': boss.progress_value,
+            'target': boss.target_value,
+            'is_completed': boss.is_completed,
+            'reward_tokens': boss.reward_tokens
+        }
+    
+    return jsonify({
+        'year': year,
+        'month': month,
+        'month_name': data['month_name'],
+        'days': data['days'],
+        'boss': boss_data
+    })
+
 @calendar_bp.route('/day/<date_str>')
 def day_detail(date_str):
     try:
@@ -178,7 +211,7 @@ def day_detail(date_str):
     
     return jsonify({
         'date': date_str,
-        'formatted_date': target_date.strftime('%B %d, %Y'),
+        'date_formatted': target_date.strftime('%B %d, %Y'),
         'tasks': [{
             'id': t.id,
             'title': t.title,

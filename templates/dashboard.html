@@ -191,104 +191,168 @@
 </a>
 {% endif %}
 
-<div class="bg-white rounded-lg shadow p-4 mb-6">
-    <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-        <a href="{{ url_for('timeline.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-            View full timeline &rarr;
-        </a>
-    </div>
-    {% if recent_activities %}
-    <div class="divide-y divide-gray-100">
-        {% for activity in recent_activities %}
-        <div class="py-2 flex items-center space-x-3 {% if activity.is_highlight() %}bg-yellow-50 -mx-2 px-2 rounded{% endif %}">
-            <div class="flex-shrink-0">
-                {% set color = activity.get_color() %}
-                <div class="w-8 h-8 rounded-full flex items-center justify-center
-                    {% if color == 'blue' %}bg-blue-100 text-blue-600
-                    {% elif color == 'indigo' %}bg-indigo-100 text-indigo-600
-                    {% elif color == 'green' %}bg-green-100 text-green-600
-                    {% elif color == 'purple' %}bg-purple-100 text-purple-600
-                    {% elif color == 'emerald' %}bg-emerald-100 text-emerald-600
-                    {% elif color == 'red' %}bg-red-100 text-red-600
-                    {% elif color == 'orange' %}bg-orange-100 text-orange-600
-                    {% elif color == 'yellow' %}bg-yellow-100 text-yellow-600
-                    {% elif color == 'amber' %}bg-amber-100 text-amber-600
-                    {% elif color == 'violet' %}bg-violet-100 text-violet-600
-                    {% elif color == 'teal' %}bg-teal-100 text-teal-600
-                    {% else %}bg-gray-100 text-gray-600{% endif %}">
-                    {% set icon = activity.get_icon() %}
-                    {% if icon == 'envelope' %}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                    {% elif icon == 'check-circle' %}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    {% elif icon == 'zap' %}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    {% elif icon == 'star' %}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                    </svg>
-                    {% elif icon == 'flame' %}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
-                    </svg>
-                    {% else %}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    {% endif %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+            <a href="{{ url_for('timeline.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+                View all &rarr;
+            </a>
+        </div>
+        {% if recent_activities %}
+        <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto">
+            {% for activity in recent_activities %}
+            <div class="py-2 flex items-center space-x-3 {% if activity.is_highlight() %}bg-yellow-50 -mx-2 px-2 rounded{% endif %}">
+                <div class="flex-shrink-0">
+                    {% set color = activity.get_color() %}
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center
+                        {% if color == 'blue' %}bg-blue-100 text-blue-600
+                        {% elif color == 'indigo' %}bg-indigo-100 text-indigo-600
+                        {% elif color == 'green' %}bg-green-100 text-green-600
+                        {% elif color == 'purple' %}bg-purple-100 text-purple-600
+                        {% elif color == 'emerald' %}bg-emerald-100 text-emerald-600
+                        {% elif color == 'red' %}bg-red-100 text-red-600
+                        {% elif color == 'orange' %}bg-orange-100 text-orange-600
+                        {% elif color == 'yellow' %}bg-yellow-100 text-yellow-600
+                        {% elif color == 'amber' %}bg-amber-100 text-amber-600
+                        {% elif color == 'violet' %}bg-violet-100 text-violet-600
+                        {% elif color == 'teal' %}bg-teal-100 text-teal-600
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {% set icon = activity.get_icon() %}
+                        {% if icon == 'envelope' %}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        {% elif icon == 'check-circle' %}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% elif icon == 'zap' %}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        {% elif icon == 'star' %}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                        </svg>
+                        {% elif icon == 'flame' %}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                        </svg>
+                        {% else %}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-800 truncate">{{ activity.description }}</p>
+                    <p class="text-xs text-gray-500">{{ activity.timestamp.strftime('%I:%M %p') }}</p>
                 </div>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm text-gray-800 truncate">{{ activity.description }}</p>
-                <p class="text-xs text-gray-500">{{ activity.timestamp.strftime('%I:%M %p') }}</p>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% else %}
+        <p class="text-sm text-gray-500 text-center py-4">No recent activity yet.</p>
+        {% endif %}
     </div>
-    {% else %}
-    <p class="text-sm text-gray-500 text-center py-4">No recent activity. Start using the CRM to see your timeline!</p>
-    {% endif %}
+
+    <div id="calendarWidget" class="bg-gray-900 rounded-xl p-4 border border-white/10 hover:border-indigo-500/50 transition-colors cursor-pointer" onclick="openCalendarModal()">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-white">Calendar</h3>
+            <span id="miniCalendarMonth" class="text-sm text-gray-400"></span>
+        </div>
+        <div id="miniCalendar" class="text-center">
+            <div class="grid grid-cols-7 gap-1 mb-2">
+                <div class="text-xs text-gray-500 font-medium">M</div>
+                <div class="text-xs text-gray-500 font-medium">T</div>
+                <div class="text-xs text-gray-500 font-medium">W</div>
+                <div class="text-xs text-gray-500 font-medium">T</div>
+                <div class="text-xs text-gray-500 font-medium">F</div>
+                <div class="text-xs text-gray-500 font-medium">S</div>
+                <div class="text-xs text-gray-500 font-medium">S</div>
+            </div>
+            <div id="miniCalendarDays" class="grid grid-cols-7 gap-1"></div>
+        </div>
+        <div class="mt-3 text-center">
+            <span class="text-xs text-indigo-400">Click to expand &rarr;</span>
+        </div>
+    </div>
 </div>
 
-<a href="{{ url_for('calendar.index') }}" class="block bg-gray-900 rounded-xl p-4 mb-6 border border-white/10 hover:border-indigo-500/50 transition-colors">
-    <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-white">Calendar</h3>
-        <span id="miniCalendarMonth" class="text-sm text-gray-400"></span>
-    </div>
-    <div id="miniCalendar" class="text-center">
-        <div class="grid grid-cols-7 gap-1 mb-2">
-            <div class="text-xs text-gray-500 font-medium">M</div>
-            <div class="text-xs text-gray-500 font-medium">T</div>
-            <div class="text-xs text-gray-500 font-medium">W</div>
-            <div class="text-xs text-gray-500 font-medium">T</div>
-            <div class="text-xs text-gray-500 font-medium">F</div>
-            <div class="text-xs text-gray-500 font-medium">S</div>
-            <div class="text-xs text-gray-500 font-medium">S</div>
+<div id="calendarModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-900 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-white/10">
+            <div class="flex items-center justify-between p-4 border-b border-white/10">
+                <div class="flex items-center gap-4">
+                    <button onclick="changeCalendarMonth(-1)" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h2 id="fullCalendarTitle" class="text-xl font-bold text-white"></h2>
+                    <button onclick="changeCalendarMonth(1)" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                    <button onclick="goToToday()" class="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Today</button>
+                </div>
+                <button onclick="closeCalendarModal()" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="fullCalendarBoss" class="hidden px-4 py-2"></div>
+            <div class="p-4 overflow-y-auto" style="max-height: calc(90vh - 120px);">
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Mon</div>
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Tue</div>
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Wed</div>
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Thu</div>
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Fri</div>
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Sat</div>
+                    <div class="text-center text-sm font-medium text-gray-400 py-2">Sun</div>
+                </div>
+                <div id="fullCalendarGrid" class="grid grid-cols-7 gap-1"></div>
+            </div>
         </div>
-        <div id="miniCalendarDays" class="grid grid-cols-7 gap-1"></div>
     </div>
-    <div class="mt-3 text-center">
-        <span class="text-xs text-indigo-400">Click to open full calendar &rarr;</span>
+</div>
+
+<div id="dayDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-800 rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden border border-white/10">
+            <div class="flex items-center justify-between p-4 border-b border-white/10">
+                <h3 id="dayDetailTitle" class="text-lg font-bold text-white"></h3>
+                <button onclick="closeDayDetailModal()" class="p-1 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="dayDetailContent" class="p-4 overflow-y-auto max-h-96"></div>
+        </div>
     </div>
-</a>
+</div>
 
 <script>
-(function() {
+let currentCalendarYear, currentCalendarMonth;
+let fullCalendarData = null;
+
+function loadMiniCalendar() {
     fetch('/calendar/mini')
         .then(r => r.json())
         .then(data => {
             document.getElementById('miniCalendarMonth').textContent = data.month_name + ' ' + data.year;
+            currentCalendarYear = data.year;
+            currentCalendarMonth = data.month;
             
             let html = '';
             data.days.forEach(day => {
-                let classes = 'w-7 h-7 text-xs rounded-full flex items-center justify-center ';
+                let classes = 'w-6 h-6 text-xs rounded-full flex items-center justify-center ';
                 if (!day.current_month) {
                     classes += 'text-gray-700';
                 } else if (day.is_today) {
@@ -302,15 +366,198 @@
                         classes += 'bg-yellow-500/30 text-yellow-300';
                     }
                 } else {
-                    classes += 'text-gray-400 hover:bg-white/5';
+                    classes += 'text-gray-400';
                 }
-                
                 html += `<div class="${classes}">${day.day}</div>`;
             });
             document.getElementById('miniCalendarDays').innerHTML = html;
         })
         .catch(err => console.error('Mini calendar error:', err));
-})();
+}
+
+function openCalendarModal() {
+    document.getElementById('calendarModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    loadFullCalendar(currentCalendarYear, currentCalendarMonth);
+}
+
+function closeCalendarModal() {
+    document.getElementById('calendarModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function changeCalendarMonth(delta) {
+    currentCalendarMonth += delta;
+    if (currentCalendarMonth > 12) {
+        currentCalendarMonth = 1;
+        currentCalendarYear++;
+    } else if (currentCalendarMonth < 1) {
+        currentCalendarMonth = 12;
+        currentCalendarYear--;
+    }
+    loadFullCalendar(currentCalendarYear, currentCalendarMonth);
+}
+
+function goToToday() {
+    const today = new Date();
+    currentCalendarYear = today.getFullYear();
+    currentCalendarMonth = today.getMonth() + 1;
+    loadFullCalendar(currentCalendarYear, currentCalendarMonth);
+}
+
+function loadFullCalendar(year, month) {
+    fetch(`/calendar/data?year=${year}&month=${month}`)
+        .then(r => r.json())
+        .then(data => {
+            fullCalendarData = data;
+            document.getElementById('fullCalendarTitle').textContent = data.month_name + ' ' + data.year;
+            
+            const bossEl = document.getElementById('fullCalendarBoss');
+            if (data.boss) {
+                const pct = Math.min(100, Math.round((data.boss.progress / data.boss.target) * 100));
+                const colorClass = data.boss.is_completed ? 'from-green-500 to-emerald-600' : 'from-red-500 to-orange-600';
+                bossEl.innerHTML = `
+                    <div class="bg-gradient-to-r ${colorClass} rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-white font-medium">${data.boss.is_completed ? '🏆' : '👹'} ${data.boss.description}</span>
+                            <span class="text-white/80 text-sm">${data.boss.progress}/${data.boss.target}</span>
+                        </div>
+                        <div class="w-full bg-white/30 rounded-full h-1.5">
+                            <div class="h-1.5 rounded-full ${data.boss.is_completed ? 'bg-white' : 'bg-yellow-300'}" style="width:${pct}%"></div>
+                        </div>
+                    </div>`;
+                bossEl.classList.remove('hidden');
+            } else {
+                bossEl.classList.add('hidden');
+            }
+            
+            let html = '';
+            data.days.forEach(day => {
+                const hasItems = (day.tasks && day.tasks.length > 0) || (day.leads && day.leads.length > 0) || day.mission;
+                let cellClasses = 'min-h-20 p-1 rounded-lg border transition-colors ';
+                if (!day.current_month) {
+                    cellClasses += 'bg-gray-800/30 border-white/5 text-gray-600';
+                } else if (day.is_today) {
+                    cellClasses += 'bg-indigo-900/50 border-indigo-500 text-white';
+                } else {
+                    cellClasses += 'bg-gray-800/50 border-white/10 text-gray-300 hover:border-indigo-500/50';
+                }
+                if (hasItems && day.date) cellClasses += ' cursor-pointer';
+                
+                html += `<div class="${cellClasses}" ${day.date && hasItems ? `onclick="openDayDetail('${day.date}')"` : ''}>
+                    <div class="text-sm font-medium mb-1 ${day.is_today ? 'text-indigo-300' : ''}">${day.day}</div>`;
+                
+                if (day.tasks && day.tasks.length > 0) {
+                    day.tasks.slice(0, 2).forEach(t => {
+                        const statusClass = t.status === 'done' ? 'bg-green-500/20 text-green-400 line-through' : 'bg-blue-500/20 text-blue-400';
+                        html += `<div class="text-xs truncate px-1 py-0.5 rounded mb-0.5 ${statusClass}">${t.title}</div>`;
+                    });
+                    if (day.tasks.length > 2) {
+                        html += `<div class="text-xs text-gray-500">+${day.tasks.length - 2} more</div>`;
+                    }
+                }
+                if (day.leads && day.leads.length > 0) {
+                    day.leads.slice(0, 2).forEach(l => {
+                        html += `<div class="text-xs truncate px-1 py-0.5 rounded mb-0.5 bg-yellow-500/20 text-yellow-400">${l.name}</div>`;
+                    });
+                    if (day.leads.length > 2) {
+                        html += `<div class="text-xs text-gray-500">+${day.leads.length - 2} more</div>`;
+                    }
+                }
+                if (day.mission) {
+                    const mClass = day.mission.is_completed ? 'bg-green-500/20 text-green-400' : 'bg-purple-500/20 text-purple-400';
+                    html += `<div class="text-xs truncate px-1 py-0.5 rounded ${mClass}">Mission</div>`;
+                }
+                
+                html += '</div>';
+            });
+            document.getElementById('fullCalendarGrid').innerHTML = html;
+        })
+        .catch(err => console.error('Full calendar error:', err));
+}
+
+function openDayDetail(dateStr) {
+    fetch(`/calendar/day/${dateStr}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('dayDetailTitle').textContent = data.date_formatted;
+            
+            let html = '';
+            if (data.tasks.length === 0 && data.leads.length === 0 && !data.mission) {
+                html = '<p class="text-gray-400 text-center py-4">Nothing scheduled for this day.</p>';
+            } else {
+                if (data.tasks.length > 0) {
+                    html += '<div class="mb-4"><h4 class="text-sm font-medium text-blue-400 mb-2">Tasks</h4>';
+                    data.tasks.forEach(t => {
+                        const done = t.status === 'done';
+                        html += `<div class="flex items-center justify-between py-2 border-b border-white/10">
+                            <span class="text-sm ${done ? 'text-gray-500 line-through' : 'text-white'}">${t.title}</span>
+                            ${!done ? `<button onclick="markTaskDone(${t.id}, '${dateStr}')" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Done</button>` : '<span class="text-xs text-green-400">Complete</span>'}
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+                if (data.leads.length > 0) {
+                    html += '<div class="mb-4"><h4 class="text-sm font-medium text-yellow-400 mb-2">Follow-ups</h4>';
+                    data.leads.forEach(l => {
+                        html += `<div class="py-2 border-b border-white/10">
+                            <a href="/leads/${l.id}" class="text-sm text-white hover:text-indigo-400">${l.name}</a>
+                            <p class="text-xs text-gray-500">${l.status}</p>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+                if (data.mission) {
+                    const mDone = data.mission.is_completed;
+                    html += `<div><h4 class="text-sm font-medium text-purple-400 mb-2">Daily Mission</h4>
+                        <div class="py-2">
+                            <p class="text-sm ${mDone ? 'text-green-400' : 'text-white'}">${data.mission.description}</p>
+                            <p class="text-xs text-gray-500 mt-1">${data.mission.progress}/${data.mission.target} - ${mDone ? 'Complete!' : 'In Progress'}</p>
+                        </div>
+                    </div>`;
+                }
+            }
+            document.getElementById('dayDetailContent').innerHTML = html;
+            document.getElementById('dayDetailModal').classList.remove('hidden');
+        })
+        .catch(err => console.error('Day detail error:', err));
+}
+
+function closeDayDetailModal() {
+    document.getElementById('dayDetailModal').classList.add('hidden');
+}
+
+function markTaskDone(taskId, dateStr) {
+    fetch(`/calendar/task/${taskId}/complete`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                openDayDetail(dateStr);
+                loadFullCalendar(currentCalendarYear, currentCalendarMonth);
+            }
+        })
+        .catch(err => console.error('Mark task done error:', err));
+}
+
+document.getElementById('calendarModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCalendarModal();
+});
+
+document.getElementById('dayDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDayDetailModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (!document.getElementById('dayDetailModal').classList.contains('hidden')) {
+            closeDayDetailModal();
+        } else if (!document.getElementById('calendarModal').classList.contains('hidden')) {
+            closeCalendarModal();
+        }
+    }
+});
+
+loadMiniCalendar();
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

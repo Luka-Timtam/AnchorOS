@@ -162,16 +162,18 @@ This is a private, single-user CRM tool built with:
 - Links to related items (leads, tasks, missions, boss)
 - Dashboard widget showing last 5 activities
 
-### Calendar (/calendar)
-- Full month view calendar with dark theme
-- Tasks displayed on their due dates
-- Lead follow-ups (next_action_date) shown
-- Daily missions shown with completion status
-- Monthly boss fight displayed at top
-- Clickable days open modal with day details
+### Calendar (Dashboard Pop-out)
+- Mini calendar widget on dashboard (side-by-side with Recent Activity)
+- Click to open full-screen calendar modal
+- Full month view with dark theme
+- Tasks displayed on their due dates (blue)
+- Lead follow-ups (next_action_date) shown (yellow)
+- Daily missions shown with completion status (purple)
+- Monthly boss fight progress bar at top when active
+- Clickable days open detail modal with tasks/leads/missions
 - Quick mark-as-done for tasks from modal
 - Month navigation with arrows and Today button
-- Mini calendar widget on dashboard linking to full calendar
+- Escape key to close modals
 
 ### Global Search (Ctrl+K)
 - Command palette modal triggered by Ctrl+K or search icon in navbar
