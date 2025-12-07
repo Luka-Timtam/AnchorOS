@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Task, Lead, Client
+from models import db, Task, Lead, Client, ActivityLog
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 
@@ -73,6 +73,9 @@ def create():
     )
     db.session.add(task)
     db.session.commit()
+    
+    ActivityLog.log_activity('task_created', f'Created task: {task.title}', task.id, 'task')
+    
     flash('Task created successfully!', 'success')
     return redirect(url_for('tasks.index'))
 
@@ -115,6 +118,7 @@ def update_status(id):
             add_xp(XP_RULES['task_done'], 'Task completed')
             add_tokens(TOKEN_RULES['task_done'], 'Task completed')
             update_mission_progress('complete_tasks')
+            ActivityLog.log_activity('task_completed', f'Completed task: {task.title}', task.id, 'task')
             flash('Task completed! +8 XP, +1 token', 'success')
         else:
             flash('Task status updated!', 'success')

@@ -1,0 +1,94 @@
+Add an Activity Timeline system that logs all important user actions into a unified feed and displays them chronologically.
+
+====================================
+1. DATA MODEL
+====================================
+
+Create table: activity_log
+Fields:
+- id (pk)
+- timestamp (datetime)
+- action_type (string)
+- description (text)
+- related_id (integer, nullable)      # lead_id, task_id, mission_id etc.
+- related_object_type (string)        # "lead", "task", "mission", "boss", etc.
+
+====================================
+2. LOGGING HELPER FUNCTION
+====================================
+
+Create helper function log_activity(action_type, description, related_id=None, related_object_type=None).
+
+This function inserts a new row into activity_log with current timestamp.
+
+====================================
+3. EVENTS TO LOG
+====================================
+
+Log entries for:
+- outreach logged → “Logged outreach for Lead X”
+- lead contacted → “Contacted Lead X”
+- call booked → “Booked call with Lead X”
+- proposal sent → “Sent proposal to Lead X”
+- deal closed_won → “Closed X (WON)”
+- deal closed_lost → “Closed X (LOST) — Reason: <reason>”
+- task created → “Created task: <title>”
+- task completed → “Completed task: <title>”
+- task overdue → “Task overdue: <title>”
+- daily mission completed → “Completed mission: <description>”
+- boss progress update → “Boss progress updated: <current>/<target>”
+- boss defeated → “Boss defeated: <description>”
+- tokens earned → “Earned X tokens”
+- XP gained → “Gained X XP”
+- streak increased → “Streak increased to X days”
+- pause mode activated → “Pause Mode activated until <date>”
+- pause mode ended → “Pause Mode ended”
+
+Use a short readable description for each.
+
+====================================
+4. TIMELINE PAGE
+====================================
+
+Add route /timeline.
+
+This page shows a descending chronological feed:
+
+• Timestamp  
+• Icon based on action_type  
+• Description text  
+• Optional link to related item:
+    - If related_object_type = "lead" → link to lead page
+    - If "task" → link to task page
+
+Pagination required:
+- Show 50 items per page
+- Next / Previous buttons
+
+====================================
+5. DASHBOARD PREVIEW
+====================================
+
+On dashboard, add a small “Recent Activity” widget showing the last 5 actions with a link:
+“View full timeline → /timeline”
+
+====================================
+6. OPTIONAL ENHANCEMENTS
+====================================
+
+Group actions by day:
+- “Today”
+- “Yesterday”
+- “Earlier this week”
+- “Last week”
+- “Older”
+
+Highlight special events:
+- boss defeated
+- level ups
+- large XP gains
+- completed deals
+
+====================================
+END OF PROMPT
+====================================

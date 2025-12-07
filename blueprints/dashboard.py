@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight
+from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight, ActivityLog
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
@@ -171,6 +171,8 @@ def index():
     pause_active = settings.is_paused()
     pause_end = settings.pause_end
     
+    recent_activities = ActivityLog.get_recent(5)
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -203,5 +205,6 @@ def index():
         current_boss=current_boss,
         boss_progress_pct=boss_progress_pct,
         pause_active=pause_active,
-        pause_end=pause_end
+        pause_end=pause_end,
+        recent_activities=recent_activities
     )

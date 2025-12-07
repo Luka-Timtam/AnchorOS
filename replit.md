@@ -145,6 +145,15 @@ This is a private, single-user CRM tool built with:
 - Sound Settings (coming soon)
 - Notifications (coming soon)
 
+### Activity Timeline (/timeline)
+- Unified feed of all important user actions
+- Events logged: outreach, lead status changes, task actions, missions, boss fights, XP/tokens, streaks, pause mode
+- Grouped by day (Today, Yesterday, Earlier this week, Last week, Older)
+- Highlighted special events (boss defeated, level ups, deals closed)
+- Pagination (50 items per page)
+- Links to related items (leads, tasks, missions, boss)
+- Dashboard widget showing last 5 activities
+
 ### Goals (/goals)
 - Set daily/weekly/monthly targets
 - Goal types: daily outreach, weekly outreach, monthly revenue, monthly deals
@@ -185,7 +194,8 @@ This is a private, single-user CRM tool built with:
 │   ├── gamification.py      # XP, streaks, achievements
 │   ├── goals.py             # Goal setting and tracking
 │   ├── outreach_templates.py # Email/DM/Call templates
-│   └── internal.py          # Internal API endpoints
+│   ├── internal.py          # Internal API endpoints
+│   └── timeline.py          # Activity timeline feed
 ├── templates/
 │   ├── base.html         # Base template with nav
 │   ├── login.html        # Login page
@@ -197,7 +207,8 @@ This is a private, single-user CRM tool built with:
 │   ├── analytics/           # Analytics templates
 │   ├── gamification/        # Gamification templates
 │   ├── goals/               # Goals templates
-│   └── outreach_templates/  # Template management pages
+│   ├── outreach_templates/  # Template management pages
+│   └── timeline/            # Activity timeline templates
 └── database.db              # SQLite database (auto-created)
 ```
 
@@ -216,7 +227,7 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 17 tables:
+SQLite database with 18 tables:
 - leads: Lead tracking with status pipeline
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
@@ -236,5 +247,6 @@ SQLite database with 17 tables:
 - daily_missions: Daily mission tracking with progress
 - boss_fights: Monthly boss challenges
 - boss_fight_history: Record of defeated bosses
+- activity_log: User activity timeline entries
 
 Tables are auto-created on first run.

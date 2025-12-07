@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -101,6 +101,7 @@ def add_xp(amount, reason=""):
     
     if new_level > old_level:
         flash(f'Level Up! You are now Level {new_level}!', 'success')
+        ActivityLog.log_activity('level_up', f'Leveled up to Level {new_level}!')
         check_level_interval_rewards(new_level)
         check_milestone_rewards(new_level)
     
@@ -207,6 +208,9 @@ def update_outreach_streak():
     db.session.commit()
     
     new_streak = stats.current_outreach_streak_days
+    
+    if new_streak > old_streak:
+        ActivityLog.log_activity('streak_increased', f'Streak increased to {new_streak} days!')
     
     if old_streak < 10 and new_streak >= 10:
         add_xp(XP_RULES['streak_10'], "10-day outreach streak!")

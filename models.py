@@ -512,6 +512,8 @@ class DailyMission(db.Model):
             self.is_completed = True
             UserTokens.add_tokens(self.reward_tokens, f"Daily mission: {self.description}")
             db.session.commit()
+            
+            ActivityLog.log_activity('mission_completed', f'Completed mission: {self.description}', self.id, 'mission')
             return True
         return False
 
@@ -599,3 +601,106 @@ class BossFightHistory(db.Model):
     reward_tokens = db.Column(db.Integer, nullable=False)
     
     boss_fight = db.relationship('BossFight', backref='history_entries')
+
+
+class ActivityLog(db.Model):
+    __tablename__ = 'activity_log'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    action_type = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    related_id = db.Column(db.Integer, nullable=True)
+    related_object_type = db.Column(db.String(50), nullable=True)
+    
+    ACTION_TYPES = [
+        'outreach_logged',
+        'lead_contacted',
+        'call_booked',
+        'proposal_sent',
+        'deal_closed_won',
+        'deal_closed_lost',
+        'task_created',
+        'task_completed',
+        'task_overdue',
+        'mission_completed',
+        'boss_progress',
+        'boss_defeated',
+        'tokens_earned',
+        'xp_gained',
+        'streak_increased',
+        'level_up',
+        'pause_activated',
+        'pause_ended',
+    ]
+    
+    @staticmethod
+    def log_activity(action_type, description, related_id=None, related_object_type=None):
+        activity = ActivityLog(
+            action_type=action_type,
+            description=description,
+            related_id=related_id,
+            related_object_type=related_object_type
+        )
+        db.session.add(activity)
+        db.session.commit()
+        return activity
+    
+    @staticmethod
+    def get_recent(limit=5):
+        return ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(limit).all()
+    
+    @staticmethod
+    def get_paginated(page=1, per_page=50):
+        return ActivityLog.query.order_by(ActivityLog.timestamp.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+    
+    def get_icon(self):
+        icons = {
+            'outreach_logged': 'envelope',
+            'lead_contacted': 'user-plus',
+            'call_booked': 'phone',
+            'proposal_sent': 'file-text',
+            'deal_closed_won': 'check-circle',
+            'deal_closed_lost': 'x-circle',
+            'task_created': 'plus-square',
+            'task_completed': 'check-square',
+            'task_overdue': 'alert-triangle',
+            'mission_completed': 'target',
+            'boss_progress': 'trending-up',
+            'boss_defeated': 'award',
+            'tokens_earned': 'coin',
+            'xp_gained': 'zap',
+            'streak_increased': 'flame',
+            'level_up': 'star',
+            'pause_activated': 'pause-circle',
+            'pause_ended': 'play-circle',
+        }
+        return icons.get(self.action_type, 'activity')
+    
+    def get_color(self):
+        colors = {
+            'outreach_logged': 'blue',
+            'lead_contacted': 'indigo',
+            'call_booked': 'green',
+            'proposal_sent': 'purple',
+            'deal_closed_won': 'emerald',
+            'deal_closed_lost': 'red',
+            'task_created': 'slate',
+            'task_completed': 'green',
+            'task_overdue': 'orange',
+            'mission_completed': 'yellow',
+            'boss_progress': 'cyan',
+            'boss_defeated': 'gold',
+            'tokens_earned': 'amber',
+            'xp_gained': 'violet',
+            'streak_increased': 'orange',
+            'level_up': 'yellow',
+            'pause_activated': 'gray',
+            'pause_ended': 'teal',
+        }
+        return colors.get(self.action_type, 'gray')
+    
+    def is_highlight(self):
+        return self.action_type in ['boss_defeated', 'level_up', 'deal_closed_won', 'xp_gained']

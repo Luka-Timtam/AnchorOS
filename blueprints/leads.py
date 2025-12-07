@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Lead, OutreachLog, Client
+from models import db, Lead, OutreachLog, Client, ActivityLog
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
@@ -180,15 +180,21 @@ def update_status(id):
                 add_xp(XP_RULES['lead_contacted'], 'Lead contacted')
                 add_tokens(TOKEN_RULES['lead_contacted'], 'Lead contacted')
                 update_mission_progress('contact_lead')
+                ActivityLog.log_activity('lead_contacted', f'Contacted {lead.name}', lead.id, 'lead')
                 flash('Status updated! +4 XP, +1 token', 'success')
             elif new_status == 'call_booked':
                 add_xp(XP_RULES['lead_call_booked'], 'Call booked')
+                ActivityLog.log_activity('call_booked', f'Booked call with {lead.name}', lead.id, 'lead')
                 flash('Status updated! +8 XP', 'success')
             elif new_status == 'proposal_sent':
                 add_xp(XP_RULES['lead_proposal_sent'], 'Proposal sent')
                 add_tokens(TOKEN_RULES['proposal_sent'], 'Proposal sent')
                 update_boss_progress('proposals')
+                ActivityLog.log_activity('proposal_sent', f'Sent proposal to {lead.name}', lead.id, 'lead')
                 flash('Status updated! +12 XP, +2 tokens', 'success')
+            elif new_status == 'closed_lost':
+                ActivityLog.log_activity('deal_closed_lost', f'Closed {lead.name} (LOST)', lead.id, 'lead')
+                flash('Status updated!', 'success')
             else:
                 flash('Status updated!', 'success')
         else:
@@ -226,6 +232,8 @@ def convert_to_client(id):
         
         add_xp(XP_RULES['lead_closed_won'], 'Deal closed')
         update_boss_progress('close_deals')
+        
+        ActivityLog.log_activity('deal_closed_won', f'Closed {lead.name} (WON)', lead.id, 'lead')
         
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))

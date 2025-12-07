@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserSettings
+from models import db, UserSettings, ActivityLog
 from datetime import date, timedelta
 
 settings_bp = Blueprint('settings', __name__, url_prefix='/settings')
@@ -34,6 +34,8 @@ def pause_activate():
     settings.pause_reason = reason
     db.session.commit()
     
+    ActivityLog.log_activity('pause_activated', f'Pause Mode activated until {settings.pause_end.strftime("%b %d, %Y")}')
+    
     flash(f'Pause mode activated for {duration} days.', 'success')
     return redirect(url_for('settings.index'))
 
@@ -51,6 +53,8 @@ def pause_end():
     settings.pause_end = None
     settings.pause_reason = None
     db.session.commit()
+    
+    ActivityLog.log_activity('pause_ended', 'Pause Mode ended')
     
     flash('Pause mode ended.', 'success')
     return redirect(url_for('settings.index'))

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, OutreachLog, Lead
+from models import db, OutreachLog, Lead, ActivityLog
 from datetime import datetime, date, timedelta
 from sqlalchemy import and_
 from blueprints.gamification import add_xp, update_outreach_streak, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
@@ -98,6 +98,10 @@ def create():
     
     if is_cold_lead_revival:
         update_boss_progress('revive_leads')
+    
+    lead_name = Lead.query.get(log.lead_id).name if log.lead_id else 'Unknown'
+    ActivityLog.log_activity('outreach_logged', f'Logged {log.type} outreach for {lead_name}', 
+                            log.lead_id, 'lead' if log.lead_id else None)
     
     flash('Outreach logged successfully! +5 XP, +1 token', 'success')
     

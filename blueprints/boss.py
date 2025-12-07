@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from models import db, BossFight, BossFightHistory
+from models import db, BossFight, BossFightHistory, ActivityLog
 
 boss_bp = Blueprint('boss', __name__)
 
@@ -32,5 +32,6 @@ def update_boss_progress(boss_type, increment=1):
         if current_boss.check_completion():
             from flask import flash
             flash(f'Boss Defeated! +{current_boss.reward_tokens} tokens!', 'success')
+            ActivityLog.log_activity('boss_defeated', f'Boss defeated: {current_boss.description}', current_boss.id, 'boss')
             return True
     return False
