@@ -168,6 +168,9 @@ def index():
     if current_boss and current_boss.target_value > 0:
         boss_progress_pct = min(100, int((current_boss.progress_value / current_boss.target_value) * 100))
     
+    pause_active = settings.is_paused()
+    pause_end = settings.pause_end
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -198,5 +201,7 @@ def index():
         daily_mission=daily_mission,
         mission_progress_pct=mission_progress_pct,
         current_boss=current_boss,
-        boss_progress_pct=boss_progress_pct
+        boss_progress_pct=boss_progress_pct,
+        pause_active=pause_active,
+        pause_end=pause_end
     )

@@ -135,6 +135,16 @@ This is a private, single-user CRM tool built with:
 - Past bosses history with completion status
 - Dashboard integration with boss battle card
 
+### Settings (/settings)
+- Full settings page with Pause Mode feature
+- Pause Mode (1-14 days duration, requires reason):
+  - Freezes: outreach streak, consistency score, daily goals, daily missions
+  - Does NOT freeze: tasks (still become overdue), boss fights
+  - Dashboard banner when pause is active
+- Theme Settings (coming soon)
+- Sound Settings (coming soon)
+- Notifications (coming soon)
+
 ### Goals (/goals)
 - Set daily/weekly/monthly targets
 - Goal types: daily outreach, weekly outreach, monthly revenue, monthly deals

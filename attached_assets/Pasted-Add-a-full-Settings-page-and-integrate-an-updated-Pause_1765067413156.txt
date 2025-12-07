@@ -1,0 +1,128 @@
+Add a full Settings page and integrate an updated Pause Mode feature with the following rules:
+• Tasks should still become overdue during pause.
+• Pause can be activated unlimited times.
+• Each pause requires a written reason stored in the database.
+
+====================================
+1. DATA MODEL
+====================================
+
+Extend user_settings with:
+
+- pause_active (boolean, default False)
+- pause_start (date, nullable)
+- pause_end (date, nullable)
+- pause_reason (text, nullable)
+
+Ensure each user has a settings row.
+
+====================================
+2. SETTINGS PAGE
+====================================
+
+Create blueprint "settings" with prefix "/settings".
+
+GET /settings should contain:
+
+Sections:
+- Pause Mode
+- (future) Theme Settings
+- (future) Sound Settings
+- (future) Notifications
+
+====================================
+3. PAUSE MODE UI (inside /settings)
+====================================
+
+Add a “Pause Mode” section with:
+
+- Input: Pause duration (1–14 days)
+- Textarea: Reason for pause (required)
+- Button: “Activate Pause Mode”
+
+When pause_active == True:
+Show:
+- Pause started: <pause_start>
+- Pause ends: <pause_end>
+- Reason: <pause_reason>
+- Remaining days: X
+- Button: “End Pause Early”
+
+====================================
+4. PAUSE BEHAVIOR
+====================================
+
+When pause_active is True:
+
+Frozen systems:
+- outreach streak does NOT decrease
+- consistency score does NOT decay
+- daily goals do NOT fail
+- daily missions do NOT count as failed
+- XP/tokens are NOT awarded automatically for skipped days
+
+Not frozen:
+- TASKS STILL BECOME OVERDUE NORMALLY
+- boss fights progress normally
+- calendar time continues
+- monthly goals still roll over normally
+
+====================================
+5. LOGIC IMPLEMENTATION
+====================================
+
+Before updating:
+- streak
+- consistency
+- daily goal results
+- daily mission reset/failure logic
+
+Add:
+if user_settings.pause_active:
+    do not update the metric and return
+
+But DO NOT modify or skip:
+- task overdue checks (tasks behave normally)
+
+Pause expiration:
+If today > pause_end:
+    pause_active = False
+    pause_start = None
+    pause_end = None
+    pause_reason = None
+
+====================================
+6. DASHBOARD INDICATOR
+====================================
+
+If pause_active:
+Show banner on dashboard:
+
+“PAUSE MODE ACTIVE — Streaks and consistency are frozen until <pause_end>.”
+
+====================================
+7. ROUTES
+====================================
+
+POST /settings/pause/activate
+- Validate duration (1–14 days)
+- Validate reason (required)
+- Set pause_start = today
+- Set pause_end = today + duration
+- Set pause_reason = text input
+- pause_active = True
+
+POST /settings/pause/end
+- Immediately disable pause_active
+- Clear pause_start, pause_end, pause_reason
+
+====================================
+8. EXTRA RULES
+====================================
+
+- User may activate pause mode as often as they want.
+- Reason is required for each new pause.
+- Tasks are NOT frozen.
+- Boss fights DO NOT pause.
+- No XP or token penalties apply during pause.
+- Manual actions still award XP/tokens normally.

@@ -119,6 +119,11 @@ class UserSettings(db.Model):
     show_forecast_widget = db.Column(db.Boolean, default=True)
     show_followup_widget = db.Column(db.Boolean, default=True)
     
+    pause_active = db.Column(db.Boolean, default=False)
+    pause_start = db.Column(db.Date, nullable=True)
+    pause_end = db.Column(db.Date, nullable=True)
+    pause_reason = db.Column(db.Text, nullable=True)
+    
     @staticmethod
     def get_settings():
         settings = UserSettings.query.first()
@@ -127,6 +132,35 @@ class UserSettings(db.Model):
             db.session.add(settings)
             db.session.commit()
         return settings
+    
+    def check_pause_expiry(self):
+        if self.pause_active and self.pause_end:
+            if date.today() > self.pause_end:
+                pause_end_date = self.pause_end
+                self.pause_active = False
+                self.pause_start = None
+                self.pause_end = None
+                self.pause_reason = None
+                
+                from models import UserStats
+                stats = UserStats.query.first()
+                if stats and stats.last_outreach_date:
+                    if stats.last_outreach_date < pause_end_date:
+                        stats.last_outreach_date = pause_end_date
+                
+                db.session.commit()
+                return True
+        return False
+    
+    def is_paused(self):
+        self.check_pause_expiry()
+        return self.pause_active
+    
+    def remaining_pause_days(self):
+        if self.pause_active and self.pause_end:
+            delta = (self.pause_end - date.today()).days
+            return max(0, delta)
+        return 0
 
 
 class UserStats(db.Model):

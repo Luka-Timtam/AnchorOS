@@ -1,7 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
+
+
+def is_paused():
+    settings = UserSettings.get_settings()
+    return settings.is_paused()
 
 gamification_bp = Blueprint('gamification', __name__, url_prefix='/gamification')
 
@@ -184,6 +189,11 @@ def update_outreach_streak():
     
     old_streak = stats.current_outreach_streak_days
     
+    if is_paused():
+        stats.last_outreach_date = today
+        db.session.commit()
+        return stats.current_outreach_streak_days
+    
     if stats.last_outreach_date == yesterday:
         stats.current_outreach_streak_days += 1
     elif stats.last_outreach_date is None or stats.last_outreach_date < yesterday:
@@ -348,9 +358,12 @@ def calculate_consistency_score():
     
     consistency_score = int((outreach_pct + followup_pct + task_pct) / 3)
     
-    stats.last_consistency_score = consistency_score
-    stats.last_consistency_calculated_at = datetime.utcnow()
-    db.session.commit()
+    if not is_paused():
+        stats.last_consistency_score = consistency_score
+        stats.last_consistency_calculated_at = datetime.utcnow()
+        db.session.commit()
+    else:
+        consistency_score = stats.last_consistency_score or consistency_score
     
     return {
         'score': consistency_score,

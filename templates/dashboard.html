@@ -3,6 +3,25 @@
 {% block title %}Dashboard - Personal CRM{% endblock %}
 
 {% block content %}
+{% if pause_active %}
+<div class="mb-6 bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <p class="font-semibold text-yellow-800">PAUSE MODE ACTIVE</p>
+                <p class="text-sm text-yellow-700">Streaks and consistency are frozen until {{ pause_end.strftime('%B %d, %Y') if pause_end else 'N/A' }}.</p>
+            </div>
+        </div>
+        <a href="{{ url_for('settings.index') }}" class="px-3 py-1 bg-yellow-200 text-yellow-800 rounded hover:bg-yellow-300 text-sm font-medium">
+            Manage
+        </a>
+    </div>
+</div>
+{% endif %}
+
 <div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
     <a href="{{ url_for('analytics.settings') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
