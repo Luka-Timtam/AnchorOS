@@ -213,6 +213,74 @@
     </div>
 </div>
 
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Wins Log</h3>
+        <button onclick="document.getElementById('addWinModal').classList.remove('hidden')" class="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700 flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add a Win
+        </button>
+    </div>
+    
+    {% if wins %}
+    <div class="space-y-3 max-h-96 overflow-y-auto">
+        {% for win in wins %}
+        <div class="flex items-start p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+            <span class="text-xl mr-3 mt-0.5">&#127881;</span>
+            <div class="flex-1">
+                <div class="flex items-center justify-between">
+                    <div class="font-semibold text-gray-900">{{ win.title }}</div>
+                    <div class="text-xs text-gray-500">{{ win.timestamp.strftime('%b %d, %Y at %H:%M') }}</div>
+                </div>
+                {% if win.description %}
+                <div class="text-sm text-gray-600 mt-1">{{ win.description }}</div>
+                {% endif %}
+                <div class="flex gap-2 mt-1">
+                    {% if win.xp_value %}
+                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">+{{ win.xp_value }} XP</span>
+                    {% endif %}
+                    {% if win.token_value %}
+                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">+{{ win.token_value }} tokens</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-sm">No wins logged yet. Start tracking your achievements!</p>
+    {% endif %}
+</div>
+
+<div id="addWinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="flex items-center justify-between p-4 border-b">
+            <h4 class="text-lg font-semibold text-gray-900">Add a Win</h4>
+            <button onclick="document.getElementById('addWinModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form method="POST" action="{{ url_for('gamification.add_win') }}" class="p-4">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input type="text" name="title" required placeholder="What did you achieve?" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+                <textarea name="description" rows="3" placeholder="Add more details about your win..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="document.getElementById('addWinModal').classList.add('hidden')" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Cancel</button>
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Add Win</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="bg-white rounded-lg shadow p-6">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Achievements</h3>
     
