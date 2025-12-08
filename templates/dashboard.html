@@ -60,260 +60,92 @@
 
 <div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-    <a href="{{ url_for('analytics.settings') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+    <button onclick="openWidgetModal()" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+        </svg>
         Customize Widgets
-    </a>
+    </button>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <a href="{{ url_for('leads.index', next_action='today') }}" class="block bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-yellow-800">Follow Up Today</h3>
-                <p class="text-sm text-yellow-600">Leads needing attention</p>
-            </div>
-            <span class="text-3xl font-bold text-yellow-700">{{ followup_today }}</span>
-        </div>
-    </a>
-    
-    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="block bg-red-50 border border-red-200 rounded-lg p-4 hover:bg-red-100 transition-colors">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-red-800">Overdue Follow Ups</h3>
-                <p class="text-sm text-red-600">Past due date</p>
-            </div>
-            <span class="text-3xl font-bold text-red-700">{{ followup_overdue }}</span>
-        </div>
-    </a>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 hover:from-indigo-100 hover:to-purple-100 transition-colors">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-indigo-800">XP</h3>
-                <p class="text-sm text-indigo-600">Level {{ user_stats.get_level_from_xp() }}</p>
-            </div>
-            <span class="text-3xl font-bold text-indigo-700">{{ user_stats.current_xp }}</span>
-        </div>
-    </a>
-    
-    <a href="{{ url_for('rewards.index') }}" class="block bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 hover:from-yellow-100 hover:to-amber-100 transition-colors">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-yellow-800">Tokens</h3>
-                <p class="text-sm text-yellow-600">Reward Shop</p>
-            </div>
-            <span class="text-3xl font-bold text-yellow-700">{{ token_balance }}</span>
-        </div>
-    </a>
-    
-    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 hover:from-orange-100 hover:to-red-100 transition-colors">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-orange-800">Streak</h3>
-                <p class="text-sm text-orange-600">Outreach days</p>
-            </div>
-            <div class="flex items-center">
-                <span class="text-3xl font-bold text-orange-700">{{ user_stats.current_outreach_streak_days }}</span>
-                <span class="text-2xl ml-1">&#x1F525;</span>
-            </div>
-        </div>
-    </a>
-    
-    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4 hover:from-emerald-100 hover:to-teal-100 transition-colors">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-semibold text-emerald-800">Consistency</h3>
-                <p class="text-sm text-emerald-600">Last 7 days</p>
-            </div>
-            <span class="text-3xl font-bold text-emerald-700">{{ consistency_score }}%</span>
-        </div>
-    </a>
-</div>
-
-<a href="{{ url_for('missions.index') }}" class="block bg-white border border-gray-200 rounded-lg p-4 mb-6 hover:border-indigo-300 transition-colors">
-    <div class="flex items-center justify-between mb-2">
-        <div>
-            <h3 class="text-lg font-semibold text-gray-900">Daily Mission</h3>
-            <p class="text-sm text-gray-600">{{ daily_mission.description }}</p>
-        </div>
-        <div class="text-right">
-            {% if daily_mission.is_completed %}
-            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                Complete! +{{ daily_mission.reward_tokens }} tokens
-            </span>
-            {% else %}
-            <span class="text-yellow-700 font-medium">{{ daily_mission.reward_tokens }} tokens</span>
-            {% endif %}
-        </div>
-    </div>
-    <div class="w-full bg-gray-200 rounded-full h-2">
-        <div class="h-2 rounded-full transition-all duration-300
-            {% if daily_mission.is_completed %}bg-green-500{% else %}bg-indigo-600{% endif %}"
-             style="width: {{ mission_progress_pct }}%"></div>
-    </div>
-    <div class="flex justify-between text-xs text-gray-500 mt-1">
-        <span>{{ daily_mission.progress_count }} / {{ daily_mission.target_count }}</span>
-        <span>{{ mission_progress_pct }}%</span>
-    </div>
-</a>
-
-{% if current_boss %}
-<a href="{{ url_for('boss.index') }}" class="block bg-gradient-to-r {% if current_boss.is_completed %}from-green-500 to-emerald-600{% else %}from-red-500 to-orange-600{% endif %} rounded-lg p-4 mb-6 hover:opacity-90 transition-opacity text-white">
-    <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl">{% if current_boss.is_completed %}🏆{% else %}👹{% endif %}</span>
-            <div>
-                <h3 class="text-lg font-semibold">Boss Battle</h3>
-                <p class="text-sm text-white/80">{{ current_boss.description }}</p>
-            </div>
-        </div>
-        <div class="text-right">
-            {% if current_boss.is_completed %}
-            <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-sm font-medium">
-                Defeated! +{{ current_boss.reward_tokens }} tokens
-            </span>
-            {% else %}
-            <span class="text-white/90 font-medium">{{ current_boss.reward_tokens }} tokens</span>
-            {% endif %}
-        </div>
-    </div>
-    <div class="w-full bg-white/30 rounded-full h-2">
-        <div class="h-2 rounded-full transition-all duration-300
-            {% if current_boss.is_completed %}bg-white{% else %}bg-yellow-300{% endif %}"
-             style="width: {{ boss_progress_pct }}%"></div>
-    </div>
-    <div class="flex justify-between text-xs text-white/80 mt-1">
-        <span>{{ current_boss.progress_value }} / {{ current_boss.target_value }}</span>
-        <span>{{ boss_progress_pct }}%</span>
-    </div>
-</a>
-{% endif %}
-
-<div id="focusSessionCard" class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4 mb-6">
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
-                <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold text-cyan-800">Focus Session</h3>
-                <p id="focusSubtitle" class="text-sm text-cyan-600">Stay focused and earn rewards</p>
-            </div>
-        </div>
-        <div id="focusControls" class="flex items-center gap-3">
-            <div id="focusStartControls">
-                <select id="focusDuration" class="rounded-lg border-cyan-300 text-sm text-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
-                    <option value="25">25 min</option>
-                    <option value="30">30 min</option>
-                    <option value="45">45 min</option>
-                    <option value="60">60 min</option>
-                </select>
-                <button onclick="startFocusSession()" class="ml-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors">
-                    Start
-                </button>
-            </div>
-            <div id="focusActiveControls" class="hidden items-center gap-3">
-                <div class="text-center">
-                    <span id="focusTimer" class="text-2xl font-bold text-cyan-700 font-mono">00:00</span>
-                </div>
-                <button onclick="cancelFocusSession()" class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-            <a href="{{ url_for('timeline.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-                View all &rarr;
-            </a>
-        </div>
-        {% if recent_activities %}
-        <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto">
-            {% for activity in recent_activities %}
-            <div class="py-2 flex items-center space-x-3 {% if activity.is_highlight() %}bg-yellow-50 -mx-2 px-2 rounded{% endif %}">
-                <div class="flex-shrink-0">
-                    {% set color = activity.get_color() %}
-                    <div class="w-7 h-7 rounded-full flex items-center justify-center
-                        {% if color == 'blue' %}bg-blue-100 text-blue-600
-                        {% elif color == 'indigo' %}bg-indigo-100 text-indigo-600
-                        {% elif color == 'green' %}bg-green-100 text-green-600
-                        {% elif color == 'purple' %}bg-purple-100 text-purple-600
-                        {% elif color == 'emerald' %}bg-emerald-100 text-emerald-600
-                        {% elif color == 'red' %}bg-red-100 text-red-600
-                        {% elif color == 'orange' %}bg-orange-100 text-orange-600
-                        {% elif color == 'yellow' %}bg-yellow-100 text-yellow-600
-                        {% elif color == 'amber' %}bg-amber-100 text-amber-600
-                        {% elif color == 'violet' %}bg-violet-100 text-violet-600
-                        {% elif color == 'teal' %}bg-teal-100 text-teal-600
-                        {% else %}bg-gray-100 text-gray-600{% endif %}">
-                        {% set icon = activity.get_icon() %}
-                        {% if icon == 'envelope' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                        {% elif icon == 'check-circle' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        {% elif icon == 'zap' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        {% elif icon == 'star' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                        </svg>
-                        {% elif icon == 'flame' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
-                        </svg>
-                        {% else %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm text-gray-800 truncate">{{ activity.description }}</p>
-                    <p class="text-xs text-gray-500">{{ activity.timestamp.strftime('%I:%M %p') }}</p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="text-sm text-gray-500 text-center py-4">No recent activity yet.</p>
+<div id="widgetContainer" class="space-y-6">
+    {% for widget_id in ordered_widgets %}
+        {% set skip_widget = false %}
+        {% if widget_id in ['tokens', 'streak', 'consistency'] and 'xp' in ordered_widgets %}
+            {% set skip_widget = true %}
         {% endif %}
-    </div>
+        {% if widget_id == 'calendar' and 'activity' in ordered_widgets %}
+            {% set skip_widget = true %}
+        {% endif %}
+        
+        {% if not skip_widget %}
+        <div class="widget-item relative" data-widget-id="{{ widget_id }}">
+            {% if widget_id == 'followups' %}
+                {% include 'widgets/followups.html' %}
+            {% elif widget_id == 'xp' %}
+                <div id="gamification-row" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {% include 'widgets/xp.html' %}
+                    {% if 'tokens' in ordered_widgets %}
+                        {% include 'widgets/tokens.html' %}
+                    {% endif %}
+                    {% if 'streak' in ordered_widgets %}
+                        {% include 'widgets/streak.html' %}
+                    {% endif %}
+                    {% if 'consistency' in ordered_widgets %}
+                        {% include 'widgets/consistency.html' %}
+                    {% endif %}
+                </div>
+            {% elif widget_id == 'tokens' %}
+                {% include 'widgets/tokens.html' %}
+            {% elif widget_id == 'streak' %}
+                {% include 'widgets/streak.html' %}
+            {% elif widget_id == 'consistency' %}
+                {% include 'widgets/consistency.html' %}
+            {% elif widget_id == 'mission' %}
+                {% include 'widgets/mission.html' %}
+            {% elif widget_id == 'boss' %}
+                {% include 'widgets/boss.html' %}
+            {% elif widget_id == 'focus' %}
+                {% include 'widgets/focus.html' %}
+            {% elif widget_id == 'activity' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% include 'widgets/activity.html' %}
+                    {% if 'calendar' in ordered_widgets %}
+                        {% include 'widgets/calendar.html' %}
+                    {% endif %}
+                </div>
+            {% elif widget_id == 'calendar' %}
+                {% include 'widgets/calendar.html' %}
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
 
-    <div id="calendarWidget" class="bg-gray-900 rounded-xl p-4 border border-white/10 hover:border-indigo-500/50 transition-colors cursor-pointer" onclick="openCalendarModal()">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-white">Calendar</h3>
-            <span id="miniCalendarMonth" class="text-sm text-gray-400"></span>
-        </div>
-        <div id="miniCalendar" class="text-center">
-            <div class="grid grid-cols-7 gap-1 mb-2">
-                <div class="text-xs text-gray-500 font-medium">M</div>
-                <div class="text-xs text-gray-500 font-medium">T</div>
-                <div class="text-xs text-gray-500 font-medium">W</div>
-                <div class="text-xs text-gray-500 font-medium">T</div>
-                <div class="text-xs text-gray-500 font-medium">F</div>
-                <div class="text-xs text-gray-500 font-medium">S</div>
-                <div class="text-xs text-gray-500 font-medium">S</div>
+<div id="widgetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden shadow-xl">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h2 class="text-lg font-bold text-gray-900">Customize Widgets</h2>
+                <button onclick="closeWidgetModal()" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
-            <div id="miniCalendarDays" class="grid grid-cols-7 gap-1"></div>
-        </div>
-        <div class="mt-3 text-center">
-            <span class="text-xs text-indigo-400">Click to expand &rarr;</span>
+            <div class="p-4 overflow-y-auto max-h-96">
+                <p class="text-sm text-gray-500 mb-4">Drag to reorder. Toggle to show/hide widgets.</p>
+                <div id="widgetList" class="space-y-2">
+                </div>
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-between">
+                <button onclick="resetLayout()" class="text-sm text-red-600 hover:text-red-800">
+                    Reset to Default
+                </button>
+                <button onclick="closeWidgetModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+                    Done
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -375,9 +207,136 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 let currentCalendarYear, currentCalendarMonth;
 let fullCalendarData = null;
+let widgetConfig = null;
+
+const widgetIcons = {
+    'followups': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>',
+    'xp': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>',
+    'tokens': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+    'streak': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>',
+    'consistency': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
+    'mission': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>',
+    'boss': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+    'focus': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+    'activity': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
+    'calendar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
+};
+
+function loadWidgetConfig() {
+    fetch('/widgets/get-config')
+        .then(r => r.json())
+        .then(data => {
+            widgetConfig = data;
+            renderWidgetList();
+        });
+}
+
+function renderWidgetList() {
+    const container = document.getElementById('widgetList');
+    let html = '';
+    
+    widgetConfig.order.forEach(id => {
+        const def = widgetConfig.definitions[id];
+        const isActive = widgetConfig.active[id] !== false;
+        html += `
+            <div class="widget-config-item flex items-center gap-3 p-3 bg-gray-50 rounded-lg" data-widget-id="${id}">
+                <div class="drag-handle-modal cursor-grab text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                    </svg>
+                </div>
+                <div class="flex-shrink-0 text-gray-500">
+                    ${widgetIcons[id] || ''}
+                </div>
+                <div class="flex-1">
+                    <div class="font-medium text-gray-900">${def.name}</div>
+                    <div class="text-xs text-gray-500">${def.description}</div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer widget-toggle" data-widget-id="${id}" ${isActive ? 'checked' : ''}>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>`;
+    });
+    
+    container.innerHTML = html;
+    
+    new Sortable(container, {
+        animation: 150,
+        handle: '.drag-handle-modal',
+        ghostClass: 'bg-indigo-100',
+        onEnd: function() {
+            saveWidgetOrder();
+        }
+    });
+    
+    document.querySelectorAll('.widget-toggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            saveActiveWidgets();
+        });
+    });
+}
+
+function saveWidgetOrder() {
+    const items = document.querySelectorAll('.widget-config-item');
+    const order = Array.from(items).map(item => item.dataset.widgetId);
+    
+    fetch('/widgets/save-layout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: order })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            widgetConfig.order = order;
+        }
+    });
+}
+
+function saveActiveWidgets() {
+    const toggles = document.querySelectorAll('.widget-toggle');
+    const active = {};
+    toggles.forEach(t => {
+        active[t.dataset.widgetId] = t.checked;
+    });
+    
+    fetch('/widgets/save-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: active })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            widgetConfig.active = active;
+        }
+    });
+}
+
+function resetLayout() {
+    if (confirm('Reset dashboard to default layout?')) {
+        fetch('/widgets/reset-layout', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+}
+
+function openWidgetModal() {
+    loadWidgetConfig();
+    document.getElementById('widgetModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeWidgetModal() {
+    document.getElementById('widgetModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    location.reload();
+}
 
 function loadMiniCalendar() {
     fetch('/calendar/mini')
@@ -584,312 +543,74 @@ document.getElementById('dayDetailModal').addEventListener('click', function(e) 
     if (e.target === this) closeDayDetailModal();
 });
 
+document.getElementById('widgetModal').addEventListener('click', function(e) {
+    if (e.target === this) closeWidgetModal();
+});
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         if (!document.getElementById('dayDetailModal').classList.contains('hidden')) {
             closeDayDetailModal();
         } else if (!document.getElementById('calendarModal').classList.contains('hidden')) {
             closeCalendarModal();
+        } else if (!document.getElementById('widgetModal').classList.contains('hidden')) {
+            closeWidgetModal();
         }
     }
 });
 
-loadMiniCalendar();
-</script>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Leads (Week)</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_week }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Leads (Month)</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_month }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Clients (Month)</h3>
-        <p class="text-3xl font-bold text-green-600">{{ new_clients_month }}</p>
-    </div>
-    {% if settings.show_project_revenue_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Project Revenue (Month)</h3>
-        <p class="text-3xl font-bold text-green-600">${{ "%.2f"|format(project_revenue_month) }}</p>
-    </div>
-    {% endif %}
-</div>
-
-{% if settings.show_outreach_widget %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach Today</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_today }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach This Week</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_week }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach This Month</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_month }}</p>
-    </div>
-</div>
-{% endif %}
-
-{% if settings.show_mrr_widget or settings.show_forecast_widget %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    {% if settings.show_mrr_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Hosting MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(hosting_mrr) }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">SaaS MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(saas_mrr) }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Total MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(total_mrr) }}</p>
-    </div>
-    {% endif %}
-    {% if settings.show_forecast_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">3-Month Forecast</h3>
-        <p class="text-3xl font-bold text-yellow-600">${{ "%.2f"|format(forecast_3_months) }}</p>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
-
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Leads by Status</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {% for status in lead_statuses %}
-        <div class="text-center p-3 bg-gray-50 rounded-lg">
-            <p class="text-2xl font-bold text-gray-700">{{ lead_counts.get(status, 0) }}</p>
-            <p class="text-xs text-gray-500 capitalize">{{ status.replace('_', ' ') }}</p>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-{% if settings.show_outreach_widget or settings.show_deals_widget %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    {% if settings.show_outreach_widget %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Outreach (Last 12 Weeks)</h3>
-        <canvas id="outreachChart" height="120"></canvas>
-    </div>
-    {% endif %}
-    {% if settings.show_deals_widget %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Deals Closed (Last 12 Weeks)</h3>
-        <canvas id="dealsChart" height="120"></canvas>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
-
-{% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-<div class="bg-white rounded-lg shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-        <h3 class="text-base font-semibold text-gray-900" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
-        <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-600" id="toggleLabel">Revenue</span>
-            <button type="button" id="revenueToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-indigo-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggleKnob"></span>
-            </button>
-            <span class="text-sm text-gray-600">MRR</span>
-        </div>
-    </div>
-    <canvas id="revenueChart" height="120"></canvas>
-</div>
-{% endif %}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const weekLabels = {{ week_labels | tojson }};
-    const outreachData = {{ outreach_weekly_data | tojson }};
-    const dealsData = {{ deals_weekly_data | tojson }};
-    const monthLabels = {{ month_labels | tojson }};
-    const monthlyRevenueData = {{ monthly_revenue_data | tojson }};
-    const monthlyMrrData = {{ monthly_mrr_data | tojson }};
-    
-    {% if settings.show_outreach_widget %}
-    new Chart(document.getElementById('outreachChart'), {
-        type: 'bar',
-        data: {
-            labels: weekLabels,
-            datasets: [{
-                label: 'Outreach',
-                data: outreachData,
-                backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                borderColor: 'rgba(99, 102, 241, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                }
-            }
-        }
-    });
-    {% endif %}
-    
-    {% if settings.show_deals_widget %}
-    new Chart(document.getElementById('dealsChart'), {
-        type: 'bar',
-        data: {
-            labels: weekLabels,
-            datasets: [{
-                label: 'Deals Closed',
-                data: dealsData,
-                backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                borderColor: 'rgba(34, 197, 94, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                }
-            }
-        }
-    });
-    {% endif %}
-    
-    {% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-    let showMrr = false;
-    const revenueChart = new Chart(document.getElementById('revenueChart'), {
-        type: 'line',
-        data: {
-            labels: monthLabels,
-            datasets: [{
-                label: 'Revenue',
-                data: monthlyRevenueData,
-                backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                borderColor: 'rgba(34, 197, 94, 1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return '$' + context.parsed.y.toLocaleString();
-                        }
-                    }
-                }
-            }
-        }
-    });
-    
-    const toggleBtn = document.getElementById('revenueToggle');
-    const toggleKnob = document.getElementById('toggleKnob');
-    const chartTitle = document.getElementById('revenueChartTitle');
-    
-    toggleBtn.addEventListener('click', function() {
-        showMrr = !showMrr;
-        
-        if (showMrr) {
-            toggleKnob.classList.remove('translate-x-0');
-            toggleKnob.classList.add('translate-x-5');
-            toggleBtn.classList.remove('bg-indigo-600');
-            toggleBtn.classList.add('bg-purple-600');
-            chartTitle.textContent = 'Monthly Recurring Revenue (Last 12 Months)';
-            revenueChart.data.datasets[0].label = 'MRR';
-            revenueChart.data.datasets[0].data = monthlyMrrData;
-            revenueChart.data.datasets[0].backgroundColor = 'rgba(147, 51, 234, 0.2)';
-            revenueChart.data.datasets[0].borderColor = 'rgba(147, 51, 234, 1)';
-        } else {
-            toggleKnob.classList.remove('translate-x-5');
-            toggleKnob.classList.add('translate-x-0');
-            toggleBtn.classList.remove('bg-purple-600');
-            toggleBtn.classList.add('bg-indigo-600');
-            chartTitle.textContent = 'Monthly Revenue (Last 12 Months)';
-            revenueChart.data.datasets[0].label = 'Revenue';
-            revenueChart.data.datasets[0].data = monthlyRevenueData;
-            revenueChart.data.datasets[0].backgroundColor = 'rgba(34, 197, 94, 0.2)';
-            revenueChart.data.datasets[0].borderColor = 'rgba(34, 197, 94, 1)';
-        }
-        
-        revenueChart.update();
-    });
-    {% endif %}
-});
-</script>
-
-<script>
 let focusInterval = null;
-let focusEndTime = null;
 
-function formatTime(seconds) {
+function checkFocusStatus() {
+    fetch('/focus/status')
+        .then(r => r.json())
+        .then(data => {
+            if (data.active) {
+                document.getElementById('focusStartControls').classList.add('hidden');
+                document.getElementById('focusActiveControls').classList.remove('hidden');
+                document.getElementById('focusActiveControls').classList.add('flex');
+                document.getElementById('focusSubtitle').textContent = data.length + ' minute session';
+                updateFocusTimer(data.remaining);
+                
+                if (!focusInterval) {
+                    focusInterval = setInterval(() => {
+                        fetch('/focus/status').then(r => r.json()).then(d => {
+                            if (d.active) {
+                                updateFocusTimer(d.remaining);
+                            } else {
+                                clearInterval(focusInterval);
+                                focusInterval = null;
+                                location.reload();
+                            }
+                        });
+                    }, 1000);
+                }
+            } else {
+                document.getElementById('focusStartControls').classList.remove('hidden');
+                document.getElementById('focusActiveControls').classList.add('hidden');
+                document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
+            }
+        });
+}
+
+function updateFocusTimer(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function updateFocusDisplay(remaining) {
-    document.getElementById('focusTimer').textContent = formatTime(remaining);
-}
-
-function showActiveControls() {
-    document.getElementById('focusStartControls').classList.add('hidden');
-    document.getElementById('focusActiveControls').classList.remove('hidden');
-    document.getElementById('focusActiveControls').classList.add('flex');
-    document.getElementById('focusSubtitle').textContent = 'Session in progress...';
-    document.getElementById('focusSessionCard').classList.remove('from-cyan-50', 'to-blue-50', 'border-cyan-200');
-    document.getElementById('focusSessionCard').classList.add('from-cyan-100', 'to-blue-100', 'border-cyan-400');
-}
-
-function showStartControls() {
-    document.getElementById('focusStartControls').classList.remove('hidden');
-    document.getElementById('focusActiveControls').classList.add('hidden');
-    document.getElementById('focusActiveControls').classList.remove('flex');
-    document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
-    document.getElementById('focusSessionCard').classList.add('from-cyan-50', 'to-blue-50', 'border-cyan-200');
-    document.getElementById('focusSessionCard').classList.remove('from-cyan-100', 'to-blue-100', 'border-cyan-400');
+    document.getElementById('focusTimer').textContent = 
+        String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
 }
 
 function startFocusSession() {
     const duration = document.getElementById('focusDuration').value;
-    
-    const formData = new FormData();
-    formData.append('duration', duration);
-    
-    fetch('/focus/start', { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                focusEndTime = new Date(data.end_time);
-                showActiveControls();
-                startTimer();
-                updateNavbarTimer(true);
-            } else if (data.error) {
-                alert(data.error);
-            }
-        })
-        .catch(err => console.error('Start focus error:', err));
+    fetch('/focus/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration: parseInt(duration) })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            checkFocusStatus();
+        }
+    });
 }
 
 function cancelFocusSession() {
@@ -897,98 +618,14 @@ function cancelFocusSession() {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                stopTimer();
-                showStartControls();
-                updateNavbarTimer(false);
+                clearInterval(focusInterval);
+                focusInterval = null;
+                checkFocusStatus();
             }
-        })
-        .catch(err => console.error('Cancel focus error:', err));
+        });
 }
 
-function startTimer() {
-    if (focusInterval) clearInterval(focusInterval);
-    
-    focusInterval = setInterval(() => {
-        checkFocusStatus();
-    }, 1000);
-}
-
-function stopTimer() {
-    if (focusInterval) {
-        clearInterval(focusInterval);
-        focusInterval = null;
-    }
-    focusEndTime = null;
-}
-
-function checkFocusStatus() {
-    fetch('/focus/check')
-        .then(r => r.json())
-        .then(data => {
-            if (data.completed) {
-                stopTimer();
-                showStartControls();
-                updateNavbarTimer(false);
-                showCompletionMessage(data.message);
-            } else if (data.active) {
-                updateFocusDisplay(data.remaining_seconds);
-                updateNavbarTimerDisplay(data.remaining_seconds);
-            } else {
-                stopTimer();
-                showStartControls();
-                updateNavbarTimer(false);
-            }
-        })
-        .catch(err => console.error('Check focus error:', err));
-}
-
-function showCompletionMessage(message) {
-    const card = document.getElementById('focusSessionCard');
-    const originalClasses = card.className;
-    card.classList.remove('from-cyan-50', 'to-blue-50', 'from-cyan-100', 'to-blue-100');
-    card.classList.add('from-green-100', 'to-emerald-100', 'border-green-400');
-    document.getElementById('focusSubtitle').textContent = message || 'Session complete! +3 tokens, +5 XP';
-    
-    setTimeout(() => {
-        card.className = originalClasses;
-        document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
-    }, 5000);
-}
-
-function updateNavbarTimer(active) {
-    const navTimer = document.getElementById('navbarFocusTimer');
-    if (navTimer) {
-        if (active) {
-            navTimer.classList.remove('hidden');
-        } else {
-            navTimer.classList.add('hidden');
-        }
-    }
-}
-
-function updateNavbarTimerDisplay(seconds) {
-    const navTimerText = document.getElementById('navbarFocusTimerText');
-    if (navTimerText) {
-        navTimerText.textContent = formatTime(seconds);
-    }
-}
-
-function initFocusSession() {
-    fetch('/focus/status')
-        .then(r => r.json())
-        .then(data => {
-            if (data.active) {
-                focusEndTime = new Date(data.end_time);
-                showActiveControls();
-                updateFocusDisplay(data.remaining_seconds);
-                startTimer();
-                updateNavbarTimer(true);
-                updateNavbarTimerDisplay(data.remaining_seconds);
-            }
-        })
-        .catch(err => console.error('Init focus error:', err));
-}
-
-initFocusSession();
+loadMiniCalendar();
+checkFocusStatus();
 </script>
 {% endblock %}

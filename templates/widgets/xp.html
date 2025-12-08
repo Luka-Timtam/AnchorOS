@@ -1,0 +1,9 @@
+<a href="{{ url_for('gamification.index') }}" class="dashboard-widget block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 hover:from-indigo-100 hover:to-purple-100 transition-colors" data-widget-id="xp">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold text-indigo-800">XP</h3>
+            <p class="text-sm text-indigo-600">Level {{ user_stats.get_level_from_xp() }}</p>
+        </div>
+        <span class="text-3xl font-bold text-indigo-700">{{ user_stats.current_xp }}</span>
+    </div>
+</a>

@@ -1,0 +1,36 @@
+<div id="focusSessionCard" class="dashboard-widget bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4" data-widget-id="focus">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-cyan-800">Focus Session</h3>
+                <p id="focusSubtitle" class="text-sm text-cyan-600">Stay focused and earn rewards</p>
+            </div>
+        </div>
+        <div id="focusControls" class="flex items-center gap-3">
+            <div id="focusStartControls">
+                <select id="focusDuration" class="rounded-lg border-cyan-300 text-sm text-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
+                    <option value="25">25 min</option>
+                    <option value="30">30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">60 min</option>
+                </select>
+                <button onclick="startFocusSession()" class="ml-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    Start
+                </button>
+            </div>
+            <div id="focusActiveControls" class="hidden items-center gap-3">
+                <div class="text-center">
+                    <span id="focusTimer" class="text-2xl font-bold text-cyan-700 font-mono">00:00</span>
+                </div>
+                <button onclick="cancelFocusSession()" class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

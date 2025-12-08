@@ -1,0 +1,26 @@
+<a href="{{ url_for('missions.index') }}" class="dashboard-widget block bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors" data-widget-id="mission">
+    <div class="flex items-center justify-between mb-2">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900">Daily Mission</h3>
+            <p class="text-sm text-gray-600">{{ daily_mission.description }}</p>
+        </div>
+        <div class="text-right">
+            {% if daily_mission.is_completed %}
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                Complete! +{{ daily_mission.reward_tokens }} tokens
+            </span>
+            {% else %}
+            <span class="text-yellow-700 font-medium">{{ daily_mission.reward_tokens }} tokens</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="h-2 rounded-full transition-all duration-300
+            {% if daily_mission.is_completed %}bg-green-500{% else %}bg-indigo-600{% endif %}"
+             style="width: {{ mission_progress_pct }}%"></div>
+    </div>
+    <div class="flex justify-between text-xs text-gray-500 mt-1">
+        <span>{{ daily_mission.progress_count }} / {{ daily_mission.target_count }}</span>
+        <span>{{ mission_progress_pct }}%</span>
+    </div>
+</a>

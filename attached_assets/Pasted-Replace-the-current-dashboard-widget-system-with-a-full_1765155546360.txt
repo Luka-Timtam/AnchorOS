@@ -1,0 +1,97 @@
+Replace the current dashboard widget system with a fully draggable, reorderable widget layout.
+
+====================================
+1. DATA MODEL
+====================================
+
+In user_settings, add:
+
+dashboard_layout (JSON storing widget order)
+dashboard_active_widgets (JSON storing which widgets are toggled on/off)
+
+Example:
+{
+  "order": ["xp", "tokens", "streak", "missions", "boss", "activity", "calendar"],
+  "active": { "xp": true, "tokens": true, "calendar": false, ... }
+}
+
+====================================
+2. FRONTEND FUNCTIONALITY
+====================================
+
+Use a draggable grid layout for widgets.
+
+Requirements:
+• Click-and-drag to reorder widgets
+• Smooth animations while dragging
+• Widgets snap into predefined grid positions
+• Invisible placeholders show drop targets
+• Works on desktop + mobile (mobile long-press to drag)
+
+When user releases a widget:
+• new order is saved via AJAX → user_settings.dashboard_layout
+
+====================================
+3. CUSTOMISE WIDGETS BUTTON
+====================================
+
+Clicking “Customise Widgets” opens a modal or sidebar:
+
+Inside:
+• Toggle switches for each widget (on/off)
+• Drag handle to reorder inside this interface as well
+• Preview of the dashboard layout
+
+When toggles change:
+• Save under dashboard_active_widgets
+
+Inactive widgets disappear from dashboard immediately.
+
+====================================
+4. WIDGET DEFINITIONS
+====================================
+
+Dashboard must treat each widget as a component:
+
+xp_widget  
+tokens_widget  
+streak_widget  
+missions_widget  
+boss_progress_widget  
+activity_widget  
+mini_calendar  
+lead_reminders  
+next_best_action  
+etc.
+
+Each widget must:
+• Have unique ID
+• Fit into the grid layout
+• Render independently
+
+====================================
+5. BACKEND
+====================================
+
+On dashboard load:
+1. Load dashboard_active_widgets
+2. Load dashboard_layout order
+3. Render widgets in the chosen order
+4. Skip widgets where active = False
+
+====================================
+6. FAILSAFE
+====================================
+
+If layout JSON becomes invalid:
+• fallback to default layout
+• show banner: “Layout reset due to update — customise again”
+
+====================================
+7. OPTIONAL FUTURE ENHANCEMENTS
+====================================
+
+Add:
+• multiple dashboard profiles
+• export dashboard layout
+• “randomise layout” button for fun
