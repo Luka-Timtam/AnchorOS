@@ -4,8 +4,18 @@
 
 {% block content %}
 <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Gamification</h1>
-    <p class="text-gray-600 mt-1">Track your progress, streaks, and achievements</p>
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Gamification</h1>
+            <p class="text-gray-600 mt-1">Track your progress, streaks, and achievements</p>
+        </div>
+        <a href="{{ url_for('monthly_review.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Monthly Reviews
+        </a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

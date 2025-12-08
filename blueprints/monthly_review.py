@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import (db, MonthlyReview, XPLog, TokenTransaction, OutreachLog, Lead, 
-                    DailyMission, BossFight, UserStats, WinsLog)
+                    DailyMission, BossFight, UserStats, WinsLog, ActivityLog)
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 from collections import Counter
@@ -39,16 +39,24 @@ def generate_review_content(year_month):
         OutreachLog.date <= last_day
     ).count()
     
-    calls_booked = Lead.query.filter(
-        Lead.status == 'call_booked',
-        Lead.updated_at >= first_datetime,
-        Lead.updated_at <= last_datetime
+    calls_booked = ActivityLog.query.filter(
+        ActivityLog.action_type == 'call_booked',
+        ActivityLog.timestamp >= first_datetime,
+        ActivityLog.timestamp <= last_datetime
     ).count()
     
-    proposals_sent = Lead.query.filter(
-        Lead.status == 'proposal_sent',
-        Lead.updated_at >= first_datetime,
-        Lead.updated_at <= last_datetime
+    outreach_calls_booked = OutreachLog.query.filter(
+        OutreachLog.outcome == 'booked_call',
+        OutreachLog.date >= first_day,
+        OutreachLog.date <= last_day
+    ).count()
+    
+    calls_booked = max(calls_booked, outreach_calls_booked)
+    
+    proposals_sent = ActivityLog.query.filter(
+        ActivityLog.action_type == 'proposal_sent',
+        ActivityLog.timestamp >= first_datetime,
+        ActivityLog.timestamp <= last_datetime
     ).count()
     
     deals_won = Lead.query.filter(
