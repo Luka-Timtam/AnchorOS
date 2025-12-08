@@ -164,6 +164,11 @@ class UserSettings(db.Model):
     
     DEFAULT_WIDGET_ORDER = [
         'followups',
+        'mrr',
+        'project_revenue',
+        'outreach',
+        'deals',
+        'forecast',
         'xp',
         'tokens',
         'streak',
@@ -177,6 +182,11 @@ class UserSettings(db.Model):
     
     DEFAULT_ACTIVE_WIDGETS = {
         'followups': True,
+        'mrr': True,
+        'project_revenue': True,
+        'outreach': True,
+        'deals': True,
+        'forecast': True,
         'xp': True,
         'tokens': True,
         'streak': True,
@@ -189,11 +199,16 @@ class UserSettings(db.Model):
     }
     
     WIDGET_DEFINITIONS = {
-        'followups': {'name': 'Follow-ups', 'description': 'Today & overdue follow-ups', 'icon': 'bell'},
+        'followups': {'name': 'Follow-up Widget', 'description': 'Shows leads needing follow-up today and overdue', 'icon': 'bell'},
+        'mrr': {'name': 'MRR Widget', 'description': 'Shows hosting and SaaS monthly recurring revenue', 'icon': 'dollar'},
+        'project_revenue': {'name': 'Project Revenue Widget', 'description': 'Shows monthly project revenue chart', 'icon': 'chart-bar'},
+        'outreach': {'name': 'Outreach Widget', 'description': 'Shows weekly outreach volume chart', 'icon': 'mail'},
+        'deals': {'name': 'Deals Widget', 'description': 'Shows weekly deals closed chart', 'icon': 'check-circle'},
+        'forecast': {'name': 'Forecast Widget', 'description': 'Shows 3-month revenue forecast', 'icon': 'trending-up'},
+        'consistency': {'name': 'Consistency Score Widget', 'description': 'Shows outreach consistency metrics', 'icon': 'chart'},
         'xp': {'name': 'XP & Level', 'description': 'Your experience points', 'icon': 'star'},
         'tokens': {'name': 'Tokens', 'description': 'Reward shop currency', 'icon': 'coin'},
         'streak': {'name': 'Streak', 'description': 'Outreach streak days', 'icon': 'fire'},
-        'consistency': {'name': 'Consistency', 'description': 'Last 7 days score', 'icon': 'chart'},
         'mission': {'name': 'Daily Mission', 'description': 'Today\'s challenge', 'icon': 'target'},
         'boss': {'name': 'Boss Fight', 'description': 'Monthly challenge', 'icon': 'skull'},
         'focus': {'name': 'Focus Timer', 'description': 'Pomodoro sessions', 'icon': 'clock'},

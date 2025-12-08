@@ -60,47 +60,76 @@
 
 <div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-    <button onclick="openWidgetModal()" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-        </svg>
-        Customize Widgets
-    </button>
+    <div class="flex items-center gap-2">
+        <button id="editModeBtn" onclick="toggleEditMode()" class="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            <span id="editModeText">Customize Dashboard</span>
+        </button>
+        <button id="doneEditBtn" onclick="exitEditMode()" class="hidden flex items-center gap-2 text-sm text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Done Editing
+        </button>
+    </div>
 </div>
 
-<div id="widgetContainer" class="space-y-6">
+<div id="editToolbar" class="hidden mb-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="text-sm text-indigo-800">Edit Mode: Drag widgets to reorder. Click the X to hide, or + to show widgets.</span>
+        </div>
+        <button onclick="resetLayout()" class="text-sm text-red-600 hover:text-red-800 font-medium">
+            Reset to Default
+        </button>
+    </div>
+</div>
+
+<div id="addWidgetBar" class="hidden mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+    <p class="text-sm text-gray-600 mb-2">Hidden Widgets (click to add):</p>
+    <div id="hiddenWidgetsList" class="flex flex-wrap gap-2"></div>
+</div>
+
+<div id="widgetContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for widget_id in ordered_widgets %}
-        {% set skip_widget = false %}
-        {% if widget_id in ['tokens', 'streak', 'consistency'] and 'xp' in ordered_widgets %}
-            {% set skip_widget = true %}
-        {% endif %}
-        {% if widget_id == 'calendar' and 'activity' in ordered_widgets %}
-            {% set skip_widget = true %}
-        {% endif %}
-        
-        {% if not skip_widget %}
-        <div class="widget-item relative" data-widget-id="{{ widget_id }}">
+        <div class="widget-item relative group" data-widget-id="{{ widget_id }}">
+            <div class="edit-controls hidden absolute -top-2 -right-2 z-10 flex gap-1">
+                <button onclick="hideWidget('{{ widget_id }}')" class="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg" title="Hide widget">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="drag-handle hidden absolute -left-3 top-1/2 -translate-y-1/2 z-10 cursor-grab bg-gray-200 hover:bg-gray-300 rounded p-1 shadow">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                </svg>
+            </div>
             {% if widget_id == 'followups' %}
                 {% include 'widgets/followups.html' %}
+            {% elif widget_id == 'mrr' %}
+                {% include 'widgets/mrr.html' %}
+            {% elif widget_id == 'project_revenue' %}
+                {% include 'widgets/project_revenue.html' %}
+            {% elif widget_id == 'outreach' %}
+                {% include 'widgets/outreach.html' %}
+            {% elif widget_id == 'deals' %}
+                {% include 'widgets/deals.html' %}
+            {% elif widget_id == 'forecast' %}
+                {% include 'widgets/forecast.html' %}
+            {% elif widget_id == 'consistency' %}
+                {% include 'widgets/consistency.html' %}
             {% elif widget_id == 'xp' %}
-                <div id="gamification-row" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {% include 'widgets/xp.html' %}
-                    {% if 'tokens' in ordered_widgets %}
-                        {% include 'widgets/tokens.html' %}
-                    {% endif %}
-                    {% if 'streak' in ordered_widgets %}
-                        {% include 'widgets/streak.html' %}
-                    {% endif %}
-                    {% if 'consistency' in ordered_widgets %}
-                        {% include 'widgets/consistency.html' %}
-                    {% endif %}
-                </div>
+                {% include 'widgets/xp.html' %}
             {% elif widget_id == 'tokens' %}
                 {% include 'widgets/tokens.html' %}
             {% elif widget_id == 'streak' %}
                 {% include 'widgets/streak.html' %}
-            {% elif widget_id == 'consistency' %}
-                {% include 'widgets/consistency.html' %}
             {% elif widget_id == 'mission' %}
                 {% include 'widgets/mission.html' %}
             {% elif widget_id == 'boss' %}
@@ -108,47 +137,14 @@
             {% elif widget_id == 'focus' %}
                 {% include 'widgets/focus.html' %}
             {% elif widget_id == 'activity' %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {% include 'widgets/activity.html' %}
-                    {% if 'calendar' in ordered_widgets %}
-                        {% include 'widgets/calendar.html' %}
-                    {% endif %}
-                </div>
+                {% include 'widgets/activity.html' %}
             {% elif widget_id == 'calendar' %}
                 {% include 'widgets/calendar.html' %}
             {% endif %}
         </div>
-        {% endif %}
     {% endfor %}
 </div>
 
-<div id="widgetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden shadow-xl">
-            <div class="flex items-center justify-between p-4 border-b">
-                <h2 class="text-lg font-bold text-gray-900">Customize Widgets</h2>
-                <button onclick="closeWidgetModal()" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-700">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="p-4 overflow-y-auto max-h-96">
-                <p class="text-sm text-gray-500 mb-4">Drag to reorder. Toggle to show/hide widgets.</p>
-                <div id="widgetList" class="space-y-2">
-                </div>
-            </div>
-            <div class="p-4 border-t bg-gray-50 flex justify-between">
-                <button onclick="resetLayout()" class="text-sm text-red-600 hover:text-red-800">
-                    Reset to Default
-                </button>
-                <button onclick="closeWidgetModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
-                    Done
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div id="calendarModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -212,77 +208,129 @@
 let currentCalendarYear, currentCalendarMonth;
 let fullCalendarData = null;
 let widgetConfig = null;
+let editMode = false;
+let widgetSortable = null;
 
-const widgetIcons = {
-    'followups': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>',
-    'xp': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>',
-    'tokens': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-    'streak': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>',
-    'consistency': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
-    'mission': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>',
-    'boss': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-    'focus': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-    'activity': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>',
-    'calendar': '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
+const widgetDefinitions = {{ widget_definitions | tojson }};
+const allWidgetIds = {{ (widget_definitions.keys() | list) | tojson }};
+const initialActiveWidgets = {{ active_widgets | tojson }};
+
+widgetConfig = {
+    active: initialActiveWidgets,
+    definitions: widgetDefinitions,
+    order: allWidgetIds
 };
+
+function toggleEditMode() {
+    editMode = true;
+    document.getElementById('editModeBtn').classList.add('hidden');
+    document.getElementById('doneEditBtn').classList.remove('hidden');
+    document.getElementById('editToolbar').classList.remove('hidden');
+    document.getElementById('addWidgetBar').classList.remove('hidden');
+    document.querySelectorAll('.drag-handle').forEach(el => el.classList.remove('hidden'));
+    document.querySelectorAll('.edit-controls').forEach(el => el.classList.remove('hidden'));
+    document.getElementById('widgetContainer').classList.add('pl-6');
+    
+    widgetSortable = new Sortable(document.getElementById('widgetContainer'), {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'opacity-50',
+        onEnd: function() {
+            saveWidgetOrder();
+        }
+    });
+    
+    loadWidgetConfig();
+}
+
+function exitEditMode() {
+    editMode = false;
+    document.getElementById('editModeBtn').classList.remove('hidden');
+    document.getElementById('doneEditBtn').classList.add('hidden');
+    document.getElementById('editToolbar').classList.add('hidden');
+    document.getElementById('addWidgetBar').classList.add('hidden');
+    document.querySelectorAll('.drag-handle').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.edit-controls').forEach(el => el.classList.add('hidden'));
+    document.getElementById('widgetContainer').classList.remove('pl-6');
+    
+    if (widgetSortable) {
+        widgetSortable.destroy();
+        widgetSortable = null;
+    }
+}
 
 function loadWidgetConfig() {
     fetch('/widgets/get-config')
         .then(r => r.json())
         .then(data => {
             widgetConfig = data;
-            renderWidgetList();
+            updateHiddenWidgetsList();
         });
 }
 
-function renderWidgetList() {
-    const container = document.getElementById('widgetList');
+function updateHiddenWidgetsList() {
+    if (!widgetConfig) return;
+    
+    const container = document.getElementById('hiddenWidgetsList');
+    const visibleWidgets = Array.from(document.querySelectorAll('.widget-item')).map(el => el.dataset.widgetId);
+    const hiddenWidgets = allWidgetIds.filter(id => !visibleWidgets.includes(id) || widgetConfig.active[id] === false);
+    
+    if (hiddenWidgets.length === 0) {
+        container.innerHTML = '<span class="text-sm text-gray-400 italic">All widgets are visible</span>';
+        return;
+    }
+    
     let html = '';
-    
-    widgetConfig.order.forEach(id => {
-        const def = widgetConfig.definitions[id];
-        const isActive = widgetConfig.active[id] !== false;
-        html += `
-            <div class="widget-config-item flex items-center gap-3 p-3 bg-gray-50 rounded-lg" data-widget-id="${id}">
-                <div class="drag-handle-modal cursor-grab text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
-                    </svg>
-                </div>
-                <div class="flex-shrink-0 text-gray-500">
-                    ${widgetIcons[id] || ''}
-                </div>
-                <div class="flex-1">
-                    <div class="font-medium text-gray-900">${def.name}</div>
-                    <div class="text-xs text-gray-500">${def.description}</div>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" class="sr-only peer widget-toggle" data-widget-id="${id}" ${isActive ? 'checked' : ''}>
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-            </div>`;
-    });
-    
-    container.innerHTML = html;
-    
-    new Sortable(container, {
-        animation: 150,
-        handle: '.drag-handle-modal',
-        ghostClass: 'bg-indigo-100',
-        onEnd: function() {
-            saveWidgetOrder();
+    hiddenWidgets.forEach(id => {
+        const def = widgetDefinitions[id];
+        if (def) {
+            html += `<button onclick="showWidget('${id}')" class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:border-indigo-300">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                ${def.name}
+            </button>`;
         }
     });
+    container.innerHTML = html;
+}
+
+function hideWidget(widgetId) {
+    if (!widgetConfig) return;
     
-    document.querySelectorAll('.widget-toggle').forEach(toggle => {
-        toggle.addEventListener('change', function() {
-            saveActiveWidgets();
-        });
+    widgetConfig.active[widgetId] = false;
+    
+    fetch('/widgets/save-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: widgetConfig.active })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            const widget = document.querySelector(`.widget-item[data-widget-id="${widgetId}"]`);
+            if (widget) widget.remove();
+            updateHiddenWidgetsList();
+        }
+    });
+}
+
+function showWidget(widgetId) {
+    if (!widgetConfig) return;
+    
+    widgetConfig.active[widgetId] = true;
+    
+    fetch('/widgets/save-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: widgetConfig.active })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            location.reload();
+        }
     });
 }
 
 function saveWidgetOrder() {
-    const items = document.querySelectorAll('.widget-config-item');
+    const items = document.querySelectorAll('.widget-item');
     const order = Array.from(items).map(item => item.dataset.widgetId);
     
     fetch('/widgets/save-layout', {
@@ -290,32 +338,14 @@ function saveWidgetOrder() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order: order })
     }).then(r => r.json()).then(data => {
-        if (data.success) {
+        if (data.success && widgetConfig) {
             widgetConfig.order = order;
         }
     });
 }
 
-function saveActiveWidgets() {
-    const toggles = document.querySelectorAll('.widget-toggle');
-    const active = {};
-    toggles.forEach(t => {
-        active[t.dataset.widgetId] = t.checked;
-    });
-    
-    fetch('/widgets/save-active', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ active: active })
-    }).then(r => r.json()).then(data => {
-        if (data.success) {
-            widgetConfig.active = active;
-        }
-    });
-}
-
 function resetLayout() {
-    if (confirm('Reset dashboard to default layout?')) {
+    if (confirm('Reset dashboard to default layout? This will show all widgets in their original order.')) {
         fetch('/widgets/reset-layout', { method: 'POST' })
             .then(r => r.json())
             .then(data => {
@@ -324,18 +354,6 @@ function resetLayout() {
                 }
             });
     }
-}
-
-function openWidgetModal() {
-    loadWidgetConfig();
-    document.getElementById('widgetModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeWidgetModal() {
-    document.getElementById('widgetModal').classList.add('hidden');
-    document.body.style.overflow = '';
-    location.reload();
 }
 
 function loadMiniCalendar() {
@@ -543,18 +561,14 @@ document.getElementById('dayDetailModal').addEventListener('click', function(e) 
     if (e.target === this) closeDayDetailModal();
 });
 
-document.getElementById('widgetModal').addEventListener('click', function(e) {
-    if (e.target === this) closeWidgetModal();
-});
-
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         if (!document.getElementById('dayDetailModal').classList.contains('hidden')) {
             closeDayDetailModal();
         } else if (!document.getElementById('calendarModal').classList.contains('hidden')) {
             closeCalendarModal();
-        } else if (!document.getElementById('widgetModal').classList.contains('hidden')) {
-            closeWidgetModal();
+        } else if (editMode) {
+            exitEditMode();
         }
     }
 });
