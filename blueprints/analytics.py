@@ -243,10 +243,44 @@ def settings():
 
 @analytics_bp.route('/flex')
 def flex():
+    today = date.today()
+    
     total_revenue = db.session.query(
         func.coalesce(func.sum(Client.amount_charged), 0)
     ).scalar() or Decimal('0')
     total_revenue = float(total_revenue)
+    
+    month_start = today.replace(day=1)
+    current_month_revenue = db.session.query(
+        func.coalesce(func.sum(Client.amount_charged), 0)
+    ).filter(
+        Client.start_date >= month_start,
+        Client.start_date <= today
+    ).scalar() or Decimal('0')
+    current_month_revenue = float(current_month_revenue)
+    
+    last_3_months = []
+    for i in range(2, -1, -1):
+        if i == 0:
+            m_start = today.replace(day=1)
+            m_end = today
+        else:
+            m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+            if m_start.month == 12:
+                m_end = m_start.replace(year=m_start.year + 1, month=1, day=1) - timedelta(days=1)
+            else:
+                m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
+        
+        month_rev = db.session.query(
+            func.coalesce(func.sum(Client.amount_charged), 0)
+        ).filter(
+            and_(Client.start_date >= m_start, Client.start_date <= m_end)
+        ).scalar() or Decimal('0')
+        
+        last_3_months.append({
+            'label': m_start.strftime('%b %Y'),
+            'amount': float(month_rev)
+        })
     
     total_deals_won = Lead.query.filter(Lead.status == 'closed_won').count()
     total_deals_lost = Lead.query.filter(Lead.status == 'closed_lost').count()
@@ -255,29 +289,22 @@ def flex():
     
     stats = UserStats.get_stats()
     highest_streak = stats.longest_outreach_streak_days if stats else 0
+    current_streak = stats.current_outreach_streak_days if stats else 0
     
     total_xp = db.session.query(func.coalesce(func.sum(XPLog.amount), 0)).scalar() or 0
     
-    tokens_earned = db.session.query(
-        func.coalesce(func.sum(TokenTransaction.amount), 0)
-    ).filter(TokenTransaction.amount > 0).scalar() or 0
-    
-    tokens_spent = abs(db.session.query(
-        func.coalesce(func.sum(TokenTransaction.amount), 0)
-    ).filter(TokenTransaction.amount < 0).scalar() or 0)
-    
-    total_missions = DailyMission.query.filter(DailyMission.is_completed == True).count()
-    
-    bosses_defeated = BossFight.query.filter(BossFight.is_completed == True).count()
-    
     total_outreach = OutreachLog.query.count()
+    
+    this_month_outreach = OutreachLog.query.filter(
+        OutreachLog.date >= month_start,
+        OutreachLog.date <= today
+    ).count()
     
     largest_deal = db.session.query(
         func.max(Client.amount_charged)
     ).scalar() or Decimal('0')
     largest_deal = float(largest_deal)
     
-    today = date.today()
     monthly_revenues = []
     for i in range(24):
         m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
@@ -321,6 +348,8 @@ def flex():
         ActivityLog.action_type == 'lead_revived'
     ).count()
     
+    avg_deal_value = total_revenue / total_deals_won if total_deals_won > 0 else 0
+    
     if total_revenue >= 100000:
         revenue_badge = {'title': 'Six-Figure Slayer', 'class': 'from-red-500 to-orange-500'}
     elif total_revenue >= 50000:
@@ -330,20 +359,27 @@ def flex():
     else:
         revenue_badge = None
     
+    chart_data = {
+        'labels': [m['label'] for m in last_3_months],
+        'data': [m['amount'] for m in last_3_months]
+    }
+    
     return render_template('analytics/flex.html',
         total_revenue=total_revenue,
+        current_month_revenue=current_month_revenue,
+        current_month_name=today.strftime('%B'),
         total_deals_won=total_deals_won,
         win_rate=win_rate,
         highest_streak=highest_streak,
+        current_streak=current_streak,
         total_xp=total_xp,
-        tokens_earned=int(tokens_earned),
-        tokens_spent=int(tokens_spent),
-        total_missions=total_missions,
-        bosses_defeated=bosses_defeated,
         highest_month=highest_month,
         fastest_deal_days=fastest_deal_days,
         largest_deal=largest_deal,
+        avg_deal_value=avg_deal_value,
         leads_revived=leads_revived,
         total_outreach=total_outreach,
-        revenue_badge=revenue_badge
+        this_month_outreach=this_month_outreach,
+        revenue_badge=revenue_badge,
+        chart_data=json.dumps(chart_data)
     )
