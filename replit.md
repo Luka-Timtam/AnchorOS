@@ -12,7 +12,7 @@ The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchem
 **Key Features:**
 *   **Authentication:** Single-password login with session persistence.
 *   **Dashboard:** Centralized view of leads, outreach stats, revenue, and follow-up reminders. Includes customizable widgets and deal closure banners.
-*   **Analytics:** Advanced charting and filtering for project revenue, MRR growth, outreach volume, deal pipeline, and win/loss reasons.
+*   **Analytics:** Advanced charting and filtering for project revenue, MRR growth, outreach volume, deal pipeline, and win/loss reasons. Includes "Flex Mode" - a full-screen showcase of lifetime power stats with high-impact visuals and confetti animation.
 *   **CRM Modules:** Full CRUD for Leads, Clients, Outreach, and Tasks, with detailed tracking and filtering capabilities. Includes lead conversion workflows and comprehensive close reason tracking.
 *   **Gamification:** XP system with levels, streaks, achievements, and a reward system (level, milestone, and unlockable rewards). Features a "Wins Log" for tracking significant accomplishments and monthly performance reviews.
 *   **Token System & Reward Shop:** In-app currency for purchasing customizable rewards, with a transaction history.

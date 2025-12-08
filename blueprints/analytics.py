@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Lead, Client, OutreachLog, UserSettings
+from models import (db, Lead, Client, OutreachLog, UserSettings, UserStats, 
+                    XPLog, TokenTransaction, DailyMission, BossFight, ActivityLog)
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
@@ -238,3 +239,111 @@ def settings():
         return redirect(url_for('analytics.settings'))
     
     return render_template('analytics/settings.html', settings=user_settings)
+
+
+@analytics_bp.route('/flex')
+def flex():
+    total_revenue = db.session.query(
+        func.coalesce(func.sum(Client.amount_charged), 0)
+    ).scalar() or Decimal('0')
+    total_revenue = float(total_revenue)
+    
+    total_deals_won = Lead.query.filter(Lead.status == 'closed_won').count()
+    total_deals_lost = Lead.query.filter(Lead.status == 'closed_lost').count()
+    total_closed = total_deals_won + total_deals_lost
+    win_rate = int((total_deals_won / total_closed * 100)) if total_closed > 0 else 0
+    
+    stats = UserStats.get_stats()
+    highest_streak = stats.longest_outreach_streak_days if stats else 0
+    
+    total_xp = db.session.query(func.coalesce(func.sum(XPLog.amount), 0)).scalar() or 0
+    
+    tokens_earned = db.session.query(
+        func.coalesce(func.sum(TokenTransaction.amount), 0)
+    ).filter(TokenTransaction.amount > 0).scalar() or 0
+    
+    tokens_spent = abs(db.session.query(
+        func.coalesce(func.sum(TokenTransaction.amount), 0)
+    ).filter(TokenTransaction.amount < 0).scalar() or 0)
+    
+    total_missions = DailyMission.query.filter(DailyMission.is_completed == True).count()
+    
+    bosses_defeated = BossFight.query.filter(BossFight.is_completed == True).count()
+    
+    total_outreach = OutreachLog.query.count()
+    
+    largest_deal = db.session.query(
+        func.max(Client.amount_charged)
+    ).scalar() or Decimal('0')
+    largest_deal = float(largest_deal)
+    
+    today = date.today()
+    monthly_revenues = []
+    for i in range(24):
+        m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+        if m_start.month == 12:
+            m_end = m_start.replace(year=m_start.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
+        
+        month_rev = db.session.query(
+            func.coalesce(func.sum(Client.amount_charged), 0)
+        ).filter(
+            and_(Client.start_date >= m_start, Client.start_date <= m_end)
+        ).scalar() or Decimal('0')
+        
+        if float(month_rev) > 0:
+            monthly_revenues.append({
+                'month': m_start.strftime('%B %Y'),
+                'amount': float(month_rev)
+            })
+    
+    highest_month = max(monthly_revenues, key=lambda x: x['amount']) if monthly_revenues else None
+    
+    fastest_deal_days = None
+    won_leads = Lead.query.filter(
+        Lead.status == 'closed_won',
+        Lead.closed_at.isnot(None)
+    ).all()
+    
+    for lead in won_leads:
+        first_outreach = OutreachLog.query.filter(
+            OutreachLog.lead_id == lead.id
+        ).order_by(OutreachLog.date.asc()).first()
+        
+        if first_outreach and lead.closed_at:
+            days = (lead.closed_at.date() - first_outreach.date).days
+            if days >= 0:
+                if fastest_deal_days is None or days < fastest_deal_days:
+                    fastest_deal_days = days
+    
+    leads_revived = ActivityLog.query.filter(
+        ActivityLog.action_type == 'lead_revived'
+    ).count()
+    
+    if total_revenue >= 100000:
+        revenue_badge = {'title': 'Six-Figure Slayer', 'class': 'from-red-500 to-orange-500'}
+    elif total_revenue >= 50000:
+        revenue_badge = {'title': 'Half-a-Stack King', 'class': 'from-purple-500 to-pink-500'}
+    elif total_revenue >= 10000:
+        revenue_badge = {'title': '5-Figure Hunter', 'class': 'from-blue-500 to-cyan-500'}
+    else:
+        revenue_badge = None
+    
+    return render_template('analytics/flex.html',
+        total_revenue=total_revenue,
+        total_deals_won=total_deals_won,
+        win_rate=win_rate,
+        highest_streak=highest_streak,
+        total_xp=total_xp,
+        tokens_earned=int(tokens_earned),
+        tokens_spent=int(tokens_spent),
+        total_missions=total_missions,
+        bosses_defeated=bosses_defeated,
+        highest_month=highest_month,
+        fastest_deal_days=fastest_deal_days,
+        largest_deal=largest_deal,
+        leads_revived=leads_revived,
+        total_outreach=total_outreach,
+        revenue_badge=revenue_badge
+    )

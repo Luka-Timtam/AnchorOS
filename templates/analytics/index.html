@@ -5,9 +5,17 @@
 {% block content %}
 <div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Analytics</h1>
-    <a href="{{ url_for('analytics.settings') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
-        Dashboard Settings
-    </a>
+    <div class="flex gap-3">
+        <a href="{{ url_for('analytics.flex') }}" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-md hover:from-indigo-700 hover:to-purple-700 flex items-center gap-2 font-semibold shadow-lg">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/>
+            </svg>
+            Flex Mode
+        </a>
+        <a href="{{ url_for('analytics.settings') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+            Dashboard Settings
+        </a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
