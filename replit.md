@@ -11,7 +11,7 @@ The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchem
 
 **Key Features:**
 *   **Authentication:** Single-password login with session persistence.
-*   **Dashboard:** Centralized view of leads, outreach stats, revenue, and follow-up reminders. Features a 15-widget system with direct on-dashboard editing: click "Customize Dashboard" to enter edit mode where widgets can be dragged to reorder, hidden with X buttons, and restored from the hidden widgets bar. Widget layout and visibility are persisted in user settings via AJAX.
+*   **Dashboard:** Centralized view of leads, outreach stats, revenue, and follow-up reminders. Includes customizable widgets and deal closure banners.
 *   **Analytics:** Advanced charting and filtering for project revenue, MRR growth, outreach volume, deal pipeline, and win/loss reasons. Includes "Flex Mode" - a full-screen showcase of lifetime power stats with high-impact visuals and confetti animation.
 *   **CRM Modules:** Full CRUD for Leads, Clients, Outreach, and Tasks, with detailed tracking and filtering capabilities. Includes lead conversion workflows and comprehensive close reason tracking.
 *   **Gamification:** XP system with levels, streaks, achievements, and a reward system (level, milestone, and unlockable rewards). Features a "Wins Log" for tracking significant accomplishments and monthly performance reviews.
@@ -36,9 +36,4 @@ The application follows a modular structure with Flask Blueprints separating con
 *   **Jinja2:** Templating engine.
 *   **Tailwind CSS (CDN):** For styling and UI.
 *   **Chart.js:** For data visualization and charts.
-*   **SortableJS:** For drag-and-drop widget reordering on the dashboard.
 *   **External Scheduler:** (Implied for Daily Summary Email) To trigger the `/internal/run-daily-summary` endpoint.
-
-## Recent Changes
-*   **December 8, 2025:** Implemented draggable widget system for the dashboard with SortableJS. Added `dashboard_layout` and `dashboard_active_widgets` JSON fields to UserSettings. Created modular widget template partials in `templates/widgets/`. Added AJAX endpoints for saving layout and visibility changes. Includes "Customize Widgets" modal with toggle switches and drag-to-reorder. Reset to default option available. Flex Mode now focuses on revenue and deals, using line chart for 3-month trend.
-*   **December 8, 2025:** Expanded widget system from 10 to 15 widgets (added MRR, Project Revenue, Outreach, Deals, Forecast). Completely refactored dashboard customization from modal-based to in-place edit mode. Implemented direct drag-and-drop widget reordering on the dashboard itself. Added edit mode toggle with show/hide controls (X to hide, + to add back widgets). Removed widget grouping; all widgets now operate independently. Fixed JavaScript bugs including undefined variables and null reference errors. Removed "Dashboard Settings" button from analytics page.

@@ -150,9 +150,6 @@ class UserSettings(db.Model):
     show_forecast_widget = db.Column(db.Boolean, default=True)
     show_followup_widget = db.Column(db.Boolean, default=True)
     
-    dashboard_layout = db.Column(db.Text, nullable=True)
-    dashboard_active_widgets = db.Column(db.Text, nullable=True)
-    
     pause_active = db.Column(db.Boolean, default=False)
     pause_start = db.Column(db.Date, nullable=True)
     pause_end = db.Column(db.Date, nullable=True)
@@ -162,60 +159,6 @@ class UserSettings(db.Model):
     focus_timer_end = db.Column(db.DateTime, nullable=True)
     focus_timer_length = db.Column(db.Integer, nullable=True)
     
-    DEFAULT_WIDGET_ORDER = [
-        'followups',
-        'mrr',
-        'project_revenue',
-        'outreach',
-        'deals',
-        'forecast',
-        'xp',
-        'tokens',
-        'streak',
-        'consistency',
-        'mission',
-        'boss',
-        'focus',
-        'activity',
-        'calendar'
-    ]
-    
-    DEFAULT_ACTIVE_WIDGETS = {
-        'followups': True,
-        'mrr': True,
-        'project_revenue': True,
-        'outreach': True,
-        'deals': True,
-        'forecast': True,
-        'xp': True,
-        'tokens': True,
-        'streak': True,
-        'consistency': True,
-        'mission': True,
-        'boss': True,
-        'focus': True,
-        'activity': True,
-        'calendar': True
-    }
-    
-    WIDGET_DEFINITIONS = {
-        'followups': {'name': 'Follow-up Widget', 'description': 'Shows leads needing follow-up today and overdue', 'icon': 'bell'},
-        'mrr': {'name': 'MRR Widget', 'description': 'Shows hosting and SaaS monthly recurring revenue', 'icon': 'dollar'},
-        'project_revenue': {'name': 'Project Revenue Widget', 'description': 'Shows monthly project revenue chart', 'icon': 'chart-bar'},
-        'outreach': {'name': 'Outreach Widget', 'description': 'Shows weekly outreach volume chart', 'icon': 'mail'},
-        'deals': {'name': 'Deals Widget', 'description': 'Shows weekly deals closed chart', 'icon': 'check-circle'},
-        'forecast': {'name': 'Forecast Widget', 'description': 'Shows 3-month revenue forecast', 'icon': 'trending-up'},
-        'consistency': {'name': 'Consistency Score Widget', 'description': 'Shows outreach consistency metrics', 'icon': 'chart'},
-        'xp': {'name': 'XP & Level', 'description': 'Your experience points', 'icon': 'star'},
-        'tokens': {'name': 'Tokens', 'description': 'Reward shop currency', 'icon': 'coin'},
-        'streak': {'name': 'Streak', 'description': 'Outreach streak days', 'icon': 'fire'},
-        'mission': {'name': 'Daily Mission', 'description': 'Today\'s challenge', 'icon': 'target'},
-        'boss': {'name': 'Boss Fight', 'description': 'Monthly challenge', 'icon': 'skull'},
-        'focus': {'name': 'Focus Timer', 'description': 'Pomodoro sessions', 'icon': 'clock'},
-        'activity': {'name': 'Recent Activity', 'description': 'Activity timeline', 'icon': 'activity'},
-        'calendar': {'name': 'Calendar', 'description': 'Tasks and events', 'icon': 'calendar'}
-    }
-    
     @staticmethod
     def get_settings():
         settings = UserSettings.query.first()
@@ -224,45 +167,6 @@ class UserSettings(db.Model):
             db.session.add(settings)
             db.session.commit()
         return settings
-    
-    def get_dashboard_layout(self):
-        import json
-        if self.dashboard_layout:
-            try:
-                return json.loads(self.dashboard_layout)
-            except (json.JSONDecodeError, TypeError):
-                pass
-        return self.DEFAULT_WIDGET_ORDER.copy()
-    
-    def set_dashboard_layout(self, order):
-        import json
-        self.dashboard_layout = json.dumps(order)
-    
-    def get_active_widgets(self):
-        import json
-        if self.dashboard_active_widgets:
-            try:
-                return json.loads(self.dashboard_active_widgets)
-            except (json.JSONDecodeError, TypeError):
-                pass
-        return self.DEFAULT_ACTIVE_WIDGETS.copy()
-    
-    def set_active_widgets(self, active):
-        import json
-        self.dashboard_active_widgets = json.dumps(active)
-    
-    def is_widget_active(self, widget_id):
-        active = self.get_active_widgets()
-        return active.get(widget_id, True)
-    
-    def get_ordered_active_widgets(self):
-        order = self.get_dashboard_layout()
-        active = self.get_active_widgets()
-        valid_widgets = list(self.WIDGET_DEFINITIONS.keys())
-        for widget_id in valid_widgets:
-            if widget_id not in order:
-                order.append(widget_id)
-        return [w for w in order if w in valid_widgets and active.get(w, True)]
     
     def check_pause_expiry(self):
         if self.pause_active and self.pause_end:

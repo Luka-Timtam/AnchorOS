@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template
 from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight, ActivityLog
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
-import json
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -180,10 +179,6 @@ def index():
         Lead.status.in_(['closed_won', 'closed_lost'])
     ).all()
     
-    ordered_widgets = settings.get_ordered_active_widgets()
-    active_widgets = settings.get_active_widgets()
-    widget_definitions = UserSettings.WIDGET_DEFINITIONS
-    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -218,73 +213,5 @@ def index():
         pause_active=pause_active,
         pause_end=pause_end,
         recent_activities=recent_activities,
-        deals_closed_today=deals_closed_today,
-        ordered_widgets=ordered_widgets,
-        active_widgets=active_widgets,
-        widget_definitions=widget_definitions
+        deals_closed_today=deals_closed_today
     )
-
-
-@dashboard_bp.route('/widgets/save-layout', methods=['POST'])
-def save_widget_layout():
-    try:
-        data = request.get_json()
-        order = data.get('order', [])
-        
-        if not isinstance(order, list):
-            return jsonify({'success': False, 'error': 'Invalid order format'}), 400
-        
-        valid_widgets = list(UserSettings.WIDGET_DEFINITIONS.keys())
-        order = [w for w in order if w in valid_widgets]
-        
-        settings = UserSettings.get_settings()
-        settings.set_dashboard_layout(order)
-        db.session.commit()
-        
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@dashboard_bp.route('/widgets/save-active', methods=['POST'])
-def save_active_widgets():
-    try:
-        data = request.get_json()
-        active = data.get('active', {})
-        
-        if not isinstance(active, dict):
-            return jsonify({'success': False, 'error': 'Invalid format'}), 400
-        
-        valid_widgets = list(UserSettings.WIDGET_DEFINITIONS.keys())
-        active = {k: bool(v) for k, v in active.items() if k in valid_widgets}
-        
-        settings = UserSettings.get_settings()
-        settings.set_active_widgets(active)
-        db.session.commit()
-        
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@dashboard_bp.route('/widgets/reset-layout', methods=['POST'])
-def reset_widget_layout():
-    try:
-        settings = UserSettings.get_settings()
-        settings.dashboard_layout = None
-        settings.dashboard_active_widgets = None
-        db.session.commit()
-        
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@dashboard_bp.route('/widgets/get-config')
-def get_widget_config():
-    settings = UserSettings.get_settings()
-    return jsonify({
-        'order': settings.get_dashboard_layout(),
-        'active': settings.get_active_widgets(),
-        'definitions': UserSettings.WIDGET_DEFINITIONS
-    })
