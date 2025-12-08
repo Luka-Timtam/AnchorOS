@@ -853,3 +853,40 @@ class WinsLog(db.Model):
         return WinsLog.query.filter(
             WinsLog.timestamp >= cutoff
         ).order_by(WinsLog.timestamp.desc()).all()
+
+
+class MonthlyReview(db.Model):
+    __tablename__ = 'monthly_reviews'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    year_month = db.Column(db.String(7), nullable=False, unique=True)
+    content_json = db.Column(db.Text, nullable=False)
+    generated_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    @staticmethod
+    def get_review(year_month):
+        return MonthlyReview.query.filter_by(year_month=year_month).first()
+    
+    @staticmethod
+    def get_all_reviews():
+        return MonthlyReview.query.order_by(MonthlyReview.year_month.desc()).all()
+    
+    @staticmethod
+    def save_review(year_month, content_dict):
+        import json
+        existing = MonthlyReview.get_review(year_month)
+        if existing:
+            existing.content_json = json.dumps(content_dict)
+            existing.generated_at = datetime.utcnow()
+        else:
+            review = MonthlyReview(
+                year_month=year_month,
+                content_json=json.dumps(content_dict)
+            )
+            db.session.add(review)
+        db.session.commit()
+        return MonthlyReview.get_review(year_month)
+    
+    def get_content(self):
+        import json
+        return json.loads(self.content_json) if self.content_json else {}
