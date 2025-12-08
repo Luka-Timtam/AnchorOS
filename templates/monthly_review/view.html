@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ label }} Review - Personal CRM{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ label }} Review</h1>
+            <p class="text-gray-600 mt-1">Generated {{ review.generated_at.strftime('%B %d, %Y at %H:%M') }}</p>
+        </div>
+        <div class="flex gap-3">
+            <form method="POST" action="{{ url_for('monthly_review.regenerate', year_month=review.year_month) }}" class="inline">
+                <button type="submit" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Regenerate
+                </button>
+            </form>
+            <a href="{{ url_for('monthly_review.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Reviews
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow p-5 text-white">
+        <div class="text-sm opacity-80 mb-1">Total XP Earned</div>
+        <div class="text-3xl font-bold">{{ content.total_xp }}</div>
+    </div>
+    <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg shadow p-5 text-white">
+        <div class="text-sm opacity-80 mb-1">Tokens Earned</div>
+        <div class="text-3xl font-bold">{{ content.total_tokens }}</div>
+    </div>
+    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg shadow p-5 text-white">
+        <div class="text-sm opacity-80 mb-1">Outreach Volume</div>
+        <div class="text-3xl font-bold">{{ content.outreach_volume }}</div>
+    </div>
+    <div class="bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg shadow p-5 text-white">
+        <div class="text-sm opacity-80 mb-1">Consistency Score</div>
+        <div class="text-3xl font-bold">{{ content.consistency_score }}%</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Sales Performance</h3>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Calls Booked</span>
+                <span class="text-xl font-bold text-gray-900">{{ content.calls_booked }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Proposals Sent</span>
+                <span class="text-xl font-bold text-gray-900">{{ content.proposals_sent }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span class="text-green-700">Deals Won</span>
+                <span class="text-xl font-bold text-green-700">{{ content.deals_won }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                <span class="text-red-700">Deals Lost</span>
+                <span class="text-xl font-bold text-red-700">{{ content.deals_lost }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Streaks & Consistency</h3>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Current Streak</span>
+                <span class="text-xl font-bold text-orange-500">{{ content.streak_current }} days</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Longest Streak</span>
+                <span class="text-xl font-bold text-gray-900">{{ content.streak_longest }} days</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span class="text-gray-600">Missions Completed</span>
+                <span class="text-xl font-bold text-purple-600">{{ content.missions_completed }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Activity Insights</h3>
+        <div class="space-y-4">
+            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="text-sm text-green-600 mb-1">Most Active Day</div>
+                <div class="font-semibold text-green-800">{{ content.most_active_day }}</div>
+                <div class="text-sm text-green-600">{{ content.most_active_count }} outreaches</div>
+            </div>
+            <div class="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <div class="text-sm text-orange-600 mb-1">Least Active Day</div>
+                <div class="font-semibold text-orange-800">{{ content.least_active_day }}</div>
+                <div class="text-sm text-orange-600">{{ content.least_active_count }} outreaches</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Boss Fight</h3>
+        {% if content.boss_result %}
+        <div class="p-4 {% if content.boss_result.is_completed %}bg-green-50 border-green-200{% else %}bg-gray-50 border-gray-200{% endif %} border rounded-lg">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-semibold text-gray-900">{{ content.boss_result.description }}</span>
+                {% if content.boss_result.is_completed %}
+                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">DEFEATED</span>
+                {% else %}
+                <span class="bg-gray-400 text-white text-xs px-2 py-1 rounded-full">IN PROGRESS</span>
+                {% endif %}
+            </div>
+            <div class="text-sm text-gray-600 mb-2">Progress: {{ content.boss_result.progress }} / {{ content.boss_result.target }}</div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="{% if content.boss_result.is_completed %}bg-green-500{% else %}bg-indigo-500{% endif %} rounded-full h-2" 
+                     style="width: {{ (content.boss_result.progress / content.boss_result.target * 100) | int if content.boss_result.target else 0 }}%"></div>
+            </div>
+            {% if content.boss_result.is_completed %}
+            <div class="mt-2 text-sm text-green-600">Reward: +{{ content.boss_result.reward_tokens }} tokens</div>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">No boss fight this month</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Win Reasons</h3>
+        {% if content.top_win_reasons %}
+        <div class="space-y-3">
+            {% for reason, count in content.top_win_reasons %}
+            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <span class="text-gray-700">{{ reason }}</span>
+                <span class="bg-green-500 text-white text-sm px-3 py-1 rounded-full">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-4">No deals won this month</p>
+        {% endif %}
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Loss Reasons</h3>
+        {% if content.top_loss_reasons %}
+        <div class="space-y-3">
+            {% for reason, count in content.top_loss_reasons %}
+            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                <span class="text-gray-700">{{ reason }}</span>
+                <span class="bg-red-500 text-white text-sm px-3 py-1 rounded-full">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-4">No deals lost this month</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if content.highlights %}
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Month Highlights</h3>
+    <div class="space-y-3">
+        {% for win in content.highlights %}
+        <div class="flex items-start p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg">
+            <span class="text-xl mr-3">&#127881;</span>
+            <div class="flex-1">
+                <div class="font-semibold text-gray-900">{{ win.title }}</div>
+                {% if win.description %}
+                <div class="text-sm text-gray-600 mt-1">{{ win.description }}</div>
+                {% endif %}
+                <div class="flex gap-2 mt-1">
+                    {% if win.xp %}
+                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">+{{ win.xp }} XP</span>
+                    {% endif %}
+                    {% if win.tokens %}
+                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">+{{ win.tokens }} tokens</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="flex justify-center gap-4 mb-8">
+    <button disabled class="bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Download as PDF (Coming Soon)
+    </button>
+</div>
+
+<div class="text-center">
+    <form method="POST" action="{{ url_for('monthly_review.delete', year_month=review.year_month) }}" 
+          onsubmit="return confirm('Are you sure you want to delete this review?')">
+        <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete this review</button>
+    </form>
+</div>
+{% endblock %}
