@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Lead, OutreachLog, Client, ActivityLog
+from models import db, Lead, OutreachLog, Client, ActivityLog, WinsLog
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
@@ -253,6 +253,13 @@ def convert_to_client(id):
         update_boss_progress('close_deals')
         
         ActivityLog.log_activity('deal_closed_won', f'Closed {lead.name} (WON): {close_reason_str}', lead.id, 'lead')
+        
+        WinsLog.log_win(
+            title=f'Deal Won: {lead.name}',
+            description=f'Closed deal with {lead.business_name or lead.name}. Reason: {close_reason_str}',
+            xp_value=XP_RULES['lead_closed_won'],
+            token_value=0
+        )
         
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))

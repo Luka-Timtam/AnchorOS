@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from models import db, BossFight, BossFightHistory, ActivityLog
+from models import db, BossFight, BossFightHistory, ActivityLog, WinsLog
 
 boss_bp = Blueprint('boss', __name__)
 
@@ -33,5 +33,11 @@ def update_boss_progress(boss_type, increment=1):
             from flask import flash
             flash(f'Boss Defeated! +{current_boss.reward_tokens} tokens!', 'success')
             ActivityLog.log_activity('boss_defeated', f'Boss defeated: {current_boss.description}', current_boss.id, 'boss')
+            WinsLog.log_win(
+                title='Boss Defeated!',
+                description=f'Defeated the monthly boss: {current_boss.description}',
+                xp_value=0,
+                token_value=current_boss.reward_tokens
+            )
             return True
     return False

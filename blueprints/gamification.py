@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog, WinsLog
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -102,6 +102,12 @@ def add_xp(amount, reason=""):
     if new_level > old_level:
         flash(f'Level Up! You are now Level {new_level}!', 'success')
         ActivityLog.log_activity('level_up', f'Leveled up to Level {new_level}!')
+        WinsLog.log_win(
+            title=f'Level Up to {new_level}',
+            description=f'Reached Level {new_level} after gaining XP.',
+            xp_value=amount,
+            token_value=0
+        )
         check_level_interval_rewards(new_level)
         check_milestone_rewards(new_level)
     
@@ -234,6 +240,13 @@ def update_outreach_streak():
             if not existing:
                 add_tokens(TOKEN_RULES[rule_key], reason)
                 flash(f'{reason}: +{TOKEN_RULES[rule_key]} tokens!', 'success')
+                if milestone in [7, 14, 30]:
+                    WinsLog.log_win(
+                        title=f'{milestone}-Day Streak!',
+                        description=f'Reached a {milestone}-day outreach streak. Keep it up!',
+                        xp_value=XP_RULES.get(f'streak_{milestone}', 0) if milestone in [10, 30] else 0,
+                        token_value=TOKEN_RULES[rule_key]
+                    )
     
     check_and_unlock_achievements()
     return stats.current_outreach_streak_days
@@ -280,6 +293,12 @@ def check_weekly_goal():
     if week_outreach >= weekly_goal.target_value and not existing_log:
         add_xp(XP_RULES['weekly_goal_hit'], "Weekly outreach goal hit!")
         add_tokens(TOKEN_RULES['weekly_goal_hit'], "Weekly goal hit!")
+        WinsLog.log_win(
+            title='Weekly Goal Hit',
+            description=f'Completed {week_outreach} outreach activities this week, hitting the weekly target of {weekly_goal.target_value}.',
+            xp_value=XP_RULES['weekly_goal_hit'],
+            token_value=TOKEN_RULES['weekly_goal_hit']
+        )
         flash('Weekly goal hit: +25 XP, +7 tokens!', 'success')
         return True
     
