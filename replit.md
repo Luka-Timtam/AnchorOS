@@ -109,6 +109,12 @@ This is a private, single-user CRM tool built with:
   - Upcoming rewards section shows next rewards to earn
   - Unlocked rewards history
   - Reward settings: Add, toggle, delete level and milestone rewards
+- Wins Log:
+  - Tracks significant achievements and milestones
+  - Auto-logged wins: Level up, Boss defeated, Streak milestones (7/14/30 days), Weekly goal hit, Deal closed won
+  - Manual win entry with title and description
+  - Displays with XP/token earned badges
+  - Reverse chronological order
 
 ### Token System & Reward Shop (/rewards)
 - Separate token currency from XP for purchasing rewards
@@ -284,7 +290,7 @@ The application runs on port 5000.
 
 ## Database
 
-SQLite database with 20 tables:
+SQLite database with 22 tables:
 - leads: Lead tracking with status pipeline, close reasons, closed_at timestamp
 - clients: Client info with project and recurring revenue
 - outreach_logs: Outreach activity logging
@@ -305,7 +311,8 @@ SQLite database with 20 tables:
 - boss_fights: Monthly boss challenges
 - boss_fight_history: Record of defeated bosses
 - activity_log: User activity timeline entries
-- notes: Mini notebook entries with tags and pinning
+- wins_log: Tracks significant wins/achievements with XP/token values
 - focus_sessions: Focus session history (start/end time, duration, completed status)
+- notes: Mini notebook entries with tags and pinning
 
 Tables are auto-created on first run.
