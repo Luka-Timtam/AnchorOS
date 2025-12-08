@@ -26,6 +26,7 @@ class Lead(db.Model):
     converted_at = db.Column(db.DateTime, nullable=True)
     close_reason = db.Column(db.String(500), nullable=True)
     closed_at = db.Column(db.DateTime, nullable=True)
+    archived_at = db.Column(db.DateTime, nullable=True)
     
     outreach_logs = db.relationship('OutreachLog', backref='lead', lazy=True)
     tasks = db.relationship('Task', backref='lead', lazy=True, foreign_keys='Task.related_lead_id')

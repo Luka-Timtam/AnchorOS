@@ -23,7 +23,7 @@ def index():
     search = request.args.get('search', '')
     next_action_filter = request.args.get('next_action', '')
     
-    query = Lead.query.filter(Lead.converted_at.is_(None))
+    query = Lead.query.filter(Lead.converted_at.is_(None), Lead.archived_at.is_(None))
     
     if status_filter:
         query = query.filter(Lead.status == status_filter)
@@ -53,12 +53,15 @@ def index():
     
     converted_leads = Lead.query.filter(Lead.converted_at.isnot(None)).order_by(Lead.converted_at.desc()).all()
     
+    archived_leads = Lead.query.filter(Lead.archived_at.isnot(None)).order_by(Lead.archived_at.desc()).all()
+    
     niches = db.session.query(Lead.niche).distinct().filter(Lead.niche.isnot(None), Lead.niche != '').all()
     sources = db.session.query(Lead.source).distinct().filter(Lead.source.isnot(None), Lead.source != '').all()
     
     return render_template('leads/index.html',
         leads=leads,
         converted_leads=converted_leads,
+        archived_leads=archived_leads,
         statuses=Lead.status_choices(),
         niches=[n[0] for n in niches],
         sources=[s[0] for s in sources],
@@ -154,12 +157,20 @@ def edit(id):
         action='Edit'
     )
 
-@leads_bp.route('/<int:id>/delete', methods=['POST'])
-def delete(id):
+@leads_bp.route('/<int:id>/archive', methods=['POST'])
+def archive(id):
     lead = Lead.query.get_or_404(id)
-    db.session.delete(lead)
+    lead.archived_at = datetime.utcnow()
     db.session.commit()
-    flash('Lead deleted successfully!', 'success')
+    flash('Lead archived successfully!', 'success')
+    return redirect(url_for('leads.index'))
+
+@leads_bp.route('/<int:id>/unarchive', methods=['POST'])
+def unarchive(id):
+    lead = Lead.query.get_or_404(id)
+    lead.archived_at = None
+    db.session.commit()
+    flash('Lead restored from archive!', 'success')
     return redirect(url_for('leads.index'))
 
 @leads_bp.route('/<int:id>/update-status', methods=['POST'])
