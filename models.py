@@ -150,6 +150,9 @@ class UserSettings(db.Model):
     show_forecast_widget = db.Column(db.Boolean, default=True)
     show_followup_widget = db.Column(db.Boolean, default=True)
     
+    dashboard_order = db.Column(db.Text, nullable=True)
+    dashboard_active = db.Column(db.Text, nullable=True)
+    
     pause_active = db.Column(db.Boolean, default=False)
     pause_start = db.Column(db.Date, nullable=True)
     pause_end = db.Column(db.Date, nullable=True)
@@ -158,6 +161,61 @@ class UserSettings(db.Model):
     focus_timer_active = db.Column(db.Boolean, default=False)
     focus_timer_end = db.Column(db.DateTime, nullable=True)
     focus_timer_length = db.Column(db.Integer, nullable=True)
+    
+    DEFAULT_WIDGET_ORDER = [
+        'followups',
+        'gamification_stats',
+        'daily_mission',
+        'boss_battle',
+        'focus_session',
+        'activity_calendar'
+    ]
+    
+    DEFAULT_WIDGET_NAMES = {
+        'followups': 'Follow-ups (Today & Overdue)',
+        'gamification_stats': 'XP, Tokens, Streak & Consistency',
+        'daily_mission': 'Daily Mission',
+        'boss_battle': 'Boss Battle',
+        'focus_session': 'Focus Session Timer',
+        'activity_calendar': 'Recent Activity & Calendar'
+    }
+    
+    def get_dashboard_order(self):
+        import json
+        if self.dashboard_order:
+            try:
+                order = json.loads(self.dashboard_order)
+                for w in self.DEFAULT_WIDGET_ORDER:
+                    if w not in order:
+                        order.append(w)
+                return order
+            except:
+                pass
+        return self.DEFAULT_WIDGET_ORDER.copy()
+    
+    def set_dashboard_order(self, order):
+        import json
+        self.dashboard_order = json.dumps(order)
+    
+    def get_dashboard_active(self):
+        import json
+        if self.dashboard_active:
+            try:
+                active = json.loads(self.dashboard_active)
+                for w in self.DEFAULT_WIDGET_ORDER:
+                    if w not in active:
+                        active[w] = True
+                return active
+            except:
+                pass
+        return {w: True for w in self.DEFAULT_WIDGET_ORDER}
+    
+    def set_dashboard_active(self, active):
+        import json
+        self.dashboard_active = json.dumps(active)
+    
+    def is_widget_active(self, widget_id):
+        return self.get_dashboard_active().get(widget_id, True)
     
     @staticmethod
     def get_settings():

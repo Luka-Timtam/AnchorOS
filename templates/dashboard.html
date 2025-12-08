@@ -60,11 +60,15 @@
 
 <div class="mb-6 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-    <a href="{{ url_for('analytics.settings') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-        Customize Widgets
-    </a>
+    <button onclick="openWidgetModal()" class="bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition flex items-center gap-2 text-gray-600 hover:text-gray-900">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+        </svg>
+        <span class="text-sm font-medium">Customize Widgets</span>
+    </button>
 </div>
 
+{% macro render_followups() %}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <a href="{{ url_for('leads.index', next_action='today') }}" class="block bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors">
         <div class="flex items-center justify-between">
@@ -86,7 +90,9 @@
         </div>
     </a>
 </div>
+{% endmacro %}
 
+{% macro render_gamification_stats() %}
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 hover:from-indigo-100 hover:to-purple-100 transition-colors">
         <div class="flex items-center justify-between">
@@ -131,7 +137,9 @@
         </div>
     </a>
 </div>
+{% endmacro %}
 
+{% macro render_daily_mission() %}
 <a href="{{ url_for('missions.index') }}" class="block bg-white border border-gray-200 rounded-lg p-4 mb-6 hover:border-indigo-300 transition-colors">
     <div class="flex items-center justify-between mb-2">
         <div>
@@ -158,7 +166,9 @@
         <span>{{ mission_progress_pct }}%</span>
     </div>
 </a>
+{% endmacro %}
 
+{% macro render_boss_battle() %}
 {% if current_boss %}
 <a href="{{ url_for('boss.index') }}" class="block bg-gradient-to-r {% if current_boss.is_completed %}from-green-500 to-emerald-600{% else %}from-red-500 to-orange-600{% endif %} rounded-lg p-4 mb-6 hover:opacity-90 transition-opacity text-white">
     <div class="flex items-center justify-between mb-2">
@@ -190,7 +200,9 @@
     </div>
 </a>
 {% endif %}
+{% endmacro %}
 
+{% macro render_focus_session() %}
 <div id="focusSessionCard" class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4 mb-6">
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -227,7 +239,9 @@
         </div>
     </div>
 </div>
+{% endmacro %}
 
+{% macro render_activity_calendar() %}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center justify-between mb-3">
@@ -317,6 +331,19 @@
         </div>
     </div>
 </div>
+{% endmacro %}
+
+{% for widget_id in widget_order %}
+{% if widget_active.get(widget_id, True) %}
+    {% if widget_id == 'followups' %}{{ render_followups() }}
+    {% elif widget_id == 'gamification_stats' %}{{ render_gamification_stats() }}
+    {% elif widget_id == 'daily_mission' %}{{ render_daily_mission() }}
+    {% elif widget_id == 'boss_battle' %}{{ render_boss_battle() }}
+    {% elif widget_id == 'focus_session' %}{{ render_focus_session() }}
+    {% elif widget_id == 'activity_calendar' %}{{ render_activity_calendar() }}
+    {% endif %}
+{% endif %}
+{% endfor %}
 
 <div id="calendarModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -371,6 +398,30 @@
                 </button>
             </div>
             <div id="dayDetailContent" class="p-4 overflow-y-auto max-h-96"></div>
+        </div>
+    </div>
+</div>
+
+<div id="widgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl w-full max-w-lg max-h-[80vh] overflow-hidden shadow-2xl">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900">Customize Dashboard Widgets</h3>
+                <button onclick="closeWidgetModal()" class="p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto max-h-96">
+                <p class="text-sm text-gray-500 mb-4">Toggle widgets on or off and reorder them using the arrow buttons. Changes take effect after page refresh.</p>
+                <div id="widgetList" class="space-y-2">
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closeWidgetModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">Cancel</button>
+                <button onclick="saveWidgetSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">Save Changes</button>
+            </div>
         </div>
     </div>
 </div>
@@ -595,6 +646,95 @@ document.addEventListener('keydown', function(e) {
 });
 
 loadMiniCalendar();
+
+let widgetOrder = {{ widget_order | tojson }};
+let widgetActive = {{ widget_active | tojson }};
+const widgetNames = {{ widget_names | tojson }};
+
+function openWidgetModal() {
+    renderWidgetList();
+    document.getElementById('widgetModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeWidgetModal() {
+    document.getElementById('widgetModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function renderWidgetList() {
+    const container = document.getElementById('widgetList');
+    let html = '';
+    
+    widgetOrder.forEach((widgetId, index) => {
+        const name = widgetNames[widgetId] || widgetId;
+        const isActive = widgetActive[widgetId] !== false;
+        
+        html += `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200" data-widget-id="${widgetId}">
+            <div class="flex items-center gap-3">
+                <div class="flex flex-col gap-1">
+                    <button onclick="moveWidget('${widgetId}', -1)" class="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                    </button>
+                    <button onclick="moveWidget('${widgetId}', 1)" class="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 ${index === widgetOrder.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                <span class="font-medium text-gray-800">${name}</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" class="sr-only peer" ${isActive ? 'checked' : ''} onchange="toggleWidget('${widgetId}', this.checked)">
+                <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+function moveWidget(widgetId, direction) {
+    const index = widgetOrder.indexOf(widgetId);
+    const newIndex = index + direction;
+    
+    if (newIndex < 0 || newIndex >= widgetOrder.length) return;
+    
+    widgetOrder.splice(index, 1);
+    widgetOrder.splice(newIndex, 0, widgetId);
+    
+    renderWidgetList();
+}
+
+function toggleWidget(widgetId, active) {
+    widgetActive[widgetId] = active;
+}
+
+function saveWidgetSettings() {
+    fetch('/dashboard/widget-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            order: widgetOrder,
+            active: widgetActive
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeWidgetModal();
+            location.reload();
+        }
+    })
+    .catch(err => console.error('Save widget settings error:', err));
+}
+
+document.getElementById('widgetModal').addEventListener('click', function(e) {
+    if (e.target === this) closeWidgetModal();
+});
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

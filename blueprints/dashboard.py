@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, jsonify
 from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight, ActivityLog
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
@@ -179,6 +179,10 @@ def index():
         Lead.status.in_(['closed_won', 'closed_lost'])
     ).all()
     
+    widget_order = settings.get_dashboard_order()
+    widget_active = settings.get_dashboard_active()
+    widget_names = UserSettings.DEFAULT_WIDGET_NAMES
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -213,5 +217,22 @@ def index():
         pause_active=pause_active,
         pause_end=pause_end,
         recent_activities=recent_activities,
-        deals_closed_today=deals_closed_today
+        deals_closed_today=deals_closed_today,
+        widget_order=widget_order,
+        widget_active=widget_active,
+        widget_names=widget_names
     )
+
+
+@dashboard_bp.route('/widget-settings', methods=['POST'])
+def save_widget_settings():
+    data = request.get_json()
+    settings = UserSettings.get_settings()
+    
+    if 'order' in data:
+        settings.set_dashboard_order(data['order'])
+    if 'active' in data:
+        settings.set_dashboard_active(data['active'])
+    
+    db.session.commit()
+    return jsonify({'success': True})

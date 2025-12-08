@@ -1,0 +1,106 @@
+Add a widget customisation system to the dashboard without modifying the appearance, size, spacing, behaviour, or layout of any existing widgets.
+
+Everything must look exactly the same as it currently does.  
+Do not change widget CSS, HTML structure, grid layout, row widths, heights, card sizes, or placement.  
+The current widget order must remain unchanged and act as the default layout.
+
+====================================
+1. REMOVE UNUSED ANALYTICS BUTTON
+====================================
+
+Remove the “Dashboard Settings” button from the Analytics page.  
+Do not change the design or spacing of the Analytics page otherwise.
+
+====================================
+2. CUSTOMISE WIDGETS BUTTON (VISUAL IMPROVEMENT ONLY)
+====================================
+
+Improve the look of the “Customise Widgets” button on the dashboard without affecting the dashboard layout.
+
+• Replace only the button’s styling  
+• Do NOT change card spacing, row height, margins, or grid alignment  
+• Button should remain in the same position
+
+Suggested style:
+bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition flex items-center gap-2
+
+====================================
+3. DATA MODEL (NO IMPACT ON LAYOUT)
+====================================
+
+In user_settings, add two fields:
+
+dashboard_order: a list storing widget IDs  
+dashboard_active: a map of widget IDs → True/False  
+
+On first load, automatically populate dashboard_order with the **current widget order exactly as it exists right now**, in the exact sequence they currently appear.
+
+Do NOT change the rendered order unless the user manually edits it through the new settings UI.
+
+dashboard_active should default to True for every current widget.
+
+====================================
+4. DO NOT MODIFY ANY WIDGET CODE
+====================================
+
+All existing widgets:
+• must render exactly the same way  
+• must stay in the same positions by default  
+• must keep their current height  
+• must keep their current width  
+• must keep all the spacing they have now  
+
+No new wrapper divs, no new grid classes, no layout restructuring.
+
+====================================
+5. CUSTOMISE WIDGETS PANEL
+====================================
+
+Create a modal or settings panel opened by the “Customise Widgets” button.
+
+Inside the panel:
+
+SECTION A — Toggle Visibility  
+• Show a toggle switch for each widget  
+• Toggling on/off updates dashboard_active  
+• This only hides/shows the widget, NOT resize or move anything else  
+
+SECTION B — Reorder Widgets  
+• Show all widgets in their current default order initially  
+• Provide ↑ and ↓ buttons to move a widget one position up or down in dashboard_order  
+• Do NOT animate or preview layout changes in the dashboard  
+• Only the ORDER value changes — the layout stays as-is until the user refreshes the dashboard page
+
+====================================
+6. DASHBOARD RENDERING LOGIC
+====================================
+
+When rendering the dashboard:
+
+1. Load dashboard_order  
+2. Load dashboard_active  
+3. Render widgets in the order specified by dashboard_order  
+4. Skip widgets where dashboard_active[id] = False  
+5. Do NOT modify any HTML/CSS of the grid or widgets  
+
+If dashboard_order is missing or corrupted:
+• automatically regenerate using the **current layout as the default**.
+
+====================================
+7. STRICT VISUAL PROTECTION
+====================================
+
+Under no circumstances should this feature:
+• resize widgets  
+• reposition widgets automatically  
+• stack widgets differently  
+• alter the grid  
+• remove or add padding/margins  
+• change card dimensions  
+• cause wrapping or collapsing  
+
+The dashboard must look **identical** to the current version unless the user intentionally changes widget order or visibility.
+
+====================================
+END OF PROMPT
+====================================
