@@ -149,7 +149,13 @@
 
 {% if converted_leads %}
 <div class="mt-10">
-    <h2 class="text-xl font-semibold text-gray-700 mb-4">Converted Leads ({{ converted_leads|length }})</h2>
+    <button onclick="toggleConvertedSection()" class="flex items-center gap-2 text-xl font-semibold text-gray-700 mb-4 hover:text-gray-900">
+        <svg id="convertedChevron" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        Converted Leads ({{ converted_leads|length }})
+    </button>
+    <div id="convertedSection" class="hidden">
     <div class="bg-gray-50 rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-100">
@@ -204,6 +210,7 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
     </div>
 </div>
 {% endif %}
@@ -262,13 +269,25 @@
     </div>
 </div>
 
+{% endif %}
+
 <script>
+function toggleConvertedSection() {
+    const section = document.getElementById('convertedSection');
+    const chevron = document.getElementById('convertedChevron');
+    if (section && chevron) {
+        section.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-90');
+    }
+}
+
 function toggleArchivedSection() {
     const section = document.getElementById('archivedSection');
     const chevron = document.getElementById('archivedChevron');
-    section.classList.toggle('hidden');
-    chevron.classList.toggle('rotate-90');
+    if (section && chevron) {
+        section.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-90');
+    }
 }
 </script>
-{% endif %}
 {% endblock %}
