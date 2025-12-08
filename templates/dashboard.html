@@ -418,9 +418,12 @@
                 <div id="widgetList" class="space-y-2">
                 </div>
             </div>
-            <div class="p-4 border-t border-gray-200 flex justify-end gap-3">
-                <button onclick="closeWidgetModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">Cancel</button>
-                <button onclick="saveWidgetSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">Save Changes</button>
+            <div class="p-4 border-t border-gray-200 flex justify-between">
+                <button onclick="resetWidgetSettings()" class="px-4 py-2 text-orange-600 hover:text-orange-800 font-medium">Reset to Default</button>
+                <div class="flex gap-3">
+                    <button onclick="closeWidgetModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">Cancel</button>
+                    <button onclick="saveWidgetSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
@@ -714,7 +717,7 @@ function toggleWidget(widgetId, active) {
 }
 
 function saveWidgetSettings() {
-    fetch('/dashboard/widget-settings', {
+    fetch('/widget-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -730,6 +733,24 @@ function saveWidgetSettings() {
         }
     })
     .catch(err => console.error('Save widget settings error:', err));
+}
+
+function resetWidgetSettings() {
+    const defaultOrder = ['followup', 'gamification', 'daily_mission', 'boss_battle', 'focus_session', 'activity_calendar'];
+    const defaultActive = {
+        'followup': true,
+        'gamification': true,
+        'daily_mission': true,
+        'boss_battle': true,
+        'focus_session': true,
+        'activity_calendar': true
+    };
+    
+    widgetOrder = [...defaultOrder];
+    widgetActive = {...defaultActive};
+    
+    renderWidgetList();
+    saveWidgetSettings();
 }
 
 document.getElementById('widgetModal').addEventListener('click', function(e) {
