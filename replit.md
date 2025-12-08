@@ -1,318 +1,39 @@
 # Personal CRM
 
-A single-user personal CRM web application for tracking leads, clients, outreach, and tasks.
-
 ## Overview
+A private, single-user personal CRM web application designed to manage leads, clients, outreach, and tasks efficiently. It aims to streamline CRM processes, enhance productivity through gamification, and provide insightful analytics for business growth. The application tracks lead progression, client relationships, revenue, and user performance, offering a comprehensive toolkit for individual business development.
 
-This is a private, single-user CRM tool built with:
-- Python 3 + Flask
-- SQLite (via SQLAlchemy)
-- Server-rendered HTML templates (Jinja2)
-- Tailwind CSS (CDN)
-- Chart.js for dashboard visualizations
+## User Preferences
+I prefer simple language and clear explanations. I want iterative development, with small, testable changes. Please ask before making any major architectural changes or adding new external dependencies. Do not make changes to the `database.db` file directly. I prefer detailed explanations for complex logic.
 
-## Authentication
+## System Architecture
+The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchemy for data persistence. Server-rendered HTML templates (Jinja2) are styled with Tailwind CSS (CDN) for a modern, responsive UI. Chart.js is integrated for dynamic dashboard visualizations and comprehensive analytics.
 
-- Simple single-password login system
-- Password stored in `CRM_PASSWORD` environment variable
-- 30-day session persistence
-- All routes protected except `/login`
+**Key Features:**
+*   **Authentication:** Single-password login with session persistence.
+*   **Dashboard:** Centralized view of leads, outreach stats, revenue, and follow-up reminders. Includes customizable widgets and deal closure banners.
+*   **Analytics:** Advanced charting and filtering for project revenue, MRR growth, outreach volume, deal pipeline, and win/loss reasons.
+*   **CRM Modules:** Full CRUD for Leads, Clients, Outreach, and Tasks, with detailed tracking and filtering capabilities. Includes lead conversion workflows and comprehensive close reason tracking.
+*   **Gamification:** XP system with levels, streaks, achievements, and a reward system (level, milestone, and unlockable rewards). Features a "Wins Log" for tracking significant accomplishments and monthly performance reviews.
+*   **Token System & Reward Shop:** In-app currency for purchasing customizable rewards, with a transaction history.
+*   **Daily Missions & Boss Fights:** Gamified challenges to encourage consistent engagement and reward completion.
+*   **Productivity Tools:** Focus Session Timer (Pomodoro-style), Mini Notebook with tagging and pinning, and customizable Goals for daily, weekly, and monthly targets.
+*   **Communication Aids:** Outreach Templates for efficient email, DM, and call script management.
+*   **Activity Timeline:** Unified feed of all significant user actions, grouped by day.
+*   **Calendar:** Dashboard widget and full-screen modal displaying tasks, follow-ups, and daily missions.
+*   **Global Search:** Command palette for quick searching across all application data.
+*   **Settings:** Includes "Pause Mode" to temporarily halt gamification elements without affecting core tasks.
+*   **Daily Summary Email:** Automated email containing performance summaries and upcoming tasks.
 
-## Features
+**Project Structure:**
+The application follows a modular structure with Flask Blueprints separating concerns for different features (e.g., `auth.py`, `leads.py`, `gamification.py`). Templates are organized hierarchically within the `templates/` directory.
 
-### Dashboard (/)
-- Lead counts by status
-- New leads this week/month
-- Outreach stats (today/week/month)
-- New clients this month
-- Project revenue this month
-- MRR tracking (hosting + SaaS)
-- 3-month revenue forecast
-- Charts: Outreach per week, Deals closed per week (last 12 weeks)
-- Follow-up reminders: Today and Overdue counts (clickable)
-- Customizable widgets via settings
-- Deal closed today banners: Shows green/red banners for deals won/lost today with reasons
-
-### Analytics (/analytics)
-- Advanced charts with filters (date range, niche, source, status)
-- Monthly project revenue chart (bar, last 12 months)
-- MRR growth chart (line, hosting/SaaS/total, last 12 months)
-- Outreach volume per week (last 12 weeks)
-- Deals closed per week (last 12 weeks)
-- Lead pipeline chart (by status)
-- Top win reasons chart (doughnut) - shows why deals are won
-- Top loss reasons chart (doughnut) - shows why deals are lost
-- 3-month revenue forecast breakdown
-- Follow-up reminders: Today and Overdue counts
-- Dashboard widget settings page (/analytics/settings)
-
-### Leads (/leads)
-- Full CRUD operations
-- Filters: status, niche, source, text search, follow-up (today/overdue)
-- Quick status update dropdown
-- Convert lead to client functionality
-- Lead detail page with outreach history
-- Website tracking: has_website (yes/no), website_quality (multiple issues: outdated, poor_design, not_mobile_friendly, slow_loading, broken_features)
-- Demo site built tracker visible on leads index
-- Converted leads shown in separate section at bottom of page
-- Auto-redirect to conversion form when status set to "closed_won"
-- Auto-redirect to loss reason form when status set to "closed_lost"
-- Next action date for follow-up scheduling
-- Deal close reason tracking:
-  - Win reasons: Good fit, Pricing match, Demo impressed, Fast response, Strong rapport, Referral, Previous interaction, Other
-  - Loss reasons: Pricing too high, Timing not right, Already working with someone, No response, Low priority, Not a good fit, Chosen competitor, Other
-  - Required multiselect when closing deals
-
-### Clients (/clients)
-- Full CRUD operations
-- Filters: status, project type, hosting/SaaS active
-- Revenue tracking (project + recurring)
-- Client detail page with revenue summary
-
-### Outreach (/outreach)
-- Log outreach activities (email, call, DM, in-person, other)
-- Link to leads (optional)
-- Track outcomes (contacted, booked_call, no_response, closed_won, closed_lost, follow_up_set)
-- Filters: type, outcome, date range
-- Stats: today/week/month counts
-
-### Tasks (/tasks)
-- Add tasks with due dates
-- Link to leads or clients (optional)
-- Status tracking (open, in_progress, done)
-- Overdue and Due Today sections highlighted
-- Completed tasks shown in separate section at bottom
-- Filters: status, due date
-
-### Gamification (/gamification)
-- XP system with levels (1-15)
-- XP earned from:
-  - Outreach log: +5 XP
-  - Lead contacted: +4 XP
-  - Call booked: +8 XP
-  - Proposal sent: +12 XP
-  - Deal closed: +30 XP
-  - Task completed: +8 XP
-  - Daily goal hit: +10 XP
-  - Weekly goal hit: +25 XP
-  - Monthly revenue goal hit: +50 XP
-  - 10-day streak: +20 XP (one-time)
-  - 30-day streak: +50 XP (one-time)
-- Level thresholds: 0, 150, 400, 800, 1400, 2200, 3200, 4500, 6500, 9000, 12000, 16000, 20000, 25000, 30000
-- Outreach streak tracking (current and longest)
-- Consistency score (0-100) based on last 7 days
-- Achievements system with unlock tracking
-- Charts: XP gained this week, consistency breakdown
-- Reward System:
-  - Level interval rewards (recurring): Rewards earned every X levels (e.g., every 2 levels)
-  - Milestone rewards (one-time): Rewards for reaching specific levels (e.g., level 10, 25, 50)
-  - Upcoming rewards section shows next rewards to earn
-  - Unlocked rewards history
-  - Reward settings: Add, toggle, delete level and milestone rewards
-- Wins Log:
-  - Tracks significant achievements and milestones
-  - Auto-logged wins: Level up, Boss defeated, Streak milestones (7/14/30 days), Weekly goal hit, Deal closed won
-  - Manual win entry with title and description
-  - Displays with XP/token earned badges
-  - Reverse chronological order
-
-### Token System & Reward Shop (/rewards)
-- Separate token currency from XP for purchasing rewards
-- Token earning:
-  - Outreach log: +1 token
-  - Lead contacted: +1 token
-  - Task completed: +1 token
-  - Proposal sent: +2 tokens
-  - Daily goal hit: +3 tokens
-  - Weekly goal hit: +7 tokens
-  - Streak bonuses: +5/+10/+20/+30 tokens (3/7/14/30 days)
-  - Daily mission completion: variable tokens
-- Reward Shop with customizable items
-- Default rewards: lollies (8), coffee (10), gaming time (12), lunch treat (20), car care (50), t-shirt (75)
-- Add/edit/toggle/delete rewards
-- Transaction history tracking
-
-### Daily Missions (/missions)
-- One random mission generated per day
-- Mission types: outreach count, contact leads, complete tasks, message old leads
-- Progress tracking with visual progress bar
-- Token rewards upon completion (4-8 tokens)
-- Past 7 days mission history
-- Auto-reset at midnight
-
-### Boss Fight Mode (/boss)
-- Monthly boss challenges with big token rewards (50-150 tokens)
-- Boss types: close deals, send outreaches, revive cold leads, send proposals
-- Auto-generated at start of each month
-- Progress tracking with visual progress bar
-- "Boss Defeated!" notification when completed
-- Past bosses history with completion status
-- Dashboard integration with boss battle card
-
-### Settings (/settings)
-- Full settings page with Pause Mode feature
-- Pause Mode (1-14 days duration, requires reason):
-  - Freezes: outreach streak, consistency score, daily goals, daily missions
-  - Does NOT freeze: tasks (still become overdue), boss fights
-  - Dashboard banner when pause is active
-- Theme Settings (coming soon)
-- Sound Settings (coming soon)
-- Notifications (coming soon)
-
-### Focus Session Timer (Dashboard)
-- Pomodoro-style focus timer on dashboard
-- Duration options: 25, 30, 45, or 60 minutes
-- Timer card with start/cancel controls
-- Live countdown display during active session
-- Navbar timer indicator when session active (visible on all pages)
-- Completion rewards: +3 tokens and +5 XP
-- Activity log entries for started/completed/cancelled sessions
-- Sessions tracked in focus_sessions table for history
-
-### Activity Timeline (/timeline)
-- Unified feed of all important user actions
-- Events logged: outreach, lead status changes, task actions, missions, boss fights, XP/tokens, streaks, pause mode, notes
-- Grouped by day (Today, Yesterday, Earlier this week, Last week, Older)
-- Highlighted special events (boss defeated, level ups, deals closed)
-- Pagination (50 items per page)
-- Links to related items (leads, tasks, missions, boss)
-- Dashboard widget showing last 5 activities
-
-### Calendar (Dashboard Pop-out)
-- Mini calendar widget on dashboard (side-by-side with Recent Activity)
-- Click to open full-screen calendar modal
-- Full month view with dark theme
-- Tasks displayed on their due dates (blue)
-- Lead follow-ups (next_action_date) shown (yellow)
-- Daily missions shown with completion status (purple)
-- Monthly boss fight progress bar at top when active
-- Clickable days open detail modal with tasks/leads/missions
-- Quick mark-as-done for tasks from modal
-- Month navigation with arrows and Today button
-- Escape key to close modals
-
-### Global Search (Ctrl+K)
-- Command palette modal triggered by Ctrl+K or search icon in navbar
-- Searches across: leads, tasks, notes, timeline, missions, boss fights
-- Instant AJAX search with 150ms throttling
-- Results grouped by category with highlighted matches
-- Keyboard navigation: Arrow keys + Enter to select
-- Dark themed modal with blurred backdrop
-
-### Mini Notebook (/notes)
-- Create, edit, and delete notes
-- Tag support with comma-separated tags
-- Pin important notes to top
-- Card layout with title and content preview
-- Search and filter functionality:
-  - Text search across title and content
-  - Filter by tag (dropdown of all used tags)
-  - Sort options: Recently Updated, Oldest Updated, Newest Created, Oldest Created, Title A-Z, Title Z-A
-  - Clear filters button when filters are active
-- XP bonuses:
-  - First note of the day: +2 XP
-  - Pinning a note (once per day): +1 XP
-
-### Goals (/goals)
-- Set daily/weekly/monthly targets
-- Goal types: daily outreach, weekly outreach, monthly revenue, monthly deals
-- Auto-generated recommended goals based on historical data
-- Manual override with "Keep manual" option
-- Reset to recommended functionality
-
-### Outreach Templates (/outreach-templates)
-- Full CRUD for email, DM, and call script templates
-- Categories: email, dm, call
-- Subcategories: cold_outreach, follow_up, cold_call_script, objection_handling, booking_confirmation, proposal, other
-- Filters by category, subcategory, and text search
-- Copy to clipboard functionality
-- Favourite toggle for quick access
-- Templates sorted by favourite status and last updated
-
-### Daily Summary Email
-- Automated endpoint: GET /internal/run-daily-summary
-- Sends Mon-Fri at scheduled time (via external scheduler)
-- Includes: follow-ups due, overdue, tasks due, outreach stats, streak/XP/level, MRR snapshot
-- Monday emails include weekly summary: outreach count, deals closed, revenue
-- Requires CRM_EMAIL env var for recipient
-- Optional INTERNAL_API_TOKEN for automated access
-
-## Project Structure
-
-```
-├── app.py                 # Main Flask application
-├── models.py              # SQLAlchemy database models
-├── blueprints/
-│   ├── auth.py              # Authentication routes
-│   ├── dashboard.py         # Dashboard with stats
-│   ├── leads.py             # Lead management
-│   ├── clients.py           # Client management
-│   ├── outreach.py          # Outreach logging
-│   ├── tasks.py             # Task management
-│   ├── analytics.py         # Analytics and settings
-│   ├── gamification.py      # XP, streaks, achievements
-│   ├── goals.py             # Goal setting and tracking
-│   ├── outreach_templates.py # Email/DM/Call templates
-│   ├── internal.py          # Internal API endpoints
-│   ├── timeline.py          # Activity timeline feed
-│   ├── notes.py             # Mini notebook feature
-│   ├── search.py            # Global search API
-│   └── calendar.py          # Calendar views and API
-├── templates/
-│   ├── base.html         # Base template with nav
-│   ├── login.html        # Login page
-│   ├── dashboard.html    # Dashboard view
-│   ├── leads/            # Lead templates
-│   ├── clients/          # Client templates
-│   ├── outreach/         # Outreach templates
-│   ├── tasks/            # Task templates
-│   ├── analytics/           # Analytics templates
-│   ├── gamification/        # Gamification templates
-│   ├── goals/               # Goals templates
-│   ├── outreach_templates/  # Template management pages
-│   ├── timeline/            # Activity timeline templates
-│   └── notes/               # Notebook templates
-└── database.db              # SQLite database (auto-created)
-```
-
-## Environment Variables
-
-- `CRM_PASSWORD`: Required password for login
-- `SESSION_SECRET`: Flask session secret key
-
-## Running the Application
-
-```bash
-python app.py
-```
-
-The application runs on port 5000.
-
-## Database
-
-SQLite database with 22 tables:
-- leads: Lead tracking with status pipeline, close reasons, closed_at timestamp
-- clients: Client info with project and recurring revenue
-- outreach_logs: Outreach activity logging
-- tasks: Task management with due dates
-- user_settings: Dashboard widget visibility preferences (includes focus timer fields)
-- user_stats: XP, level, streak tracking (single row)
-- achievements: Achievement definitions and unlock status
-- goals: Goal targets (daily outreach, weekly outreach, monthly revenue, monthly deals)
-- xp_logs: XP gain history for tracking
-- outreach_templates: Email, DM, and call script templates
-- level_rewards: Recurring rewards at level intervals (e.g., every 2 levels)
-- milestone_rewards: One-time rewards at specific levels (e.g., level 10, 25)
-- unlocked_rewards: History of all earned rewards
-- user_tokens: Token balance tracking (single row)
-- token_transactions: Log of all token gains and spends
-- reward_items: Shop items that can be purchased with tokens
-- daily_missions: Daily mission tracking with progress
-- boss_fights: Monthly boss challenges
-- boss_fight_history: Record of defeated bosses
-- activity_log: User activity timeline entries
-- wins_log: Tracks significant wins/achievements with XP/token values
-- focus_sessions: Focus session history (start/end time, duration, completed status)
-- notes: Mini notebook entries with tags and pinning
-
-Tables are auto-created on first run.
+## External Dependencies
+*   **Python 3:** Core programming language.
+*   **Flask:** Web framework.
+*   **SQLAlchemy:** ORM for database interaction.
+*   **SQLite:** Default database.
+*   **Jinja2:** Templating engine.
+*   **Tailwind CSS (CDN):** For styling and UI.
+*   **Chart.js:** For data visualization and charts.
+*   **External Scheduler:** (Implied for Daily Summary Email) To trigger the `/internal/run-daily-summary` endpoint.
