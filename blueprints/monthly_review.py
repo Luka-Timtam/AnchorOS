@@ -96,8 +96,8 @@ def generate_review_content(year_month):
     
     missions_completed = DailyMission.query.filter(
         DailyMission.is_completed == True,
-        DailyMission.date >= first_day,
-        DailyMission.date <= last_day
+        DailyMission.mission_date >= first_day,
+        DailyMission.mission_date <= last_day
     ).count()
     
     boss = BossFight.query.filter(
