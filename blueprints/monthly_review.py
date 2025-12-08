@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import (db, MonthlyReview, XPLog, TokenTransaction, OutreachLog, Lead, 
-                    DailyMission, BossFight, UserStats, WinsLog, ActivityLog)
+                    DailyMission, BossFight, UserStats, WinsLog, ActivityLog, Client)
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 from collections import Counter
@@ -70,6 +70,36 @@ def generate_review_content(year_month):
         Lead.closed_at >= first_datetime,
         Lead.closed_at <= last_datetime
     ).count()
+    
+    new_clients = Client.query.filter(
+        Client.created_at >= first_datetime,
+        Client.created_at <= last_datetime
+    ).all()
+    
+    new_client_count = len(new_clients)
+    project_revenue = sum(float(c.amount_charged or 0) for c in new_clients)
+    
+    active_clients_count = Client.query.filter(
+        Client.status == 'active',
+        Client.created_at <= last_datetime
+    ).count()
+    
+    hosting_clients = Client.query.filter(
+        Client.hosting_active == True,
+        Client.created_at <= last_datetime
+    ).all()
+    monthly_hosting_revenue = sum(float(c.monthly_hosting_fee or 0) for c in hosting_clients)
+    
+    saas_clients = Client.query.filter(
+        Client.saas_active == True,
+        Client.created_at <= last_datetime
+    ).all()
+    monthly_saas_revenue = sum(float(c.monthly_saas_fee or 0) for c in saas_clients)
+    
+    mrr = monthly_hosting_revenue + monthly_saas_revenue
+    total_revenue = project_revenue + mrr
+    
+    avg_deal_value = project_revenue / new_client_count if new_client_count > 0 else 0
     
     stats = UserStats.get_stats()
     streak_current = stats.current_outreach_streak_days if stats else 0
@@ -164,6 +194,12 @@ def generate_review_content(year_month):
         'proposals_sent': proposals_sent,
         'deals_won': deals_won,
         'deals_lost': deals_lost,
+        'new_clients': new_client_count,
+        'project_revenue': round(project_revenue, 2),
+        'mrr': round(mrr, 2),
+        'total_revenue': round(total_revenue, 2),
+        'avg_deal_value': round(avg_deal_value, 2),
+        'active_clients': active_clients_count,
         'streak_current': streak_current,
         'streak_longest': streak_longest,
         'consistency_score': consistency_score,
