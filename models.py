@@ -816,3 +816,40 @@ class FocusSession(db.Model):
             FocusSession.completed == True
         ).scalar()
         return result or 0
+
+
+class WinsLog(db.Model):
+    __tablename__ = 'wins_log'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    xp_value = db.Column(db.Integer, nullable=True)
+    token_value = db.Column(db.Integer, nullable=True)
+    
+    @staticmethod
+    def log_win(title, description=None, xp_value=None, token_value=None):
+        win = WinsLog(
+            title=title,
+            description=description,
+            xp_value=xp_value,
+            token_value=token_value
+        )
+        db.session.add(win)
+        db.session.commit()
+        return win
+    
+    @staticmethod
+    def get_all_wins(limit=None):
+        query = WinsLog.query.order_by(WinsLog.timestamp.desc())
+        if limit:
+            query = query.limit(limit)
+        return query.all()
+    
+    @staticmethod
+    def get_recent_wins(days=30):
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        return WinsLog.query.filter(
+            WinsLog.timestamp >= cutoff
+        ).order_by(WinsLog.timestamp.desc()).all()
