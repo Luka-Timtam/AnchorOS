@@ -526,6 +526,8 @@ def index():
     level_rewards = LevelReward.query.order_by(LevelReward.level_interval).all()
     milestone_rewards = MilestoneReward.query.order_by(MilestoneReward.target_level).all()
     
+    wins = WinsLog.get_all_wins()
+    
     max_level = 15
     
     return render_template('gamification/index.html',
@@ -541,7 +543,8 @@ def index():
         upcoming_rewards=upcoming_rewards,
         unlocked_rewards=unlocked_rewards,
         level_rewards=level_rewards,
-        milestone_rewards=milestone_rewards
+        milestone_rewards=milestone_rewards,
+        wins=wins
     )
 
 
@@ -608,4 +611,24 @@ def delete_milestone_reward(id):
     db.session.delete(reward)
     db.session.commit()
     flash('Milestone reward deleted.', 'success')
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/wins/add', methods=['POST'])
+def add_win():
+    title = request.form.get('title', '').strip()
+    description = request.form.get('description', '').strip()
+    
+    if not title:
+        flash('Please enter a title for your win.', 'error')
+        return redirect(url_for('gamification.index'))
+    
+    WinsLog.log_win(
+        title=title,
+        description=description if description else None,
+        xp_value=None,
+        token_value=None
+    )
+    
+    flash('Win added successfully!', 'success')
     return redirect(url_for('gamification.index'))
