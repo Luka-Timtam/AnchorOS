@@ -4,6 +4,14 @@
 
 {% block content %}
 <div class="space-y-6">
+    <div>
+        <a href="{{ url_for('rewards.index') }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-indigo-600 mb-3 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            <span class="text-sm font-medium">Back to Rewards Shop</span>
+        </a>
+    </div>
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-900">Daily Missions</h1>
         <div class="flex items-center space-x-4">
