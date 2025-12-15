@@ -530,25 +530,39 @@
 
 <div id="widgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-xl w-full max-w-lg max-h-[80vh] overflow-hidden shadow-2xl">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 class="text-lg font-bold text-gray-900">Customize Dashboard Widgets</h3>
-                <button onclick="closeWidgetModal()" class="p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+        <div class="bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Customize Your Dashboard</h3>
+                        <p class="text-indigo-100 text-sm mt-1">Drag to reorder, toggle to show/hide widgets</p>
+                    </div>
+                    <button onclick="closeWidgetModal()" class="p-2 hover:bg-white/20 rounded-lg text-white/80 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <div class="p-4 overflow-y-auto max-h-96">
-                <p class="text-sm text-gray-500 mb-4">Toggle widgets on or off and reorder them using the arrow buttons. Changes take effect after page refresh.</p>
+            <div class="p-5 overflow-y-auto max-h-[50vh] bg-gray-50">
                 <div id="widgetList" class="space-y-2">
                 </div>
             </div>
-            <div class="p-4 border-t border-gray-200 flex justify-between">
-                <button onclick="resetWidgetSettings()" class="px-4 py-2 text-orange-600 hover:text-orange-800 font-medium">Reset to Default</button>
+            <div class="p-4 bg-white border-t border-gray-200 flex justify-between items-center">
+                <button onclick="resetWidgetSettings()" class="px-4 py-2 text-sm text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-lg font-medium transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Reset to Default
+                </button>
                 <div class="flex gap-3">
-                    <button onclick="closeWidgetModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">Cancel</button>
-                    <button onclick="saveWidgetSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">Save Changes</button>
+                    <button onclick="closeWidgetModal()" class="px-5 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg font-medium transition-colors">Cancel</button>
+                    <button onclick="saveWidgetSettings()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Save Changes
+                    </button>
                 </div>
             </div>
         </div>
@@ -780,15 +794,61 @@ let widgetOrder = {{ widget_order | tojson }};
 let widgetActive = {{ widget_active | tojson }};
 const widgetNames = {{ widget_names | tojson }};
 
+let widgetSortable = null;
+
 function openWidgetModal() {
     renderWidgetList();
     document.getElementById('widgetModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    initSortable();
 }
 
 function closeWidgetModal() {
     document.getElementById('widgetModal').classList.add('hidden');
     document.body.style.overflow = '';
+    if (widgetSortable) {
+        widgetSortable.destroy();
+        widgetSortable = null;
+    }
+}
+
+function initSortable() {
+    const container = document.getElementById('widgetList');
+    if (widgetSortable) {
+        widgetSortable.destroy();
+    }
+    widgetSortable = new Sortable(container, {
+        animation: 200,
+        handle: '.drag-handle',
+        ghostClass: 'bg-indigo-100',
+        chosenClass: 'shadow-lg',
+        dragClass: 'opacity-90',
+        onEnd: function(evt) {
+            const newOrder = [];
+            container.querySelectorAll('[data-widget-id]').forEach(el => {
+                newOrder.push(el.dataset.widgetId);
+            });
+            widgetOrder = newOrder;
+        }
+    });
+}
+
+function getWidgetIcon(widgetId) {
+    const icons = {
+        'followups': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        'gamification_stats': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>',
+        'daily_mission': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>',
+        'boss_battle': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>',
+        'focus_session': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        'activity_calendar': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>',
+        'lead_stats': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>',
+        'outreach_stats': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>',
+        'mrr_forecast': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+        'leads_by_status': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>',
+        'outreach_deals_charts': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>',
+        'revenue_chart': '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>'
+    };
+    return icons[widgetId] || '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
 }
 
 function renderWidgetList() {
@@ -798,25 +858,25 @@ function renderWidgetList() {
     widgetOrder.forEach((widgetId, index) => {
         const name = widgetNames[widgetId] || widgetId;
         const isActive = widgetActive[widgetId] !== false;
+        const iconPath = getWidgetIcon(widgetId);
         
         html += `
-        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200" data-widget-id="${widgetId}">
-            <div class="flex items-center gap-3">
-                <div class="flex flex-col gap-1">
-                    <button onclick="moveWidget('${widgetId}', -1)" class="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                        </svg>
-                    </button>
-                    <button onclick="moveWidget('${widgetId}', 1)" class="p-1 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 ${index === widgetOrder.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                </div>
-                <span class="font-medium text-gray-800">${name}</span>
+        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group" data-widget-id="${widgetId}">
+            <div class="drag-handle cursor-grab active:cursor-grabbing p-2 -m-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                </svg>
             </div>
-            <label class="relative inline-flex items-center cursor-pointer">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-400'}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${iconPath}
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <span class="font-medium ${isActive ? 'text-gray-900' : 'text-gray-500'} block truncate">${name}</span>
+                <span class="text-xs ${isActive ? 'text-green-600' : 'text-gray-400'}">${isActive ? 'Visible on dashboard' : 'Hidden'}</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input type="checkbox" class="sr-only peer" ${isActive ? 'checked' : ''} onchange="toggleWidget('${widgetId}', this.checked)">
                 <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
             </label>
@@ -826,20 +886,10 @@ function renderWidgetList() {
     container.innerHTML = html;
 }
 
-function moveWidget(widgetId, direction) {
-    const index = widgetOrder.indexOf(widgetId);
-    const newIndex = index + direction;
-    
-    if (newIndex < 0 || newIndex >= widgetOrder.length) return;
-    
-    widgetOrder.splice(index, 1);
-    widgetOrder.splice(newIndex, 0, widgetId);
-    
-    renderWidgetList();
-}
-
 function toggleWidget(widgetId, active) {
     widgetActive[widgetId] = active;
+    renderWidgetList();
+    initSortable();
 }
 
 function saveWidgetSettings() {

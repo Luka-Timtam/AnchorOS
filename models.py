@@ -179,18 +179,18 @@ class UserSettings(db.Model):
     ]
     
     DEFAULT_WIDGET_NAMES = {
-        'followups': 'Follow-ups (Today & Overdue)',
-        'gamification_stats': 'XP, Tokens, Streak & Consistency',
-        'daily_mission': 'Daily Mission',
-        'boss_battle': 'Boss Battle',
-        'focus_session': 'Focus Session Timer',
-        'activity_calendar': 'Recent Activity & Calendar',
-        'lead_stats': 'Lead & Client Stats',
-        'outreach_stats': 'Outreach Stats',
-        'mrr_forecast': 'MRR & Forecast',
-        'leads_by_status': 'Leads by Status',
-        'outreach_deals_charts': 'Outreach & Deals Charts',
-        'revenue_chart': 'Revenue Chart'
+        'followups': 'Follow-Up Reminders',
+        'gamification_stats': 'XP & Streak Progress',
+        'daily_mission': 'Daily Mission Challenge',
+        'boss_battle': 'Monthly Boss Battle',
+        'focus_session': 'Focus Timer',
+        'activity_calendar': 'Activity Feed & Calendar',
+        'lead_stats': 'New Leads & Clients',
+        'outreach_stats': 'Outreach Activity',
+        'mrr_forecast': 'MRR & Revenue Forecast',
+        'leads_by_status': 'Lead Pipeline Status',
+        'outreach_deals_charts': 'Weekly Charts',
+        'revenue_chart': 'Revenue Trend Graph'
     }
     
     def get_dashboard_order(self):
