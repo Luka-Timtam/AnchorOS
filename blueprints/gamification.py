@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog, WinsLog
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog, WinsLog, BossFight, RewardItem
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -530,6 +530,18 @@ def index():
     
     max_level = 15
     
+    token_balance = UserTokens.get_balance()
+    RewardItem.seed_defaults()
+    available_rewards = RewardItem.query.filter_by(is_active=True).count()
+    
+    current_boss = BossFight.get_current_boss()
+    boss_progress = 0
+    if current_boss and current_boss.target_value > 0:
+        boss_progress = min(100, int((current_boss.progress_value / current_boss.target_value) * 100))
+    
+    goals = Goal.query.all()
+    active_goals_count = len(goals)
+    
     return render_template('gamification/index.html',
         stats=stats,
         unlocked_achievements=unlocked,
@@ -544,7 +556,12 @@ def index():
         unlocked_rewards=unlocked_rewards,
         level_rewards=level_rewards,
         milestone_rewards=milestone_rewards,
-        wins=wins
+        wins=wins,
+        token_balance=token_balance,
+        available_rewards=available_rewards,
+        current_boss=current_boss,
+        boss_progress=boss_progress,
+        active_goals_count=active_goals_count
     )
 
 
