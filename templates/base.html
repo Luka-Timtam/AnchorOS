@@ -21,7 +21,7 @@
                         <a href="{{ url_for('dashboard.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if request.endpoint == 'dashboard.index' %}bg-indigo-700{% endif %}">Dashboard</a>
                         <a href="{{ url_for('leads.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'leads' in request.endpoint %}bg-indigo-700{% endif %}">Leads</a>
                         <a href="{{ url_for('clients.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'clients' in request.endpoint %}bg-indigo-700{% endif %}">Clients</a>
-                        <a href="{{ url_for('outreach.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach' in request.endpoint %}bg-indigo-700{% endif %}">Outreach</a>
+                        <a href="{{ url_for('outreach.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}bg-indigo-700{% endif %}">Outreach</a>
                         <a href="{{ url_for('tasks.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'tasks' in request.endpoint %}bg-indigo-700{% endif %}">Tasks</a>
                         <a href="{{ url_for('analytics.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'analytics' in request.endpoint %}bg-indigo-700{% endif %}">Analytics</a>
                         <a href="{{ url_for('outreach_templates.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach_templates' in request.endpoint %}bg-indigo-700{% endif %}">Templates</a>
