@@ -333,6 +333,126 @@
 </div>
 {% endmacro %}
 
+{% macro render_lead_stats() %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">New Leads (Week)</h3>
+        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_week }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">New Leads (Month)</h3>
+        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_month }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">New Clients (Month)</h3>
+        <p class="text-3xl font-bold text-green-600">{{ new_clients_month }}</p>
+    </div>
+    {% if settings.show_project_revenue_widget %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Project Revenue (Month)</h3>
+        <p class="text-3xl font-bold text-green-600">${{ "%.2f"|format(project_revenue_month) }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_outreach_stats() %}
+{% if settings.show_outreach_widget %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Outreach Today</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ outreach_today }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Outreach This Week</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ outreach_week }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Outreach This Month</h3>
+        <p class="text-3xl font-bold text-blue-600">{{ outreach_month }}</p>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro render_mrr_forecast() %}
+{% if settings.show_mrr_widget or settings.show_forecast_widget %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {% if settings.show_mrr_widget %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Hosting MRR</h3>
+        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(hosting_mrr) }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">SaaS MRR</h3>
+        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(saas_mrr) }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">Total MRR</h3>
+        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(total_mrr) }}</p>
+    </div>
+    {% endif %}
+    {% if settings.show_forecast_widget %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-sm font-medium text-gray-500">3-Month Forecast</h3>
+        <p class="text-3xl font-bold text-yellow-600">${{ "%.2f"|format(forecast_3_months) }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro render_leads_by_status() %}
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Leads by Status</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        {% for status in lead_statuses %}
+        <div class="text-center p-3 bg-gray-50 rounded-lg">
+            <p class="text-2xl font-bold text-gray-700">{{ lead_counts.get(status, 0) }}</p>
+            <p class="text-xs text-gray-500 capitalize">{{ status.replace('_', ' ') }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_outreach_deals_charts() %}
+{% if settings.show_outreach_widget or settings.show_deals_widget %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    {% if settings.show_outreach_widget %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">Outreach (Last 12 Weeks)</h3>
+        <canvas id="outreachChart" height="120"></canvas>
+    </div>
+    {% endif %}
+    {% if settings.show_deals_widget %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">Deals Closed (Last 12 Weeks)</h3>
+        <canvas id="dealsChart" height="120"></canvas>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro render_revenue_chart() %}
+{% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-gray-900" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
+        <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600" id="toggleLabel">Revenue</span>
+            <button type="button" id="revenueToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-indigo-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false">
+                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggleKnob"></span>
+            </button>
+            <span class="text-sm text-gray-600">MRR</span>
+        </div>
+    </div>
+    <canvas id="revenueChart" height="120"></canvas>
+</div>
+{% endif %}
+{% endmacro %}
+
 {% for widget_id in widget_order %}
 {% if widget_active.get(widget_id, True) %}
     {% if widget_id == 'followups' %}{{ render_followups() }}
@@ -341,6 +461,12 @@
     {% elif widget_id == 'boss_battle' %}{{ render_boss_battle() }}
     {% elif widget_id == 'focus_session' %}{{ render_focus_session() }}
     {% elif widget_id == 'activity_calendar' %}{{ render_activity_calendar() }}
+    {% elif widget_id == 'lead_stats' %}{{ render_lead_stats() }}
+    {% elif widget_id == 'outreach_stats' %}{{ render_outreach_stats() }}
+    {% elif widget_id == 'mrr_forecast' %}{{ render_mrr_forecast() }}
+    {% elif widget_id == 'leads_by_status' %}{{ render_leads_by_status() }}
+    {% elif widget_id == 'outreach_deals_charts' %}{{ render_outreach_deals_charts() }}
+    {% elif widget_id == 'revenue_chart' %}{{ render_revenue_chart() }}
     {% endif %}
 {% endif %}
 {% endfor %}
@@ -736,14 +862,20 @@ function saveWidgetSettings() {
 }
 
 function resetWidgetSettings() {
-    const defaultOrder = ['followup', 'gamification', 'daily_mission', 'boss_battle', 'focus_session', 'activity_calendar'];
+    const defaultOrder = ['followups', 'gamification_stats', 'daily_mission', 'boss_battle', 'focus_session', 'activity_calendar', 'lead_stats', 'outreach_stats', 'mrr_forecast', 'leads_by_status', 'outreach_deals_charts', 'revenue_chart'];
     const defaultActive = {
-        'followup': true,
-        'gamification': true,
+        'followups': true,
+        'gamification_stats': true,
         'daily_mission': true,
         'boss_battle': true,
         'focus_session': true,
-        'activity_calendar': true
+        'activity_calendar': true,
+        'lead_stats': true,
+        'outreach_stats': true,
+        'mrr_forecast': true,
+        'leads_by_status': true,
+        'outreach_deals_charts': true,
+        'revenue_chart': true
     };
     
     widgetOrder = [...defaultOrder];
@@ -757,114 +889,6 @@ document.getElementById('widgetModal').addEventListener('click', function(e) {
     if (e.target === this) closeWidgetModal();
 });
 </script>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Leads (Week)</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_week }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Leads (Month)</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_month }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Clients (Month)</h3>
-        <p class="text-3xl font-bold text-green-600">{{ new_clients_month }}</p>
-    </div>
-    {% if settings.show_project_revenue_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Project Revenue (Month)</h3>
-        <p class="text-3xl font-bold text-green-600">${{ "%.2f"|format(project_revenue_month) }}</p>
-    </div>
-    {% endif %}
-</div>
-
-{% if settings.show_outreach_widget %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach Today</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_today }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach This Week</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_week }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach This Month</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_month }}</p>
-    </div>
-</div>
-{% endif %}
-
-{% if settings.show_mrr_widget or settings.show_forecast_widget %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    {% if settings.show_mrr_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Hosting MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(hosting_mrr) }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">SaaS MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(saas_mrr) }}</p>
-    </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Total MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(total_mrr) }}</p>
-    </div>
-    {% endif %}
-    {% if settings.show_forecast_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">3-Month Forecast</h3>
-        <p class="text-3xl font-bold text-yellow-600">${{ "%.2f"|format(forecast_3_months) }}</p>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
-
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Leads by Status</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {% for status in lead_statuses %}
-        <div class="text-center p-3 bg-gray-50 rounded-lg">
-            <p class="text-2xl font-bold text-gray-700">{{ lead_counts.get(status, 0) }}</p>
-            <p class="text-xs text-gray-500 capitalize">{{ status.replace('_', ' ') }}</p>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-{% if settings.show_outreach_widget or settings.show_deals_widget %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    {% if settings.show_outreach_widget %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Outreach (Last 12 Weeks)</h3>
-        <canvas id="outreachChart" height="120"></canvas>
-    </div>
-    {% endif %}
-    {% if settings.show_deals_widget %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Deals Closed (Last 12 Weeks)</h3>
-        <canvas id="dealsChart" height="120"></canvas>
-    </div>
-    {% endif %}
-</div>
-{% endif %}
-
-{% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-<div class="bg-white rounded-lg shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-        <h3 class="text-base font-semibold text-gray-900" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
-        <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-600" id="toggleLabel">Revenue</span>
-            <button type="button" id="revenueToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-indigo-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggleKnob"></span>
-            </button>
-            <span class="text-sm text-gray-600">MRR</span>
-        </div>
-    </div>
-    <canvas id="revenueChart" height="120"></canvas>
-</div>
-{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
