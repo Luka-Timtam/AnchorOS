@@ -169,7 +169,13 @@ class UserSettings(db.Model):
         'daily_mission',
         'boss_battle',
         'focus_session',
-        'activity_calendar'
+        'activity_calendar',
+        'lead_stats',
+        'outreach_stats',
+        'mrr_forecast',
+        'leads_by_status',
+        'outreach_deals_charts',
+        'revenue_chart'
     ]
     
     DEFAULT_WIDGET_NAMES = {
@@ -178,7 +184,13 @@ class UserSettings(db.Model):
         'daily_mission': 'Daily Mission',
         'boss_battle': 'Boss Battle',
         'focus_session': 'Focus Session Timer',
-        'activity_calendar': 'Recent Activity & Calendar'
+        'activity_calendar': 'Recent Activity & Calendar',
+        'lead_stats': 'Lead & Client Stats',
+        'outreach_stats': 'Outreach Stats',
+        'mrr_forecast': 'MRR & Forecast',
+        'leads_by_status': 'Leads by Status',
+        'outreach_deals_charts': 'Outreach & Deals Charts',
+        'revenue_chart': 'Revenue Chart'
     }
     
     def get_dashboard_order(self):
