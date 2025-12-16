@@ -439,16 +439,23 @@
         
         .nav-indicator {
             position: absolute;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             height: 44px;
-            width: calc(100% - 0px);
-            background: rgba(49, 224, 247, 0.1);
-            border-left: 3px solid #31E0F7;
-            border-radius: 0 12px 12px 0;
+            width: 44px;
+            background: rgba(49, 224, 247, 0.15);
+            border: 2px solid #31E0F7;
+            border-radius: 12px;
             pointer-events: none;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+            transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
             opacity: 0;
             z-index: 0;
+            box-shadow: 0 0 12px rgba(49, 224, 247, 0.3);
+        }
+        
+        #sidebar:hover .nav-indicator {
+            left: 12px;
+            transform: translateX(0);
         }
         
         .nav-indicator.visible {
@@ -463,6 +470,10 @@
         .sidebar-item.active {
             background: transparent !important;
             border-left: none !important;
+        }
+        
+        .sidebar-item.active svg {
+            color: #31E0F7;
         }
         
         .sidebar-search-btn {
@@ -1019,7 +1030,7 @@
                 const itemRect = activeItem.getBoundingClientRect();
                 const offsetTop = itemRect.top - navRect.top + nav.scrollTop;
                 
-                indicator.style.transform = 'translateY(' + offsetTop + 'px)';
+                indicator.style.top = offsetTop + 'px';
                 indicator.classList.add('visible');
             } else if (indicator) {
                 indicator.classList.remove('visible');
