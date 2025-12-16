@@ -420,12 +420,15 @@
         
         .sidebar-item {
             justify-content: center;
-            padding: 0.75rem;
+            padding: 0.75rem 0;
+        }
+        
+        .sidebar-item svg {
+            flex-shrink: 0;
         }
         
         .sidebar-item.active {
-            padding: 0.75rem;
-            padding-left: calc(0.75rem - 3px);
+            padding: 0.75rem 0;
         }
         
         #sidebar:hover .sidebar-item {
@@ -434,28 +437,25 @@
         }
         
         #sidebar:hover .sidebar-item.active {
-            padding-left: calc(1rem - 3px);
+            padding: 0.75rem 1rem;
         }
         
         .nav-indicator {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
             height: 44px;
-            width: 44px;
-            background: rgba(49, 224, 247, 0.15);
-            border: 2px solid #31E0F7;
-            border-radius: 12px;
+            width: 56px;
+            background: rgba(49, 224, 247, 0.08);
+            border-left: 3px solid #31E0F7;
+            border-radius: 0 12px 12px 0;
             pointer-events: none;
-            transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+            transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s ease, opacity 0.2s ease;
             opacity: 0;
             z-index: 0;
-            box-shadow: 0 0 12px rgba(49, 224, 247, 0.3);
         }
         
         #sidebar:hover .nav-indicator {
-            left: 12px;
-            transform: translateX(0);
+            width: calc(100% - 0px);
         }
         
         .nav-indicator.visible {
