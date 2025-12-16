@@ -428,6 +428,7 @@
         .sidebar-search-btn {
             width: 100%;
             display: flex;
+            align-items: center;
             justify-content: center;
             padding: 0.625rem;
             transition: all 0.2s ease;
@@ -438,16 +439,15 @@
             padding: 0.625rem 0.75rem;
         }
         
-        .search-text {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            transition: opacity 0.2s ease, width 0.2s ease;
+        .sidebar-search-btn .search-text {
+            display: none;
         }
         
-        #sidebar:hover .search-text {
-            opacity: 1;
-            width: auto;
+        #sidebar:hover .sidebar-search-btn .search-text {
+            display: inline;
+        }
+        
+        .search-text {
             margin-left: 0.5rem;
         }
         
