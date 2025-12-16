@@ -3,63 +3,63 @@
 {% block title %}Goals - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('gamification.index') }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-indigo-600 mb-3 transition-colors">
+<div class="mb-8">
+    <a href="{{ url_for('gamification.index') }}" class="back-button">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         <span class="text-sm font-medium">Back to Gamification</span>
     </a>
-    <h1 class="text-3xl font-bold text-gray-900">Goals</h1>
-    <p class="text-gray-600 mt-1">Set your targets and track progress</p>
+    <h1 class="text-3xl font-bold text-high mt-3">Goals</h1>
+    <p class="text-medium mt-1">Set your targets and track progress</p>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     {% for goal in goals %}
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="glass-card p-6">
         <div class="flex justify-between items-start mb-4">
             <div>
-                <h3 class="text-lg font-semibold text-gray-900">{{ goal.label }}</h3>
-                <p class="text-sm text-gray-500">{{ goal.description }}</p>
+                <h3 class="text-lg font-semibold text-high">{{ goal.label }}</h3>
+                <p class="text-sm text-low">{{ goal.description }}</p>
             </div>
             {% if goal.is_manual %}
-            <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">Custom</span>
+            <span class="pill pill-aqua">Custom</span>
             {% else %}
-            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">Auto</span>
+            <span class="pill pill-neutral">Auto</span>
             {% endif %}
         </div>
         
         <div class="mb-4">
-            <div class="text-3xl font-bold text-indigo-600">
+            <div class="text-3xl font-bold text-aqua">
                 {% if 'revenue' in goal.type %}${% endif %}{{ goal.current }}
             </div>
-            <div class="text-sm text-gray-500">
+            <div class="text-sm text-low">
                 Recommended: {% if 'revenue' in goal.type %}${% endif %}{{ goal.recommended }}
             </div>
         </div>
         
-        <form action="{{ url_for('goals.update') }}" method="POST" class="space-y-3">
+        <form action="{{ url_for('goals.update') }}" method="POST" class="space-y-4">
             <input type="hidden" name="goal_type" value="{{ goal.type }}">
             <input type="hidden" name="period" value="{{ goal.period }}">
             
             <div class="flex items-center space-x-3">
                 <input type="number" name="target_value" value="{{ goal.current }}" min="0"
-                    class="w-32 border border-gray-300 rounded-md px-3 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <label class="flex items-center text-sm text-gray-600">
-                    <input type="checkbox" name="is_manual" class="rounded border-gray-300 text-indigo-600 mr-2"
+                    class="w-32 input-glass text-lg">
+                <label class="flex items-center text-sm text-medium">
+                    <input type="checkbox" name="is_manual" class="rounded border-white/20 text-aqua bg-white/10 mr-2"
                         {% if goal.is_manual %}checked{% endif %}>
                     Keep manual
                 </label>
             </div>
             
             <div class="flex space-x-3">
-                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
+                <button type="submit" class="btn-primary text-sm">
                     Save
                 </button>
                 {% if goal.is_manual %}
                 <a href="{{ url_for('goals.reset', goal_id=goal.id) }}" 
                    onclick="event.preventDefault(); document.getElementById('reset-{{ goal.id }}').submit();"
-                   class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-300">
+                   class="btn-secondary text-sm">
                     Reset to Recommended
                 </a>
                 {% endif %}

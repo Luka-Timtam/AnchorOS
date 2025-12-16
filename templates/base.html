@@ -4,73 +4,469 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Personal CRM{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        aqua: '#31E0F7',
+                        porcelain: '#FFFDF7',
+                        graphite: '#2E2F37',
+                        cinnabar: '#EB564E',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         [x-cloak] { display: none !important; }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #2E2F37 0%, #1a1b20 50%, #2E2F37 100%);
+            background-attachment: fixed;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(49, 224, 247, 0.3);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            color: rgba(255, 253, 247, 0.7);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .nav-item:hover {
+            color: #FFFDF7;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .nav-item.active {
+            color: #31E0F7;
+            background: rgba(49, 224, 247, 0.12);
+            box-shadow: 0 0 12px rgba(49, 224, 247, 0.2);
+        }
+        
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        
+        .nav-item span {
+            display: none;
+        }
+        
+        @media (min-width: 1280px) {
+            .nav-item span {
+                display: inline;
+            }
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #31E0F7 0%, #1bc4dc 100%);
+            color: #2E2F37;
+            font-weight: 600;
+            padding: 0.625rem 1.25rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(49, 224, 247, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(49, 224, 247, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFFDF7;
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(49, 224, 247, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #EB564E 0%, #d44840 100%);
+            color: #FFFDF7;
+            font-weight: 600;
+            padding: 0.625rem 1.25rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(235, 86, 78, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(235, 86, 78, 0.4);
+        }
+        
+        .text-high { color: #FFFDF7; }
+        .text-medium { color: rgba(255, 253, 247, 0.7); }
+        .text-low { color: rgba(255, 253, 247, 0.5); }
+        
+        .glow-aqua {
+            box-shadow: 0 0 20px rgba(49, 224, 247, 0.3);
+        }
+        
+        .glow-cinnabar {
+            box-shadow: 0 0 20px rgba(235, 86, 78, 0.3);
+        }
+        
+        .input-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #FFFDF7;
+            padding: 0.625rem 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .input-glass::placeholder {
+            color: rgba(255, 253, 247, 0.4);
+        }
+        
+        .input-glass:focus {
+            outline: none;
+            border-color: #31E0F7;
+            box-shadow: 0 0 0 3px rgba(49, 224, 247, 0.15);
+        }
+        
+        .select-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #FFFDF7;
+            padding: 0.625rem 2.5rem 0.625rem 1rem;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FFFDF7' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+        
+        .select-glass option {
+            background: #2E2F37;
+            color: #FFFDF7;
+        }
+        
+        .select-glass:focus {
+            outline: none;
+            border-color: #31E0F7;
+            box-shadow: 0 0 0 3px rgba(49, 224, 247, 0.15);
+        }
+        
+        .table-glass {
+            border-radius: 18px;
+            overflow: hidden;
+        }
+        
+        .table-glass thead {
+            background: rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        }
+        
+        .table-glass th {
+            color: rgba(255, 253, 247, 0.7);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+        }
+        
+        .table-glass tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.2s ease;
+        }
+        
+        .table-glass tbody tr:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        
+        .table-glass td {
+            padding: 1rem 1.25rem;
+            color: #FFFDF7;
+        }
+        
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .pill-aqua {
+            background: rgba(49, 224, 247, 0.15);
+            color: #31E0F7;
+            border: 1px solid rgba(49, 224, 247, 0.3);
+        }
+        
+        .pill-cinnabar {
+            background: rgba(235, 86, 78, 0.15);
+            color: #EB564E;
+            border: 1px solid rgba(235, 86, 78, 0.3);
+        }
+        
+        .pill-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .pill-warning {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+        
+        .pill-neutral {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 253, 247, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-aqua {
+            background: linear-gradient(90deg, #31E0F7 0%, #1bc4dc 100%);
+            box-shadow: 0 0 12px rgba(49, 224, 247, 0.5);
+        }
+        
+        .progress-bar-cinnabar {
+            background: linear-gradient(90deg, #EB564E 0%, #ff7b74 100%);
+            box-shadow: 0 0 12px rgba(235, 86, 78, 0.5);
+        }
+        
+        .flash-success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            border-radius: 14px;
+        }
+        
+        .flash-error {
+            background: rgba(235, 86, 78, 0.15);
+            border: 1px solid rgba(235, 86, 78, 0.3);
+            color: #EB564E;
+            border-radius: 14px;
+        }
+        
+        .search-pill {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 9999px;
+            transition: all 0.2s ease;
+        }
+        
+        .search-pill:focus-within {
+            border-color: #31E0F7;
+            box-shadow: 0 0 0 3px rgba(49, 224, 247, 0.15);
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <nav class="bg-indigo-600 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center space-x-8">
-                    <a href="{{ url_for('dashboard.index') }}" class="font-bold text-xl">CRM</a>
-                    <div class="hidden md:flex space-x-4">
-                        <a href="{{ url_for('dashboard.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if request.endpoint == 'dashboard.index' %}bg-indigo-700{% endif %}">Dashboard</a>
-                        <a href="{{ url_for('leads.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'leads' in request.endpoint %}bg-indigo-700{% endif %}">Leads</a>
-                        <a href="{{ url_for('clients.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'clients' in request.endpoint %}bg-indigo-700{% endif %}">Clients</a>
-                        <a href="{{ url_for('outreach.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}bg-indigo-700{% endif %}">Outreach</a>
-                        <a href="{{ url_for('tasks.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'tasks' in request.endpoint %}bg-indigo-700{% endif %}">Tasks</a>
-                        <a href="{{ url_for('analytics.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'analytics' in request.endpoint %}bg-indigo-700{% endif %}">Analytics</a>
-                        <a href="{{ url_for('outreach_templates.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'outreach_templates' in request.endpoint %}bg-indigo-700{% endif %}">Templates</a>
-                        <a href="{{ url_for('gamification.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'gamification' in request.endpoint or 'goals' in request.endpoint or 'rewards' in request.endpoint or 'missions' in request.endpoint or 'boss' in request.endpoint %}bg-indigo-700{% endif %}">Gamification</a>
-                        <a href="{{ url_for('notes.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'notes' in request.endpoint %}bg-indigo-700{% endif %}">Notes</a>
+<body class="min-h-screen text-porcelain">
+    <nav class="glass-nav sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between h-14">
+                <div class="flex items-center gap-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-2 mr-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-aqua to-cyan-400 flex items-center justify-center">
+                            <span class="text-graphite font-bold text-sm">C</span>
+                        </div>
+                        <span class="font-bold text-lg text-high hidden sm:block">CRM</span>
+                    </a>
+                    <div class="hidden md:flex items-center gap-1">
+                        <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('leads.index') }}" class="nav-item {% if 'leads' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Leads</span>
+                        </a>
+                        <a href="{{ url_for('clients.index') }}" class="nav-item {% if 'clients' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            <span>Clients</span>
+                        </a>
+                        <a href="{{ url_for('outreach.index') }}" class="nav-item {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            <span>Outreach</span>
+                        </a>
+                        <a href="{{ url_for('tasks.index') }}" class="nav-item {% if 'tasks' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                            <span>Tasks</span>
+                        </a>
+                        <a href="{{ url_for('analytics.index') }}" class="nav-item {% if 'analytics' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            <span>Analytics</span>
+                        </a>
+                        <a href="{{ url_for('outreach_templates.index') }}" class="nav-item {% if 'outreach_templates' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Templates</span>
+                        </a>
+                        <a href="{{ url_for('gamification.index') }}" class="nav-item {% if 'gamification' in request.endpoint or 'goals' in request.endpoint or 'rewards' in request.endpoint or 'missions' in request.endpoint or 'boss' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span>Game</span>
+                        </a>
+                        <a href="{{ url_for('notes.index') }}" class="nav-item {% if 'notes' in request.endpoint %}active{% endif %}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            <span>Notes</span>
+                        </a>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <a href="{{ url_for('dashboard.index') }}" id="navbarFocusTimer" class="hidden px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 flex items-center gap-2 transition-colors">
+                <div class="flex items-center gap-2">
+                    <a href="{{ url_for('dashboard.index') }}" id="navbarFocusTimer" class="hidden px-3 py-1.5 rounded-full bg-gradient-to-r from-aqua to-cyan-400 text-graphite font-semibold items-center gap-2 transition-all text-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span id="navbarFocusTimerText" class="font-mono font-bold text-sm">00:00</span>
+                        <span id="navbarFocusTimerText" class="font-mono font-bold">00:00</span>
                     </a>
-                    <button type="button" id="openSearchBtn" class="px-3 py-2 rounded-md hover:bg-indigo-700 flex items-center gap-2" title="Search (Ctrl+K)">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="button" id="openSearchBtn" class="search-pill px-3 py-1.5 flex items-center gap-2 text-medium hover:text-high" title="Search (Ctrl+K)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
-                        <span class="hidden md:inline text-xs bg-indigo-500 px-1.5 py-0.5 rounded">Ctrl+K</span>
+                        <span class="hidden sm:inline text-xs text-low">Ctrl+K</span>
                     </button>
-                    <a href="{{ url_for('settings.index') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700 {% if 'settings' in request.endpoint %}bg-indigo-700{% endif %}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ url_for('settings.index') }}" class="nav-item {% if 'settings' in request.endpoint %}active{% endif %}" title="Settings">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                     </a>
-                    <a href="{{ url_for('auth.logout') }}" class="px-3 py-2 rounded-md hover:bg-indigo-700">Logout</a>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-item" title="Logout">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="md:hidden px-4 pb-3 space-y-1">
-            <a href="{{ url_for('dashboard.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Dashboard</a>
-            <a href="{{ url_for('leads.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Leads</a>
-            <a href="{{ url_for('clients.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Clients</a>
-            <a href="{{ url_for('outreach.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Outreach</a>
-            <a href="{{ url_for('tasks.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Tasks</a>
-            <a href="{{ url_for('analytics.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Analytics</a>
-            <a href="{{ url_for('outreach_templates.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Templates</a>
-            <a href="{{ url_for('gamification.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Gamification</a>
-            <a href="{{ url_for('notes.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Notes</a>
-            <a href="{{ url_for('settings.index') }}" class="block px-3 py-2 rounded-md hover:bg-indigo-700">Settings</a>
+        <div class="md:hidden px-4 pb-3 pt-2 flex flex-wrap gap-2 border-t border-white/5">
+            <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path></svg>
+            </a>
+            <a href="{{ url_for('leads.index') }}" class="nav-item {% if 'leads' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </a>
+            <a href="{{ url_for('clients.index') }}" class="nav-item {% if 'clients' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            </a>
+            <a href="{{ url_for('outreach.index') }}" class="nav-item {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </a>
+            <a href="{{ url_for('tasks.index') }}" class="nav-item {% if 'tasks' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+            </a>
+            <a href="{{ url_for('gamification.index') }}" class="nav-item {% if 'gamification' in request.endpoint or 'goals' in request.endpoint or 'rewards' in request.endpoint or 'missions' in request.endpoint or 'boss' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </a>
+            <a href="{{ url_for('notes.index') }}" class="nav-item {% if 'notes' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            </a>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="mb-4 p-4 rounded-md {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    <div class="mb-6 p-4 {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -81,31 +477,31 @@
     </main>
 
     <div id="searchModal" class="fixed inset-0 z-50 hidden">
-        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" id="searchBackdrop"></div>
-        <div class="fixed inset-0 flex items-start justify-center pt-[15vh]">
-            <div class="bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden border border-gray-700">
-                <div class="p-4 border-b border-gray-700">
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-md" id="searchBackdrop"></div>
+        <div class="fixed inset-0 flex items-start justify-center pt-[12vh]">
+            <div class="glass-card w-full max-w-2xl mx-4 overflow-hidden">
+                <div class="p-4 border-b border-white/10">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         <input type="text" id="searchInput" placeholder="Search leads, tasks, notes..." 
-                            class="flex-1 bg-transparent text-white text-lg placeholder-gray-500 outline-none">
-                        <kbd class="px-2 py-1 text-xs text-gray-400 bg-gray-800 rounded border border-gray-600">ESC</kbd>
+                            class="flex-1 bg-transparent text-high text-lg placeholder-low outline-none">
+                        <kbd class="px-2 py-1 text-xs text-low bg-white/5 rounded-lg border border-white/10">ESC</kbd>
                     </div>
                 </div>
-                <div id="searchResults" class="max-h-[60vh] overflow-y-auto p-2">
-                    <div id="searchEmpty" class="text-center text-gray-500 py-8">
+                <div id="searchResults" class="max-h-[60vh] overflow-y-auto p-3 scrollbar-thin">
+                    <div id="searchEmpty" class="text-center text-low py-8">
                         Type to search across your CRM...
                     </div>
-                    <div id="searchLoading" class="text-center text-gray-500 py-8 hidden">
-                        <svg class="animate-spin h-6 w-6 mx-auto text-indigo-500" fill="none" viewBox="0 0 24 24">
+                    <div id="searchLoading" class="text-center text-low py-8 hidden">
+                        <svg class="animate-spin h-6 w-6 mx-auto text-aqua" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                         </svg>
                     </div>
-                    <div id="searchResultsContent" class="hidden"></div>
-                    <div id="searchNoResults" class="text-center text-gray-500 py-8 hidden">
+                    <div id="searchResultsContent" class="hidden space-y-2"></div>
+                    <div id="searchNoResults" class="text-center text-low py-8 hidden">
                         No results found
                     </div>
                 </div>
@@ -171,7 +567,7 @@
         function highlightMatch(text, query) {
             if (!query) return text;
             const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-            return text.replace(regex, '<mark class="bg-yellow-500/30 text-yellow-300 px-0.5 rounded">$1</mark>');
+            return text.replace(regex, '<mark class="bg-aqua/30 text-aqua px-0.5 rounded">$1</mark>');
         }
         
         function renderResults(data, query) {
@@ -193,11 +589,11 @@
                 const items = data[cat.key] || [];
                 if (items.length > 0) {
                     hasResults = true;
-                    html += `<div class="mb-4">
-                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">${cat.icon} ${cat.label}</div>`;
+                    html += `<div class="mb-3">
+                        <div class="text-xs font-semibold text-low uppercase tracking-wider px-3 py-2">${cat.icon} ${cat.label}</div>`;
                     items.forEach(item => {
-                        html += `<a href="${item.link}" data-index="${itemIndex}" class="search-result-item block px-3 py-2 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
-                            <div class="text-white">${highlightMatch(item.label, query)}</div>
+                        html += `<a href="${item.link}" data-index="${itemIndex}" class="search-result-item block px-3 py-2.5 rounded-xl hover:bg-white/8 cursor-pointer transition-all">
+                            <div class="text-high">${highlightMatch(item.label, query)}</div>
                         </a>`;
                         itemIndex++;
                     });
@@ -226,10 +622,14 @@
             const items = resultsContent.querySelectorAll('.search-result-item');
             items.forEach((item, idx) => {
                 if (idx === selectedIndex) {
-                    item.classList.add('bg-gray-800');
+                    item.classList.add('bg-white/10');
+                    item.classList.add('border-l-2');
+                    item.classList.add('border-aqua');
                     item.scrollIntoView({ block: 'nearest' });
                 } else {
-                    item.classList.remove('bg-gray-800');
+                    item.classList.remove('bg-white/10');
+                    item.classList.remove('border-l-2');
+                    item.classList.remove('border-aqua');
                 }
             });
         }
@@ -352,5 +752,7 @@
         initGlobalFocusCheck();
     })();
     </script>
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>

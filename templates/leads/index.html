@@ -3,29 +3,32 @@
 {% block title %}Leads - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Leads</h1>
-    <a href="{{ url_for('leads.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-        + New Lead
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-high">Leads</h1>
+    <a href="{{ url_for('leads.create') }}" class="btn-primary flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        New Lead
     </a>
 </div>
 
 {% if current_next_action %}
-<div class="bg-{% if current_next_action == 'overdue' %}red{% else %}yellow{% endif %}-50 border border-{% if current_next_action == 'overdue' %}red{% else %}yellow{% endif %}-200 rounded-lg p-4 mb-4">
+<div class="glass-card p-4 mb-6 border-l-4 {% if current_next_action == 'overdue' %}border-cinnabar{% else %}border-yellow-400{% endif %}">
     <div class="flex justify-between items-center">
-        <span class="font-medium text-{% if current_next_action == 'overdue' %}red{% else %}yellow{% endif %}-800">
+        <span class="font-medium {% if current_next_action == 'overdue' %}text-cinnabar{% else %}text-yellow-400{% endif %}">
             {% if current_next_action == 'overdue' %}Showing Overdue Follow-Ups{% else %}Showing Follow-Ups Due Today{% endif %}
         </span>
-        <a href="{{ url_for('leads.index') }}" class="text-sm text-{% if current_next_action == 'overdue' %}red{% else %}yellow{% endif %}-600 hover:underline">Clear Filter</a>
+        <a href="{{ url_for('leads.index') }}" class="text-sm text-aqua hover:text-aqua/80 transition-colors">Clear Filter</a>
     </div>
 </div>
 {% endif %}
 
-<div class="bg-white rounded-lg shadow p-4 mb-6">
+<div class="glass-card p-5 mb-6">
     <form method="GET" class="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <label class="block text-sm font-medium text-medium mb-2">Status</label>
+            <select name="status" class="w-full select-glass">
                 <option value="">All Statuses</option>
                 {% for status in statuses %}
                 <option value="{{ status }}" {% if current_status == status %}selected{% endif %}>{{ status.replace('_', ' ').title() }}</option>
@@ -33,8 +36,8 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Niche</label>
-            <select name="niche" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <label class="block text-sm font-medium text-medium mb-2">Niche</label>
+            <select name="niche" class="w-full select-glass">
                 <option value="">All Niches</option>
                 {% for niche in niches %}
                 <option value="{{ niche }}" {% if current_niche == niche %}selected{% endif %}>{{ niche }}</option>
@@ -42,8 +45,8 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
-            <select name="source" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <label class="block text-sm font-medium text-medium mb-2">Source</label>
+            <select name="source" class="w-full select-glass">
                 <option value="">All Sources</option>
                 {% for source in sources %}
                 <option value="{{ source }}" {% if current_source == source %}selected{% endif %}>{{ source }}</option>
@@ -51,74 +54,74 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Follow-Up</label>
-            <select name="next_action" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <label class="block text-sm font-medium text-medium mb-2">Follow-Up</label>
+            <select name="next_action" class="w-full select-glass">
                 <option value="">All</option>
                 <option value="today" {% if current_next_action == 'today' %}selected{% endif %}>Due Today</option>
                 <option value="overdue" {% if current_next_action == 'overdue' %}selected{% endif %}>Overdue</option>
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label class="block text-sm font-medium text-medium mb-2">Search</label>
             <input type="text" name="search" value="{{ current_search }}" placeholder="Name or Business" 
-                class="w-full border border-gray-300 rounded-md px-3 py-2">
+                class="w-full input-glass">
         </div>
         <div class="flex items-end">
-            <button type="submit" class="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Filter</button>
+            <button type="submit" class="w-full btn-secondary">Filter</button>
         </div>
     </form>
 </div>
 
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+<div class="glass-card overflow-hidden table-glass">
+    <table class="min-w-full">
+        <thead>
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Business</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Website</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Demo</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Action</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th class="text-left">Name</th>
+                <th class="text-left">Business</th>
+                <th class="text-left">Website</th>
+                <th class="text-left">Demo</th>
+                <th class="text-left">Status</th>
+                <th class="text-left">Next Action</th>
+                <th class="text-left">Actions</th>
             </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody>
             {% for lead in leads %}
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4">
-                    <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
+            <tr>
+                <td>
+                    <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                         {{ lead.name }}
                     </a>
                 </td>
-                <td class="px-6 py-4 text-gray-600">{{ lead.business_name or '-' }}</td>
-                <td class="px-6 py-4">
+                <td class="text-medium">{{ lead.business_name or '-' }}</td>
+                <td>
                     {% if lead.has_website %}
                     <div class="space-y-1">
                         {% for issue in lead.website_quality.split(',') %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 block">
+                        <span class="pill pill-warning text-xs">
                             {{ issue.strip().replace('_', ' ').title() }}
                         </span>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">No Website</span>
+                    <span class="pill pill-cinnabar">No Website</span>
                     {% endif %}
                 </td>
-                <td class="px-6 py-4">
+                <td>
                     {% if lead.demo_site_built %}
-                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Built</span>
+                    <span class="pill pill-success">Built</span>
                     {% else %}
-                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Yet</span>
+                    <span class="pill pill-neutral">Not Yet</span>
                     {% endif %}
                 </td>
-                <td class="px-6 py-4">
+                <td>
                     <form method="POST" action="{{ url_for('leads.update_status', id=lead.id) }}" class="inline">
                         <select name="status" onchange="this.form.submit()" 
-                            class="text-sm border border-gray-300 rounded px-2 py-1 
-                            {% if lead.status == 'closed_won' %}bg-green-100 text-green-800
-                            {% elif lead.status == 'closed_lost' %}bg-red-100 text-red-800
-                            {% elif lead.status == 'new' %}bg-blue-100 text-blue-800
-                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            class="select-glass text-sm py-1.5 px-3
+                            {% if lead.status == 'closed_won' %}!bg-green-500/20 !border-green-500/30 !text-green-400
+                            {% elif lead.status == 'closed_lost' %}!bg-cinnabar/20 !border-cinnabar/30 !text-cinnabar
+                            {% elif lead.status == 'new' %}!bg-aqua/20 !border-aqua/30 !text-aqua
+                            {% endif %}">
                             {% for status in statuses %}
                             <option value="{{ status }}" {% if lead.status == status %}selected{% endif %}>
                                 {{ status.replace('_', ' ').title() }}
@@ -127,20 +130,20 @@
                         </select>
                     </form>
                 </td>
-                <td class="px-6 py-4 text-gray-600">{{ lead.next_action_date or '-' }}</td>
-                <td class="px-6 py-4 space-x-2">
-                    <a href="{{ url_for('leads.edit', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</a>
+                <td class="text-medium">{{ lead.next_action_date or '-' }}</td>
+                <td class="space-x-3">
+                    <a href="{{ url_for('leads.edit', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
                     {% if lead.status != 'closed_won' %}
-                    <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="text-green-600 hover:text-green-900 text-sm">Convert</a>
+                    <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="text-green-400 hover:text-green-300 text-sm transition-colors">Convert</a>
                     {% endif %}
                     <form method="POST" action="{{ url_for('leads.archive', id=lead.id) }}" class="inline" onsubmit="return confirm('Archive this lead?')">
-                        <button type="submit" class="text-orange-600 hover:text-orange-900 text-sm">Archive</button>
+                        <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Archive</button>
                     </form>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" class="px-6 py-8 text-center text-gray-500">No active leads found</td>
+                <td colspan="7" class="text-center py-12 text-low">No active leads found</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -148,117 +151,112 @@
 </div>
 
 {% if converted_leads %}
-<div class="mt-6 bg-white rounded-lg shadow border border-green-200">
-    <button onclick="toggleConvertedSection()" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-green-50 transition-colors rounded-lg">
-        <span class="text-lg font-semibold text-green-700">Converted Leads ({{ converted_leads|length }})</span>
-        <svg id="convertedChevron" class="w-5 h-5 text-green-500 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="mt-8 glass-card overflow-hidden">
+    <button onclick="toggleConvertedSection()" class="w-full p-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+        <span class="text-lg font-semibold text-green-400">Converted Leads ({{ converted_leads|length }})</span>
+        <svg id="convertedChevron" class="w-5 h-5 text-green-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
-    <div id="convertedSection" class="hidden border-t border-green-200">
-    <div class="bg-green-50 overflow-hidden">
-        <table class="min-w-full divide-y divide-green-200">
-            <thead class="bg-green-100">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase">Business</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase">Website Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase">Demo Built</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase">Converted</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-green-100">
-                {% for lead in converted_leads %}
-                <tr class="hover:bg-green-50">
-                    <td class="px-6 py-4">
-                        <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
-                            {{ lead.name }}
-                        </a>
-                    </td>
-                    <td class="px-6 py-4 text-gray-600">{{ lead.business_name or '-' }}</td>
-                    <td class="px-6 py-4">
-                        {% if lead.has_website %}
-                        <div class="space-y-1">
-                            {% for issue in lead.website_quality.split(',') %}
-                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 block">
-                                {{ issue.strip().replace('_', ' ').title() }}
-                            </span>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">No Website</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        {% if lead.demo_site_built %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Built</span>
-                        {% else %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Built</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-gray-600">
-                        {{ lead.converted_at.strftime('%Y-%m-%d') if lead.converted_at else '-' }}
-                    </td>
-                    <td class="px-6 py-4 space-x-2">
-                        <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View</a>
-                        {% if lead.converted_client %}
-                        <a href="{{ url_for('clients.detail', id=lead.converted_client[0].id) }}" class="text-green-600 hover:text-green-900 text-sm">View Client</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <div id="convertedSection" class="hidden border-t border-white/10">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-glass">
+                <thead>
+                    <tr class="bg-green-500/10">
+                        <th class="text-left text-green-400">Name</th>
+                        <th class="text-left text-green-400">Business</th>
+                        <th class="text-left text-green-400">Website Status</th>
+                        <th class="text-left text-green-400">Demo Built</th>
+                        <th class="text-left text-green-400">Converted</th>
+                        <th class="text-left text-green-400">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in converted_leads %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
+                                {{ lead.name }}
+                            </a>
+                        </td>
+                        <td class="text-medium">{{ lead.business_name or '-' }}</td>
+                        <td>
+                            {% if lead.has_website %}
+                            <div class="space-y-1">
+                                {% for issue in lead.website_quality.split(',') %}
+                                <span class="pill pill-warning text-xs">
+                                    {{ issue.strip().replace('_', ' ').title() }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <span class="pill pill-cinnabar">No Website</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if lead.demo_site_built %}
+                            <span class="pill pill-success">Built</span>
+                            {% else %}
+                            <span class="pill pill-neutral">Not Built</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-medium">
+                            {{ lead.converted_at.strftime('%Y-%m-%d') if lead.converted_at else '-' }}
+                        </td>
+                        <td class="space-x-3">
+                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                            {% if lead.converted_client %}
+                            <a href="{{ url_for('clients.detail', id=lead.converted_client[0].id) }}" class="text-green-400 hover:text-green-300 text-sm transition-colors">View Client</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endif %}
 
 {% if archived_leads %}
-<div class="mt-6 bg-white rounded-lg shadow border border-orange-200">
-    <button onclick="toggleArchivedSection()" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-orange-50 transition-colors rounded-lg">
-        <span class="text-lg font-semibold text-orange-700">Archived Leads ({{ archived_leads|length }})</span>
-        <svg id="archivedChevron" class="w-5 h-5 text-orange-500 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="mt-6 glass-card overflow-hidden">
+    <button onclick="toggleArchivedSection()" class="w-full p-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+        <span class="text-lg font-semibold text-cinnabar">Archived Leads ({{ archived_leads|length }})</span>
+        <svg id="archivedChevron" class="w-5 h-5 text-cinnabar transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
-    <div id="archivedSection" class="hidden border-t border-orange-200">
-        <div class="bg-orange-50 overflow-hidden">
-            <table class="min-w-full divide-y divide-orange-200">
-                <thead class="bg-orange-100">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase">Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase">Business</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase">Archived</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-orange-700 uppercase">Actions</th>
+    <div id="archivedSection" class="hidden border-t border-white/10">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-glass">
+                <thead>
+                    <tr class="bg-cinnabar/10">
+                        <th class="text-left text-cinnabar">Name</th>
+                        <th class="text-left text-cinnabar">Business</th>
+                        <th class="text-left text-cinnabar">Last Status</th>
+                        <th class="text-left text-cinnabar">Archived</th>
+                        <th class="text-left text-cinnabar">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-orange-100">
+                <tbody>
                     {% for lead in archived_leads %}
-                    <tr class="hover:bg-orange-50">
-                        <td class="px-6 py-4">
-                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                                 {{ lead.name }}
                             </a>
                         </td>
-                        <td class="px-6 py-4 text-gray-600">{{ lead.business_name or '-' }}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full 
-                                {% if lead.status == 'closed_won' %}bg-green-100 text-green-800
-                                {% elif lead.status == 'closed_lost' %}bg-red-100 text-red-800
-                                {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                {{ lead.status.replace('_', ' ').title() }}
-                            </span>
+                        <td class="text-medium">{{ lead.business_name or '-' }}</td>
+                        <td>
+                            <span class="pill pill-neutral">{{ lead.status.replace('_', ' ').title() }}</span>
                         </td>
-                        <td class="px-6 py-4 text-gray-600">
+                        <td class="text-medium">
                             {{ lead.archived_at.strftime('%Y-%m-%d') if lead.archived_at else '-' }}
                         </td>
-                        <td class="px-6 py-4 space-x-2">
-                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View</a>
-                            <form method="POST" action="{{ url_for('leads.unarchive', id=lead.id) }}" class="inline">
-                                <button type="submit" class="text-green-600 hover:text-green-900 text-sm">Restore</button>
+                        <td class="space-x-3">
+                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                            <form method="POST" action="{{ url_for('leads.restore', id=lead.id) }}" class="inline">
+                                <button type="submit" class="text-green-400 hover:text-green-300 text-sm transition-colors">Restore</button>
                             </form>
                         </td>
                     </tr>
@@ -268,26 +266,75 @@
         </div>
     </div>
 </div>
-
 {% endif %}
 
+{% if closed_lost_leads %}
+<div class="mt-6 glass-card overflow-hidden">
+    <button onclick="toggleLostSection()" class="w-full p-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+        <span class="text-lg font-semibold text-medium">Lost Leads ({{ closed_lost_leads|length }})</span>
+        <svg id="lostChevron" class="w-5 h-5 text-medium transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    <div id="lostSection" class="hidden border-t border-white/10">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-glass">
+                <thead>
+                    <tr>
+                        <th class="text-left">Name</th>
+                        <th class="text-left">Business</th>
+                        <th class="text-left">Close Reason</th>
+                        <th class="text-left">Closed</th>
+                        <th class="text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in closed_lost_leads %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
+                                {{ lead.name }}
+                            </a>
+                        </td>
+                        <td class="text-medium">{{ lead.business_name or '-' }}</td>
+                        <td class="text-medium">{{ lead.close_reason or '-' }}</td>
+                        <td class="text-medium">
+                            {{ lead.closed_at.strftime('%Y-%m-%d') if lead.closed_at else '-' }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
 <script>
 function toggleConvertedSection() {
     const section = document.getElementById('convertedSection');
     const chevron = document.getElementById('convertedChevron');
-    if (section && chevron) {
-        section.classList.toggle('hidden');
-        chevron.classList.toggle('rotate-180');
-    }
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
 }
 
 function toggleArchivedSection() {
     const section = document.getElementById('archivedSection');
     const chevron = document.getElementById('archivedChevron');
-    if (section && chevron) {
-        section.classList.toggle('hidden');
-        chevron.classList.toggle('rotate-180');
-    }
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
+
+function toggleLostSection() {
+    const section = document.getElementById('lostSection');
+    const chevron = document.getElementById('lostChevron');
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
 }
 </script>
 {% endblock %}

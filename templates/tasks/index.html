@@ -3,23 +3,23 @@
 {% block title %}Tasks - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Tasks</h1>
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-high">Tasks</h1>
 </div>
 
 {% if overdue_tasks %}
-<div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-    <h2 class="text-lg font-semibold text-red-800 mb-3">Overdue Tasks ({{ overdue_tasks|length }})</h2>
+<div class="glass-card p-5 mb-6 border-l-4 border-cinnabar">
+    <h2 class="text-lg font-semibold text-cinnabar mb-4">Overdue Tasks ({{ overdue_tasks|length }})</h2>
     <div class="space-y-2">
         {% for task in overdue_tasks %}
-        <div class="flex items-center justify-between bg-white p-3 rounded-md shadow-sm">
+        <div class="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/10">
             <div>
-                <span class="font-medium text-gray-900">{{ task.title }}</span>
-                <span class="text-sm text-red-600 ml-2">(Due: {{ task.due_date }})</span>
+                <span class="font-medium text-high">{{ task.title }}</span>
+                <span class="text-sm text-cinnabar ml-2">(Due: {{ task.due_date }})</span>
             </div>
             <form method="POST" action="{{ url_for('tasks.update_status', id=task.id) }}" class="inline">
                 <input type="hidden" name="status" value="done">
-                <button type="submit" class="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Mark Done</button>
+                <button type="submit" class="btn-primary text-sm py-1.5 px-3">Mark Done</button>
             </form>
         </div>
         {% endfor %}
@@ -28,23 +28,23 @@
 {% endif %}
 
 {% if today_tasks %}
-<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-    <h2 class="text-lg font-semibold text-yellow-800 mb-3">Due Today ({{ today_tasks|length }})</h2>
+<div class="glass-card p-5 mb-6 border-l-4 border-yellow-400">
+    <h2 class="text-lg font-semibold text-yellow-400 mb-4">Due Today ({{ today_tasks|length }})</h2>
     <div class="space-y-2">
         {% for task in today_tasks %}
-        <div class="flex items-center justify-between bg-white p-3 rounded-md shadow-sm">
+        <div class="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/10">
             <div>
-                <span class="font-medium text-gray-900">{{ task.title }}</span>
-                <span class="text-xs px-2 py-1 rounded-full ml-2
-                    {% if task.status == 'open' %}bg-blue-100 text-blue-800
-                    {% elif task.status == 'in_progress' %}bg-yellow-100 text-yellow-800
-                    {% else %}bg-green-100 text-green-800{% endif %}">
+                <span class="font-medium text-high">{{ task.title }}</span>
+                <span class="pill ml-2
+                    {% if task.status == 'open' %}pill-aqua
+                    {% elif task.status == 'in_progress' %}pill-warning
+                    {% else %}pill-success{% endif %}">
                     {{ task.status.replace('_', ' ').title() }}
                 </span>
             </div>
             <form method="POST" action="{{ url_for('tasks.update_status', id=task.id) }}" class="inline">
                 <input type="hidden" name="status" value="done">
-                <button type="submit" class="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Mark Done</button>
+                <button type="submit" class="btn-primary text-sm py-1.5 px-3">Mark Done</button>
             </form>
         </div>
         {% endfor %}
@@ -52,31 +52,29 @@
 </div>
 {% endif %}
 
-<div class="bg-white rounded-lg shadow mb-6">
-    <button type="button" id="toggleForm" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors">
-        <span class="text-lg font-semibold text-gray-900">Add New Task</span>
-        <svg id="toggleIcon" class="w-5 h-5 text-gray-500 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="glass-card mb-6 overflow-hidden">
+    <button type="button" id="toggleForm" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+        <span class="text-lg font-semibold text-high">Add New Task</span>
+        <svg id="toggleIcon" class="w-5 h-5 text-medium transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
-    <div id="formContainer" class="hidden border-t border-gray-200">
+    <div id="formContainer" class="hidden border-t border-white/10">
         <form method="POST" action="{{ url_for('tasks.create') }}" class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div class="lg:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                    <input type="text" name="title" required
-                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Title *</label>
+                    <input type="text" name="title" required class="w-full input-glass">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-                    <input type="date" name="due_date"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Due Date</label>
+                    <input type="date" name="due_date" class="w-full input-glass">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Status</label>
+                    <select name="status" class="w-full select-glass">
                         {% for status in statuses %}
                         <option value="{{ status }}">{{ status.replace('_', ' ').title() }}</option>
                         {% endfor %}
@@ -86,8 +84,8 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Related Lead</label>
-                    <select name="related_lead_id" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Related Lead</label>
+                    <select name="related_lead_id" class="w-full select-glass">
                         <option value="">-- None --</option>
                         {% for lead in leads %}
                         <option value="{{ lead.id }}">{{ lead.name }}</option>
@@ -96,8 +94,8 @@
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Related Client</label>
-                    <select name="related_client_id" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Related Client</label>
+                    <select name="related_client_id" class="w-full select-glass">
                         <option value="">-- None --</option>
                         {% for client in clients %}
                         <option value="{{ client.id }}">{{ client.name }}</option>
@@ -106,25 +104,25 @@
                 </div>
                 
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                    <button type="submit" class="w-full btn-primary">
                         Add Task
                     </button>
                 </div>
             </div>
             
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="description" rows="2" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Add task details..."></textarea>
+                <label class="block text-sm font-medium text-medium mb-2">Description</label>
+                <textarea name="description" rows="2" class="w-full input-glass" placeholder="Add task details..."></textarea>
             </div>
         </form>
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow p-4 mb-6">
+<div class="glass-card p-5 mb-6">
     <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <label class="block text-sm font-medium text-medium mb-2">Status</label>
+            <select name="status" class="w-full select-glass">
                 <option value="">All Statuses</option>
                 {% for status in statuses %}
                 <option value="{{ status }}" {% if current_status == status %}selected{% endif %}>{{ status.replace('_', ' ').title() }}</option>
@@ -132,8 +130,8 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
-            <select name="due" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <label class="block text-sm font-medium text-medium mb-2">Due Date</label>
+            <select name="due" class="w-full select-glass">
                 <option value="">All</option>
                 <option value="overdue" {% if current_due == 'overdue' %}selected{% endif %}>Overdue</option>
                 <option value="today" {% if current_due == 'today' %}selected{% endif %}>Today</option>
@@ -141,47 +139,47 @@
             </select>
         </div>
         <div class="flex items-end">
-            <button type="submit" class="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Filter</button>
+            <button type="submit" class="w-full btn-secondary">Filter</button>
         </div>
     </form>
 </div>
 
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+<div class="glass-card overflow-hidden table-glass">
+    <table class="min-w-full">
+        <thead>
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Related To</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th class="text-left">Task</th>
+                <th class="text-left">Due Date</th>
+                <th class="text-left">Status</th>
+                <th class="text-left">Related To</th>
+                <th class="text-left">Actions</th>
             </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody>
             {% for task in tasks %}
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4">
-                    <span class="font-medium text-gray-900">{{ task.title }}</span>
+            <tr>
+                <td>
+                    <span class="font-medium text-high">{{ task.title }}</span>
                     {% if task.description %}
-                    <p class="text-sm text-gray-500 truncate max-w-xs">{{ task.description }}</p>
+                    <p class="text-sm text-low truncate max-w-xs mt-1">{{ task.description }}</p>
                     {% endif %}
                 </td>
-                <td class="px-6 py-4">
+                <td>
                     {% if task.due_date %}
-                    <span class="{% if task.due_date < today and task.status != 'done' %}text-red-600 font-medium{% else %}text-gray-600{% endif %}">
+                    <span class="{% if task.due_date < today and task.status != 'done' %}text-cinnabar font-medium{% else %}text-medium{% endif %}">
                         {{ task.due_date }}
                     </span>
                     {% else %}
-                    -
+                    <span class="text-low">-</span>
                     {% endif %}
                 </td>
-                <td class="px-6 py-4">
+                <td>
                     <form method="POST" action="{{ url_for('tasks.update_status', id=task.id) }}" class="inline">
                         <select name="status" onchange="this.form.submit()" 
-                            class="text-sm border border-gray-300 rounded px-2 py-1
-                            {% if task.status == 'done' %}bg-green-100 text-green-800
-                            {% elif task.status == 'in_progress' %}bg-yellow-100 text-yellow-800
-                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                            class="select-glass text-sm py-1.5 px-3
+                            {% if task.status == 'done' %}!bg-green-500/20 !border-green-500/30 !text-green-400
+                            {% elif task.status == 'in_progress' %}!bg-yellow-500/20 !border-yellow-500/30 !text-yellow-400
+                            {% else %}!bg-aqua/20 !border-aqua/30 !text-aqua{% endif %}">
                             {% for status in statuses %}
                             <option value="{{ status }}" {% if task.status == status %}selected{% endif %}>
                                 {{ status.replace('_', ' ').title() }}
@@ -190,29 +188,29 @@
                         </select>
                     </form>
                 </td>
-                <td class="px-6 py-4 text-sm">
+                <td class="text-sm">
                     {% if task.lead %}
-                    <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-indigo-600 hover:text-indigo-900">
+                    <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
                         Lead: {{ task.lead.name }}
                     </a>
                     {% elif task.client %}
-                    <a href="{{ url_for('clients.detail', id=task.client.id) }}" class="text-indigo-600 hover:text-indigo-900">
+                    <a href="{{ url_for('clients.detail', id=task.client.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
                         Client: {{ task.client.name }}
                     </a>
                     {% else %}
-                    -
+                    <span class="text-low">-</span>
                     {% endif %}
                 </td>
-                <td class="px-6 py-4 space-x-2">
-                    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</a>
+                <td class="space-x-3">
+                    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
                     <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
-                        <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                        <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                     </form>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500">No open or in-progress tasks found</td>
+                <td colspan="5" class="text-center py-12 text-low">No open or in-progress tasks found</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -220,66 +218,73 @@
 </div>
 
 {% if completed_tasks %}
-<div class="bg-gray-50 rounded-lg shadow overflow-hidden mt-6">
-    <div class="bg-gray-200 px-6 py-3">
-        <h2 class="text-lg font-semibold text-gray-800">Completed Tasks ({{ completed_tasks|length }})</h2>
+<div class="glass-card overflow-hidden mt-6">
+    <button onclick="toggleCompletedSection()" class="w-full p-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+        <span class="text-lg font-semibold text-green-400">Completed Tasks ({{ completed_tasks|length }})</span>
+        <svg id="completedChevron" class="w-5 h-5 text-green-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    <div id="completedSection" class="hidden border-t border-white/10">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-glass">
+                <thead>
+                    <tr class="bg-green-500/10">
+                        <th class="text-left text-green-400">Task</th>
+                        <th class="text-left text-green-400">Completed</th>
+                        <th class="text-left text-green-400">Related To</th>
+                        <th class="text-left text-green-400">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in completed_tasks %}
+                    <tr>
+                        <td>
+                            <span class="text-medium line-through">{{ task.title }}</span>
+                        </td>
+                        <td class="text-medium">{{ task.completed_at.strftime('%Y-%m-%d') if task.completed_at else '-' }}</td>
+                        <td class="text-sm">
+                            {% if task.lead %}
+                            <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
+                                Lead: {{ task.lead.name }}
+                            </a>
+                            {% elif task.client %}
+                            <a href="{{ url_for('clients.detail', id=task.client.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
+                                Client: {{ task.client.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-low">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
+                                <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <table class="min-w-full divide-y divide-gray-200">
-        <tbody class="bg-white divide-y divide-gray-200">
-            {% for task in completed_tasks %}
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4">
-                    <span class="line-through text-gray-500">{{ task.title }}</span>
-                    {% if task.description %}
-                    <p class="text-sm text-gray-400 truncate max-w-xs">{{ task.description }}</p>
-                    {% endif %}
-                </td>
-                <td class="px-6 py-4 text-sm">
-                    {% if task.due_date %}
-                    <span class="text-gray-600">{{ task.due_date }}</span>
-                    {% else %}
-                    -
-                    {% endif %}
-                </td>
-                <td class="px-6 py-4">
-                    <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">Done</span>
-                </td>
-                <td class="px-6 py-4 text-sm">
-                    {% if task.lead %}
-                    <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-indigo-600 hover:text-indigo-900">
-                        Lead: {{ task.lead.name }}
-                    </a>
-                    {% elif task.client %}
-                    <a href="{{ url_for('clients.detail', id=task.client.id) }}" class="text-indigo-600 hover:text-indigo-900">
-                        Client: {{ task.client.name }}
-                    </a>
-                    {% else %}
-                    -
-                    {% endif %}
-                </td>
-                <td class="px-6 py-4 space-x-2">
-                    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</a>
-                    <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
-                        <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 {% endif %}
+{% endblock %}
 
+{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('toggleForm');
-    const formContainer = document.getElementById('formContainer');
-    const toggleIcon = document.getElementById('toggleIcon');
-    
-    toggleBtn.addEventListener('click', function() {
-        formContainer.classList.toggle('hidden');
-        toggleIcon.classList.toggle('rotate-180');
-    });
+document.getElementById('toggleForm').addEventListener('click', function() {
+    const container = document.getElementById('formContainer');
+    const icon = document.getElementById('toggleIcon');
+    container.classList.toggle('hidden');
+    icon.classList.toggle('rotate-180');
 });
+
+function toggleCompletedSection() {
+    const section = document.getElementById('completedSection');
+    const chevron = document.getElementById('completedChevron');
+    section.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
 </script>
 {% endblock %}

@@ -3,14 +3,14 @@
 {% block title %}Gamification - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="mb-6">
+<div class="mb-8">
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Gamification</h1>
-            <p class="text-gray-600 mt-1">Track your progress, streaks, and achievements</p>
+            <h1 class="text-3xl font-bold text-high">Gamification</h1>
+            <p class="text-medium mt-1">Track your progress, streaks, and achievements</p>
         </div>
-        <a href="{{ url_for('monthly_review.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="{{ url_for('monthly_review.index') }}" class="btn-secondary flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             Monthly Reviews
@@ -19,96 +19,105 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow p-6 text-white">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold opacity-90">Level {{ current_level }}</h3>
-            <span class="text-3xl">&#x1F3C6;</span>
+    <div class="glass-card p-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-aqua/20 to-cyan-500/10"></div>
+        <div class="relative">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-aqua/80">Level {{ current_level }}</h3>
+                <span class="text-3xl">🏆</span>
+            </div>
+            <div class="text-4xl font-bold text-aqua mb-2">{{ stats.current_xp }} XP</div>
+            {% if xp_for_next %}
+            <div class="text-sm text-medium mb-3">{{ xp_for_next - stats.current_xp }} XP to Level {{ current_level + 1 }}</div>
+            <div class="progress-bar-container h-2">
+                <div class="h-2 progress-bar-aqua rounded-full" style="width: {{ xp_progress }}%"></div>
+            </div>
+            {% else %}
+            <div class="text-sm text-medium">Max level reached!</div>
+            {% endif %}
         </div>
-        <div class="text-4xl font-bold mb-2">{{ stats.current_xp }} XP</div>
-        {% if xp_for_next %}
-        <div class="text-sm opacity-80 mb-2">{{ xp_for_next - stats.current_xp }} XP to Level {{ current_level + 1 }}</div>
-        <div class="w-full bg-white/30 rounded-full h-2">
-            <div class="bg-white rounded-full h-2" style="width: {{ xp_progress }}%"></div>
-        </div>
-        {% else %}
-        <div class="text-sm opacity-80">Max level reached!</div>
-        {% endif %}
     </div>
     
-    <div class="bg-gradient-to-br from-orange-400 to-red-500 rounded-lg shadow p-6 text-white">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold opacity-90">Outreach Streak</h3>
-            <span class="text-3xl">&#x1F525;</span>
+    <div class="glass-card p-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-cinnabar/20 to-orange-600/10"></div>
+        <div class="relative">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-cinnabar/80">Outreach Streak</h3>
+                <span class="text-3xl animate-pulse">🔥</span>
+            </div>
+            <div class="text-4xl font-bold text-cinnabar mb-2">{{ stats.current_outreach_streak_days }} days</div>
+            <div class="text-sm text-medium">Longest: {{ stats.longest_outreach_streak_days }} days</div>
         </div>
-        <div class="text-4xl font-bold mb-2">{{ stats.current_outreach_streak_days }} days</div>
-        <div class="text-sm opacity-80">Longest: {{ stats.longest_outreach_streak_days }} days</div>
     </div>
     
-    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg shadow p-6 text-white">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold opacity-90">Consistency Score</h3>
-            <span class="text-3xl">&#x1F4C8;</span>
+    <div class="glass-card p-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/10"></div>
+        <div class="relative">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-green-400/80">Consistency Score</h3>
+                <span class="text-3xl">📈</span>
+            </div>
+            <div class="text-4xl font-bold text-green-400 mb-2">{{ consistency.score }}%</div>
+            <div class="text-sm text-medium">Based on last 7 days</div>
         </div>
-        <div class="text-4xl font-bold mb-2">{{ consistency.score }}%</div>
-        <div class="text-sm opacity-80">Based on last 7 days</div>
     </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <a href="{{ url_for('goals.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:border-blue-300 transition-all">
+    <a href="{{ url_for('goals.index') }}" class="group glass-card p-5 hover:border-aqua/50 transition-all">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <div class="w-12 h-12 rounded-xl bg-aqua/20 text-aqua flex items-center justify-center group-hover:bg-aqua group-hover:text-graphite transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
             </div>
             <div class="flex-1">
-                <h3 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Goals</h3>
-                <p class="text-sm text-gray-500">{{ active_goals_count }} active goals</p>
+                <h3 class="font-semibold text-high group-hover:text-aqua transition-colors">Goals</h3>
+                <p class="text-sm text-medium">{{ active_goals_count }} active goals</p>
             </div>
-            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-medium group-hover:text-aqua group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
         </div>
     </a>
     
-    <a href="{{ url_for('rewards.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:border-amber-300 transition-all">
+    <a href="{{ url_for('rewards.index') }}" class="group glass-card p-5 hover:border-yellow-400/50 transition-all shimmer-on-hover">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors">
+            <div class="w-12 h-12 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center group-hover:bg-yellow-500 group-hover:text-graphite transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
             <div class="flex-1">
-                <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Rewards Shop</h3>
-                <p class="text-sm text-gray-500"><span class="font-medium text-amber-600">{{ token_balance }}</span> tokens | {{ available_rewards }} rewards</p>
+                <h3 class="font-semibold text-high group-hover:text-yellow-400 transition-colors">Rewards Shop</h3>
+                <p class="text-sm text-medium"><span class="font-medium text-yellow-400">{{ token_balance }}</span> tokens | {{ available_rewards }} rewards</p>
             </div>
-            <svg class="w-5 h-5 text-gray-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-medium group-hover:text-yellow-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
         </div>
     </a>
     
-    <a href="{{ url_for('boss.index') }}" class="group bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-lg hover:border-red-300 transition-all">
+    <a href="{{ url_for('boss.index') }}" class="group glass-card p-5 hover:border-cinnabar/50 transition-all">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+            <div class="w-12 h-12 rounded-xl bg-cinnabar/20 text-cinnabar flex items-center justify-center group-hover:bg-cinnabar group-hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
                 </svg>
             </div>
             <div class="flex-1">
-                <h3 class="font-semibold text-gray-900 group-hover:text-red-600 transition-colors">Boss Battle</h3>
+                <h3 class="font-semibold text-high group-hover:text-cinnabar transition-colors">Boss Battle</h3>
                 {% if current_boss %}
                     {% if current_boss.is_completed %}
-                    <p class="text-sm text-green-600 font-medium">Defeated!</p>
+                    <p class="text-sm text-green-400 font-medium">Defeated!</p>
                     {% else %}
-                    <p class="text-sm text-gray-500">{{ boss_progress }}% progress</p>
+                    <p class="text-sm text-medium">{{ boss_progress }}% progress</p>
                     {% endif %}
                 {% else %}
-                <p class="text-sm text-gray-500">No active boss</p>
+                <p class="text-sm text-medium">No active boss</p>
                 {% endif %}
             </div>
-            <svg class="w-5 h-5 text-gray-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-medium group-hover:text-cinnabar group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
         </div>
@@ -116,65 +125,65 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">XP Gained This Week</h3>
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-semibold text-high mb-4">XP Gained This Week</h3>
         <div style="height: 200px; position: relative;">
             <canvas id="xpChart"></canvas>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Consistency Breakdown</h3>
-        <div class="space-y-4">
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-semibold text-high mb-4">Consistency Breakdown</h3>
+        <div class="space-y-5">
             <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Outreach</span>
-                    <span class="font-medium">{{ consistency.outreach_pct }}%</span>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-medium">Outreach</span>
+                    <span class="font-medium text-aqua">{{ consistency.outreach_pct }}%</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-indigo-500 rounded-full h-3" style="width: {{ consistency.outreach_pct }}%"></div>
+                <div class="progress-bar-container h-3">
+                    <div class="h-3 progress-bar-aqua rounded-full" style="width: {{ consistency.outreach_pct }}%"></div>
                 </div>
-                <div class="text-xs text-gray-500 mt-1">{{ consistency.outreach_count }} of {{ consistency.outreach_goal }} target</div>
+                <div class="text-xs text-low mt-1">{{ consistency.outreach_count }} of {{ consistency.outreach_goal }} target</div>
             </div>
             <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Follow-ups</span>
-                    <span class="font-medium">{{ consistency.followup_pct }}%</span>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-medium">Follow-ups</span>
+                    <span class="font-medium text-cinnabar">{{ consistency.followup_pct }}%</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-orange-500 rounded-full h-3" style="width: {{ consistency.followup_pct }}%"></div>
+                <div class="progress-bar-container h-3">
+                    <div class="h-3 progress-bar-cinnabar rounded-full" style="width: {{ consistency.followup_pct }}%"></div>
                 </div>
             </div>
             <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-600">Tasks Completed</span>
-                    <span class="font-medium">{{ consistency.task_pct }}%</span>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-medium">Tasks Completed</span>
+                    <span class="font-medium text-green-400">{{ consistency.task_pct }}%</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-emerald-500 rounded-full h-3" style="width: {{ consistency.task_pct }}%"></div>
+                <div class="progress-bar-container h-3">
+                    <div class="h-3 bg-green-500 rounded-full" style="width: {{ consistency.task_pct }}%"></div>
                 </div>
-                <div class="text-xs text-gray-500 mt-1">{{ consistency.tasks_done }} of {{ consistency.tasks_due }} due</div>
+                <div class="text-xs text-low mt-1">{{ consistency.tasks_done }} of {{ consistency.tasks_due }} due</div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Upcoming Rewards</h3>
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-semibold text-high mb-4">Upcoming Rewards</h3>
         {% if upcoming_rewards %}
         <div class="space-y-3">
             {% for reward in upcoming_rewards %}
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
                 <div class="flex items-center">
                     {% if reward.type == 'milestone' %}
-                    <span class="text-xl mr-3">&#127942;</span>
+                    <span class="text-xl mr-3">🏆</span>
                     {% else %}
-                    <span class="text-xl mr-3">&#127873;</span>
+                    <span class="text-xl mr-3">🎁</span>
                     {% endif %}
                     <div>
-                        <div class="font-medium text-gray-900">{{ reward.reward_text }}</div>
-                        <div class="text-xs text-gray-500">
+                        <div class="font-medium text-high">{{ reward.reward_text }}</div>
+                        <div class="text-xs text-low">
                             {% if reward.type == 'milestone' %}
                             Milestone at Level {{ reward.level }}
                             {% else %}
@@ -183,112 +192,112 @@
                         </div>
                     </div>
                 </div>
-                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-1 rounded">Lvl {{ reward.level }}</span>
+                <span class="pill pill-aqua">Lvl {{ reward.level }}</span>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-sm">No upcoming rewards. Add some below!</p>
+        <p class="text-low text-sm">No upcoming rewards. Add some below!</p>
         {% endif %}
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Unlocked Rewards</h3>
+    <div class="glass-card p-6">
+        <h3 class="text-lg font-semibold text-high mb-4">Unlocked Rewards</h3>
         {% if unlocked_rewards %}
-        <div class="space-y-3 max-h-64 overflow-y-auto">
+        <div class="space-y-3 max-h-64 overflow-y-auto scrollbar-thin">
             {% for reward in unlocked_rewards %}
-            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+            <div class="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <div class="flex items-center">
-                    <span class="text-xl mr-3">&#127881;</span>
+                    <span class="text-xl mr-3">🎉</span>
                     <div>
-                        <div class="font-medium text-gray-900">{{ reward.reward_text }}</div>
-                        <div class="text-xs text-gray-500">
+                        <div class="font-medium text-high">{{ reward.reward_text }}</div>
+                        <div class="text-xs text-low">
                             {{ reward.reward_type|title }} reward at Level {{ reward.level_achieved }}
                         </div>
                     </div>
                 </div>
-                <span class="text-xs text-gray-500">{{ reward.unlocked_at.strftime('%b %d') }}</span>
+                <span class="text-xs text-low">{{ reward.unlocked_at.strftime('%b %d') }}</span>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-sm">No rewards unlocked yet. Keep leveling up!</p>
+        <p class="text-low text-sm">No rewards unlocked yet. Keep leveling up!</p>
         {% endif %}
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Reward Settings</h3>
+<div class="glass-card p-6 mb-8">
+    <h3 class="text-lg font-semibold text-high mb-4">Reward Settings</h3>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-            <h4 class="text-sm font-medium text-gray-600 mb-3">Level Interval Rewards (Recurring)</h4>
+            <h4 class="text-sm font-medium text-medium mb-3">Level Interval Rewards (Recurring)</h4>
             <div class="space-y-2 mb-4">
                 {% for reward in level_rewards %}
-                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg {% if not reward.is_active %}opacity-50{% endif %}">
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 {% if not reward.is_active %}opacity-50{% endif %}">
                     <div>
-                        <span class="font-medium text-sm">Every {{ reward.level_interval }} levels:</span>
-                        <span class="text-sm text-gray-600">{{ reward.reward_text }}</span>
+                        <span class="font-medium text-sm text-high">Every {{ reward.level_interval }} levels:</span>
+                        <span class="text-sm text-medium ml-1">{{ reward.reward_text }}</span>
                     </div>
                     <div class="flex gap-1">
                         <form method="POST" action="{{ url_for('gamification.toggle_level_reward', id=reward.id) }}" class="inline">
-                            <button type="submit" class="text-xs px-2 py-1 rounded {% if reward.is_active %}bg-green-100 text-green-700{% else %}bg-gray-200 text-gray-600{% endif %}">
+                            <button type="submit" class="text-xs px-2 py-1 rounded-lg {% if reward.is_active %}bg-green-500/20 text-green-400{% else %}bg-white/10 text-low{% endif %}">
                                 {{ 'On' if reward.is_active else 'Off' }}
                             </button>
                         </form>
                         <form method="POST" action="{{ url_for('gamification.delete_level_reward', id=reward.id) }}" class="inline" onsubmit="return confirm('Delete this reward?')">
-                            <button type="submit" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Del</button>
+                            <button type="submit" class="text-xs px-2 py-1 rounded-lg bg-cinnabar/20 text-cinnabar">Del</button>
                         </form>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <form method="POST" action="{{ url_for('gamification.add_level_reward') }}" class="flex gap-2">
-                <input type="number" name="level_interval" min="1" placeholder="Every X levels" class="w-28 text-sm border border-gray-300 rounded px-2 py-1">
-                <input type="text" name="reward_text" placeholder="Reward description" class="flex-1 text-sm border border-gray-300 rounded px-2 py-1">
-                <button type="submit" class="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700">Add</button>
+                <input type="number" name="level_interval" min="1" placeholder="Every X levels" class="w-28 text-sm input-glass py-2">
+                <input type="text" name="reward_text" placeholder="Reward description" class="flex-1 text-sm input-glass py-2">
+                <button type="submit" class="btn-primary text-sm py-2 px-3">Add</button>
             </form>
         </div>
         
         <div>
-            <h4 class="text-sm font-medium text-gray-600 mb-3">Milestone Rewards (One-time)</h4>
+            <h4 class="text-sm font-medium text-medium mb-3">Milestone Rewards (One-time)</h4>
             <div class="space-y-2 mb-4">
                 {% for reward in milestone_rewards %}
-                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg {% if not reward.is_active %}opacity-50{% endif %} {% if reward.unlocked_at %}bg-green-50{% endif %}">
+                <div class="flex items-center justify-between p-3 rounded-xl border {% if not reward.is_active %}opacity-50 bg-white/5 border-white/10{% elif reward.unlocked_at %}bg-green-500/10 border-green-500/20{% else %}bg-white/5 border-white/10{% endif %}">
                     <div>
-                        <span class="font-medium text-sm">Level {{ reward.target_level }}:</span>
-                        <span class="text-sm text-gray-600">{{ reward.reward_text }}</span>
+                        <span class="font-medium text-sm text-high">Level {{ reward.target_level }}:</span>
+                        <span class="text-sm text-medium ml-1">{{ reward.reward_text }}</span>
                         {% if reward.unlocked_at %}
-                        <span class="text-xs text-green-600 ml-1">(Claimed)</span>
+                        <span class="text-xs text-green-400 ml-1">(Claimed)</span>
                         {% endif %}
                     </div>
                     <div class="flex gap-1">
                         <form method="POST" action="{{ url_for('gamification.toggle_milestone_reward', id=reward.id) }}" class="inline">
-                            <button type="submit" class="text-xs px-2 py-1 rounded {% if reward.is_active %}bg-green-100 text-green-700{% else %}bg-gray-200 text-gray-600{% endif %}">
+                            <button type="submit" class="text-xs px-2 py-1 rounded-lg {% if reward.is_active %}bg-green-500/20 text-green-400{% else %}bg-white/10 text-low{% endif %}">
                                 {{ 'On' if reward.is_active else 'Off' }}
                             </button>
                         </form>
                         <form method="POST" action="{{ url_for('gamification.delete_milestone_reward', id=reward.id) }}" class="inline" onsubmit="return confirm('Delete this reward?')">
-                            <button type="submit" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Del</button>
+                            <button type="submit" class="text-xs px-2 py-1 rounded-lg bg-cinnabar/20 text-cinnabar">Del</button>
                         </form>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <form method="POST" action="{{ url_for('gamification.add_milestone_reward') }}" class="flex gap-2">
-                <input type="number" name="target_level" min="1" placeholder="At level" class="w-28 text-sm border border-gray-300 rounded px-2 py-1">
-                <input type="text" name="reward_text" placeholder="Reward description" class="flex-1 text-sm border border-gray-300 rounded px-2 py-1">
-                <button type="submit" class="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700">Add</button>
+                <input type="number" name="target_level" min="1" placeholder="At level" class="w-28 text-sm input-glass py-2">
+                <input type="text" name="reward_text" placeholder="Reward description" class="flex-1 text-sm input-glass py-2">
+                <button type="submit" class="btn-primary text-sm py-2 px-3">Add</button>
             </form>
         </div>
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6 mb-8">
+<div class="glass-card p-6 mb-8">
     <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">Wins Log</h3>
-        <button onclick="document.getElementById('addWinModal').classList.remove('hidden')" class="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-700 flex items-center">
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <h3 class="text-lg font-semibold text-high">Wins Log</h3>
+        <button onclick="document.getElementById('addWinModal').classList.remove('hidden')" class="btn-primary text-sm py-2 px-3 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
             Add a Win
@@ -296,24 +305,24 @@
     </div>
     
     {% if wins %}
-    <div class="space-y-3 max-h-96 overflow-y-auto">
+    <div class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
         {% for win in wins %}
-        <div class="flex items-start p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-            <span class="text-xl mr-3 mt-0.5">&#127881;</span>
+        <div class="flex items-start p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+            <span class="text-xl mr-3 mt-0.5">🎉</span>
             <div class="flex-1">
                 <div class="flex items-center justify-between">
-                    <div class="font-semibold text-gray-900">{{ win.title }}</div>
-                    <div class="text-xs text-gray-500">{{ win.timestamp.strftime('%b %d, %Y at %H:%M') }}</div>
+                    <div class="font-semibold text-high">{{ win.title }}</div>
+                    <div class="text-xs text-low">{{ win.timestamp.strftime('%b %d, %Y at %H:%M') }}</div>
                 </div>
                 {% if win.description %}
-                <div class="text-sm text-gray-600 mt-1">{{ win.description }}</div>
+                <div class="text-sm text-medium mt-1">{{ win.description }}</div>
                 {% endif %}
-                <div class="flex gap-2 mt-1">
+                <div class="flex gap-2 mt-2">
                     {% if win.xp_value %}
-                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">+{{ win.xp_value }} XP</span>
+                    <span class="pill pill-aqua">+{{ win.xp_value }} XP</span>
                     {% endif %}
                     {% if win.token_value %}
-                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">+{{ win.token_value }} tokens</span>
+                    <span class="pill pill-warning">+{{ win.token_value }} tokens</span>
                     {% endif %}
                 </div>
             </div>
@@ -321,54 +330,54 @@
         {% endfor %}
     </div>
     {% else %}
-    <p class="text-gray-500 text-sm">No wins logged yet. Start tracking your achievements!</p>
+    <p class="text-low text-sm">No wins logged yet. Start tracking your achievements!</p>
     {% endif %}
 </div>
 
-<div id="addWinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div class="flex items-center justify-between p-4 border-b">
-            <h4 class="text-lg font-semibold text-gray-900">Add a Win</h4>
-            <button onclick="document.getElementById('addWinModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+<div id="addWinModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50">
+    <div class="glass-card max-w-md w-full mx-4">
+        <div class="flex items-center justify-between p-5 border-b border-white/10">
+            <h4 class="text-lg font-semibold text-high">Add a Win</h4>
+            <button onclick="document.getElementById('addWinModal').classList.add('hidden')" class="text-medium hover:text-high transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
         </div>
-        <form method="POST" action="{{ url_for('gamification.add_win') }}" class="p-4">
+        <form method="POST" action="{{ url_for('gamification.add_win') }}" class="p-5">
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                <input type="text" name="title" required placeholder="What did you achieve?" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <label class="block text-sm font-medium text-medium mb-2">Title *</label>
+                <input type="text" name="title" required placeholder="What did you achieve?" class="w-full input-glass">
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-                <textarea name="description" rows="3" placeholder="Add more details about your win..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <label class="block text-sm font-medium text-medium mb-2">Description (optional)</label>
+                <textarea name="description" rows="3" placeholder="Add more details about your win..." class="w-full input-glass"></textarea>
             </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="document.getElementById('addWinModal').classList.add('hidden')" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Add Win</button>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('addWinModal').classList.add('hidden')" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Add Win</button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Achievements</h3>
+<div class="glass-card p-6">
+    <h3 class="text-lg font-semibold text-high mb-4">Achievements</h3>
     
     {% if unlocked_achievements %}
     <div class="mb-6">
-        <h4 class="text-sm font-medium text-gray-600 mb-3">Unlocked</h4>
+        <h4 class="text-sm font-medium text-medium mb-3">Unlocked</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for achievement in unlocked_achievements %}
-            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4">
+            <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
                 <div class="flex items-center mb-2">
-                    <span class="text-2xl mr-3">&#x1F3C5;</span>
+                    <span class="text-2xl mr-3">🏅</span>
                     <div>
-                        <div class="font-semibold text-gray-900">{{ achievement.name }}</div>
-                        <div class="text-xs text-gray-500">Unlocked {{ achievement.unlocked_at.strftime('%b %d, %Y') }}</div>
+                        <div class="font-semibold text-high">{{ achievement.name }}</div>
+                        <div class="text-xs text-low">Unlocked {{ achievement.unlocked_at.strftime('%b %d, %Y') }}</div>
                     </div>
                 </div>
-                <div class="text-sm text-gray-600">{{ achievement.description }}</div>
+                <div class="text-sm text-medium">{{ achievement.description }}</div>
             </div>
             {% endfor %}
         </div>
@@ -377,26 +386,31 @@
     
     {% if locked_achievements %}
     <div>
-        <h4 class="text-sm font-medium text-gray-600 mb-3">Locked</h4>
+        <h4 class="text-sm font-medium text-medium mb-3">Locked</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for achievement in locked_achievements %}
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 opacity-60">
+            <div class="p-4 bg-white/5 border border-white/10 rounded-xl opacity-60">
                 <div class="flex items-center mb-2">
-                    <span class="text-2xl mr-3 grayscale">&#x1F512;</span>
+                    <span class="text-2xl mr-3 grayscale">🔒</span>
                     <div>
-                        <div class="font-semibold text-gray-700">{{ achievement.name }}</div>
+                        <div class="font-semibold text-medium">{{ achievement.name }}</div>
                     </div>
                 </div>
-                <div class="text-sm text-gray-500">{{ achievement.description }}</div>
+                <div class="text-sm text-low">{{ achievement.description }}</div>
             </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
 const xpData = {{ xp_this_week | tojson }};
 const today = new Date();
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -409,7 +423,6 @@ for (let i = 0; i < 7; i++) {
 
 const xpCtx = document.getElementById('xpChart');
 if (xpCtx) {
-    const xpContainer = xpCtx.parentElement;
     new Chart(xpCtx, {
         type: 'bar',
         data: {
@@ -417,8 +430,10 @@ if (xpCtx) {
             datasets: [{
                 label: 'XP Earned',
                 data: xpData,
-                backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                borderRadius: 4
+                backgroundColor: 'rgba(49, 224, 247, 0.6)',
+                borderColor: '#31E0F7',
+                borderWidth: 1,
+                borderRadius: 6
             }]
         },
         options: {
@@ -430,7 +445,11 @@ if (xpCtx) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 10 }
+                    ticks: { stepSize: 10 },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                x: {
+                    grid: { display: false }
                 }
             }
         }

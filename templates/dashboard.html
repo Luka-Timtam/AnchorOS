@@ -4,18 +4,18 @@
 
 {% block content %}
 {% if pause_active %}
-<div class="mb-6 bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+<div class="mb-6 glass-card p-4 border-l-4 border-yellow-500">
     <div class="flex items-center justify-between">
         <div class="flex items-center">
-            <svg class="w-6 h-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div>
-                <p class="font-semibold text-yellow-800">PAUSE MODE ACTIVE</p>
-                <p class="text-sm text-yellow-700">Streaks and consistency are frozen until {{ pause_end.strftime('%B %d, %Y') if pause_end else 'N/A' }}.</p>
+                <p class="font-semibold text-yellow-400">PAUSE MODE ACTIVE</p>
+                <p class="text-sm text-medium">Streaks and consistency are frozen until {{ pause_end.strftime('%B %d, %Y') if pause_end else 'N/A' }}.</p>
             </div>
         </div>
-        <a href="{{ url_for('settings.index') }}" class="px-3 py-1 bg-yellow-200 text-yellow-800 rounded hover:bg-yellow-300 text-sm font-medium">
+        <a href="{{ url_for('settings.index') }}" class="btn-secondary text-sm">
             Manage
         </a>
     </div>
@@ -23,32 +23,36 @@
 {% endif %}
 
 {% if deals_closed_today %}
-<div class="mb-6 space-y-2">
+<div class="mb-6 space-y-3">
     {% for deal in deals_closed_today %}
     {% if deal.status == 'closed_won' %}
-    <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-lg">
+    <div class="glass-card p-4 border-l-4 border-green-500">
         <div class="flex items-center">
-            <svg class="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
             <div>
-                <p class="font-semibold text-green-800">Deal Won: {{ deal.name }}</p>
+                <p class="font-semibold text-green-400">Deal Won: {{ deal.name }}</p>
                 {% if deal.close_reason %}
-                <p class="text-sm text-green-700">{{ deal.close_reason }}</p>
+                <p class="text-sm text-medium">{{ deal.close_reason }}</p>
                 {% endif %}
             </div>
         </div>
     </div>
     {% else %}
-    <div class="bg-red-100 border-l-4 border-red-400 p-4 rounded-r-lg">
+    <div class="glass-card p-4 border-l-4 border-cinnabar">
         <div class="flex items-center">
-            <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+            <div class="w-10 h-10 rounded-full bg-cinnabar/20 flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-cinnabar" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
             <div>
-                <p class="font-semibold text-red-700">Deal Lost: {{ deal.name }}</p>
+                <p class="font-semibold text-cinnabar">Deal Lost: {{ deal.name }}</p>
                 {% if deal.close_reason %}
-                <p class="text-sm text-red-600">{{ deal.close_reason }}</p>
+                <p class="text-sm text-medium">{{ deal.close_reason }}</p>
                 {% endif %}
             </div>
         </div>
@@ -58,35 +62,35 @@
 </div>
 {% endif %}
 
-<div class="mb-6 flex justify-between items-center">
-    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-    <button onclick="openWidgetModal()" class="bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 transition flex items-center gap-2 text-gray-600 hover:text-gray-900">
+<div class="mb-8 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-high">Dashboard</h1>
+    <button onclick="openWidgetModal()" class="btn-secondary flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
         </svg>
-        <span class="text-sm font-medium">Customize Widgets</span>
+        <span class="text-sm font-medium">Customize</span>
     </button>
 </div>
 
 {% macro render_followups() %}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <a href="{{ url_for('leads.index', next_action='today') }}" class="block bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors">
+    <a href="{{ url_for('leads.index', next_action='today') }}" class="glass-card p-5 hover:border-yellow-500/50 group">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-yellow-800">Follow Up Today</h3>
-                <p class="text-sm text-yellow-600">Leads needing attention</p>
+                <h3 class="text-lg font-semibold text-yellow-400">Follow Up Today</h3>
+                <p class="text-sm text-medium">Leads needing attention</p>
             </div>
-            <span class="text-3xl font-bold text-yellow-700">{{ followup_today }}</span>
+            <span class="text-4xl font-bold text-yellow-400">{{ followup_today }}</span>
         </div>
     </a>
     
-    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="block bg-red-50 border border-red-200 rounded-lg p-4 hover:bg-red-100 transition-colors">
+    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="glass-card p-5 hover:border-cinnabar/50 group">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-red-800">Overdue Follow Ups</h3>
-                <p class="text-sm text-red-600">Past due date</p>
+                <h3 class="text-lg font-semibold text-cinnabar">Overdue Follow Ups</h3>
+                <p class="text-sm text-medium">Past due date</p>
             </div>
-            <span class="text-3xl font-bold text-red-700">{{ followup_overdue }}</span>
+            <span class="text-4xl font-bold text-cinnabar">{{ followup_overdue }}</span>
         </div>
     </a>
 </div>
@@ -94,74 +98,84 @@
 
 {% macro render_gamification_stats() %}
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4 hover:from-indigo-100 hover:to-purple-100 transition-colors">
-        <div class="flex items-center justify-between">
+    <a href="{{ url_for('gamification.index') }}" class="glass-card p-5 hover:border-aqua/50 group relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-aqua/10 to-cyan-500/5"></div>
+        <div class="relative flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-indigo-800">XP</h3>
-                <p class="text-sm text-indigo-600">Level {{ user_stats.get_level_from_xp() }}</p>
+                <h3 class="text-lg font-semibold text-aqua">XP</h3>
+                <p class="text-sm text-medium">Level {{ user_stats.get_level_from_xp() }}</p>
             </div>
-            <span class="text-3xl font-bold text-indigo-700">{{ user_stats.current_xp }}</span>
+            <span class="text-4xl font-bold text-aqua">{{ user_stats.current_xp }}</span>
         </div>
     </a>
     
-    <a href="{{ url_for('rewards.index') }}" class="block bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 hover:from-yellow-100 hover:to-amber-100 transition-colors">
-        <div class="flex items-center justify-between">
+    <a href="{{ url_for('rewards.index') }}" class="glass-card p-5 hover:border-yellow-400/50 group relative overflow-hidden shimmer-on-hover">
+        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-amber-500/5"></div>
+        <div class="relative flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-yellow-800">Tokens</h3>
-                <p class="text-sm text-yellow-600">Reward Shop</p>
+                <h3 class="text-lg font-semibold text-yellow-400">Tokens</h3>
+                <p class="text-sm text-medium">Reward Shop</p>
             </div>
-            <span class="text-3xl font-bold text-yellow-700">{{ token_balance }}</span>
+            <span class="text-4xl font-bold text-yellow-400">{{ token_balance }}</span>
         </div>
     </a>
     
-    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 hover:from-orange-100 hover:to-red-100 transition-colors">
-        <div class="flex items-center justify-between">
+    <a href="{{ url_for('gamification.index') }}" class="glass-card p-5 hover:border-cinnabar/50 group relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-cinnabar/10 to-orange-500/5"></div>
+        <div class="relative flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-orange-800">Streak</h3>
-                <p class="text-sm text-orange-600">Outreach days</p>
+                <h3 class="text-lg font-semibold text-cinnabar">Streak</h3>
+                <p class="text-sm text-medium">Outreach days</p>
             </div>
             <div class="flex items-center">
-                <span class="text-3xl font-bold text-orange-700">{{ user_stats.current_outreach_streak_days }}</span>
-                <span class="text-2xl ml-1">&#x1F525;</span>
+                <span class="text-4xl font-bold text-cinnabar">{{ user_stats.current_outreach_streak_days }}</span>
+                <span class="text-3xl ml-2 animate-pulse">🔥</span>
             </div>
         </div>
     </a>
     
-    <a href="{{ url_for('gamification.index') }}" class="block bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4 hover:from-emerald-100 hover:to-teal-100 transition-colors">
-        <div class="flex items-center justify-between">
+    <a href="{{ url_for('gamification.index') }}" class="glass-card p-5 hover:border-green-400/50 group relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5"></div>
+        <div class="relative flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-emerald-800">Consistency</h3>
-                <p class="text-sm text-emerald-600">Last 7 days</p>
+                <h3 class="text-lg font-semibold text-green-400">Consistency</h3>
+                <p class="text-sm text-medium">Last 7 days</p>
             </div>
-            <span class="text-3xl font-bold text-emerald-700">{{ consistency_score }}%</span>
+            <span class="text-4xl font-bold text-green-400">{{ consistency_score }}%</span>
         </div>
     </a>
 </div>
 {% endmacro %}
 
 {% macro render_daily_mission() %}
-<a href="{{ url_for('missions.index') }}" class="block bg-white border border-gray-200 rounded-lg p-4 mb-6 hover:border-indigo-300 transition-colors">
-    <div class="flex items-center justify-between mb-2">
-        <div>
-            <h3 class="text-lg font-semibold text-gray-900">Daily Mission</h3>
-            <p class="text-sm text-gray-600">{{ daily_mission.description }}</p>
+<a href="{{ url_for('missions.index') }}" class="block glass-card p-5 mb-6 hover:border-aqua/50 group">
+    <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-aqua/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-high">Daily Mission</h3>
+                <p class="text-sm text-medium">{{ daily_mission.description }}</p>
+            </div>
         </div>
         <div class="text-right">
             {% if daily_mission.is_completed %}
-            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span class="pill pill-success">
                 Complete! +{{ daily_mission.reward_tokens }} tokens
             </span>
             {% else %}
-            <span class="text-yellow-700 font-medium">{{ daily_mission.reward_tokens }} tokens</span>
+            <span class="text-yellow-400 font-medium">{{ daily_mission.reward_tokens }} tokens</span>
             {% endif %}
         </div>
     </div>
-    <div class="w-full bg-gray-200 rounded-full h-2">
-        <div class="h-2 rounded-full transition-all duration-300
-            {% if daily_mission.is_completed %}bg-green-500{% else %}bg-indigo-600{% endif %}"
+    <div class="progress-bar-container h-2">
+        <div class="h-2 rounded-full transition-all duration-500 {% if daily_mission.is_completed %}bg-green-500{% else %}progress-bar-aqua{% endif %}"
              style="width: {{ mission_progress_pct }}%"></div>
     </div>
-    <div class="flex justify-between text-xs text-gray-500 mt-1">
+    <div class="flex justify-between text-xs text-low mt-2">
         <span>{{ daily_mission.progress_count }} / {{ daily_mission.target_count }}</span>
         <span>{{ mission_progress_pct }}%</span>
     </div>
@@ -170,69 +184,71 @@
 
 {% macro render_boss_battle() %}
 {% if current_boss %}
-<a href="{{ url_for('boss.index') }}" class="block bg-gradient-to-r {% if current_boss.is_completed %}from-green-500 to-emerald-600{% else %}from-red-500 to-orange-600{% endif %} rounded-lg p-4 mb-6 hover:opacity-90 transition-opacity text-white">
-    <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl">{% if current_boss.is_completed %}🏆{% else %}👹{% endif %}</span>
-            <div>
-                <h3 class="text-lg font-semibold">Boss Battle</h3>
-                <p class="text-sm text-white/80">{{ current_boss.description }}</p>
+<a href="{{ url_for('boss.index') }}" class="block glass-card p-5 mb-6 relative overflow-hidden group {% if current_boss.is_completed %}hover:border-green-500/50{% else %}hover:border-cinnabar/50{% endif %}">
+    <div class="absolute inset-0 {% if current_boss.is_completed %}bg-gradient-to-r from-green-500/20 to-emerald-600/10{% else %}bg-gradient-to-r from-cinnabar/20 to-orange-600/10{% endif %}"></div>
+    <div class="absolute inset-0 {% if not current_boss.is_completed %}animate-pulse-glow{% endif %} bg-gradient-to-r {% if current_boss.is_completed %}from-green-500/5{% else %}from-cinnabar/5{% endif %} to-transparent"></div>
+    <div class="relative">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+                <div class="text-3xl">{% if current_boss.is_completed %}🏆{% else %}👹{% endif %}</div>
+                <div>
+                    <h3 class="text-lg font-semibold text-high">Boss Battle</h3>
+                    <p class="text-sm text-medium">{{ current_boss.description }}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                {% if current_boss.is_completed %}
+                <span class="pill pill-success">
+                    Defeated! +{{ current_boss.reward_tokens }} tokens
+                </span>
+                {% else %}
+                <span class="text-cinnabar font-medium">{{ current_boss.reward_tokens }} tokens</span>
+                {% endif %}
             </div>
         </div>
-        <div class="text-right">
-            {% if current_boss.is_completed %}
-            <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-sm font-medium">
-                Defeated! +{{ current_boss.reward_tokens }} tokens
-            </span>
-            {% else %}
-            <span class="text-white/90 font-medium">{{ current_boss.reward_tokens }} tokens</span>
-            {% endif %}
+        <div class="progress-bar-container h-2">
+            <div class="h-2 rounded-full transition-all duration-500 {% if current_boss.is_completed %}bg-green-500{% else %}progress-bar-cinnabar{% endif %}"
+                 style="width: {{ boss_progress_pct }}%"></div>
         </div>
-    </div>
-    <div class="w-full bg-white/30 rounded-full h-2">
-        <div class="h-2 rounded-full transition-all duration-300
-            {% if current_boss.is_completed %}bg-white{% else %}bg-yellow-300{% endif %}"
-             style="width: {{ boss_progress_pct }}%"></div>
-    </div>
-    <div class="flex justify-between text-xs text-white/80 mt-1">
-        <span>{{ current_boss.progress_value }} / {{ current_boss.target_value }}</span>
-        <span>{{ boss_progress_pct }}%</span>
+        <div class="flex justify-between text-xs text-low mt-2">
+            <span>{{ current_boss.progress_value }} / {{ current_boss.target_value }}</span>
+            <span>{{ boss_progress_pct }}%</span>
+        </div>
     </div>
 </a>
 {% endif %}
 {% endmacro %}
 
 {% macro render_focus_session() %}
-<div id="focusSessionCard" class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4 mb-6">
-    <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
-                <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div id="focusSessionCard" class="glass-card p-5 mb-6 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-aqua/10 to-cyan-500/5"></div>
+    <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-aqua/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
             <div>
-                <h3 class="text-lg font-semibold text-cyan-800">Focus Session</h3>
-                <p id="focusSubtitle" class="text-sm text-cyan-600">Stay focused and earn rewards</p>
+                <h3 class="text-lg font-semibold text-high">Focus Session</h3>
+                <p id="focusSubtitle" class="text-sm text-medium">Stay focused and earn rewards</p>
             </div>
         </div>
         <div id="focusControls" class="flex items-center gap-3">
-            <div id="focusStartControls">
-                <select id="focusDuration" class="rounded-lg border-cyan-300 text-sm text-gray-700 focus:ring-cyan-500 focus:border-cyan-500">
+            <div id="focusStartControls" class="flex items-center gap-2">
+                <select id="focusDuration" class="select-glass text-sm">
                     <option value="25">25 min</option>
                     <option value="30">30 min</option>
                     <option value="45">45 min</option>
                     <option value="60">60 min</option>
                 </select>
-                <button onclick="startFocusSession()" class="ml-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors">
+                <button onclick="startFocusSession()" class="btn-primary">
                     Start
                 </button>
             </div>
-            <div id="focusActiveControls" class="hidden items-center gap-3">
-                <div class="text-center">
-                    <span id="focusTimer" class="text-2xl font-bold text-cyan-700 font-mono">00:00</span>
-                </div>
-                <button onclick="cancelFocusSession()" class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-colors">
+            <div id="focusActiveControls" class="hidden items-center gap-4">
+                <span id="focusTimer" class="text-3xl font-bold text-aqua font-mono">00:00</span>
+                <button onclick="cancelFocusSession()" class="btn-danger text-sm">
                     Cancel
                 </button>
             </div>
@@ -243,91 +259,91 @@
 
 {% macro render_activity_calendar() %}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-            <a href="{{ url_for('timeline.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-                View all &rarr;
+    <div class="glass-card p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-high">Recent Activity</h3>
+            <a href="{{ url_for('timeline.index') }}" class="text-sm text-aqua hover:text-aqua/80 transition-colors">
+                View all →
             </a>
         </div>
         {% if recent_activities %}
-        <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto">
+        <div class="space-y-2 max-h-48 overflow-y-auto scrollbar-thin">
             {% for activity in recent_activities %}
-            <div class="py-2 flex items-center space-x-3 {% if activity.is_highlight() %}bg-yellow-50 -mx-2 px-2 rounded{% endif %}">
+            <div class="flex items-center gap-3 p-2 rounded-lg {% if activity.is_highlight() %}bg-yellow-500/10 border border-yellow-500/20{% else %}hover:bg-white/5{% endif %} transition-colors">
                 <div class="flex-shrink-0">
                     {% set color = activity.get_color() %}
-                    <div class="w-7 h-7 rounded-full flex items-center justify-center
-                        {% if color == 'blue' %}bg-blue-100 text-blue-600
-                        {% elif color == 'indigo' %}bg-indigo-100 text-indigo-600
-                        {% elif color == 'green' %}bg-green-100 text-green-600
-                        {% elif color == 'purple' %}bg-purple-100 text-purple-600
-                        {% elif color == 'emerald' %}bg-emerald-100 text-emerald-600
-                        {% elif color == 'red' %}bg-red-100 text-red-600
-                        {% elif color == 'orange' %}bg-orange-100 text-orange-600
-                        {% elif color == 'yellow' %}bg-yellow-100 text-yellow-600
-                        {% elif color == 'amber' %}bg-amber-100 text-amber-600
-                        {% elif color == 'violet' %}bg-violet-100 text-violet-600
-                        {% elif color == 'teal' %}bg-teal-100 text-teal-600
-                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center
+                        {% if color == 'blue' %}bg-blue-500/20 text-blue-400
+                        {% elif color == 'indigo' %}bg-indigo-500/20 text-indigo-400
+                        {% elif color == 'green' %}bg-green-500/20 text-green-400
+                        {% elif color == 'purple' %}bg-purple-500/20 text-purple-400
+                        {% elif color == 'emerald' %}bg-emerald-500/20 text-emerald-400
+                        {% elif color == 'red' %}bg-cinnabar/20 text-cinnabar
+                        {% elif color == 'orange' %}bg-orange-500/20 text-orange-400
+                        {% elif color == 'yellow' %}bg-yellow-500/20 text-yellow-400
+                        {% elif color == 'amber' %}bg-amber-500/20 text-amber-400
+                        {% elif color == 'violet' %}bg-violet-500/20 text-violet-400
+                        {% elif color == 'teal' %}bg-teal-500/20 text-teal-400
+                        {% else %}bg-white/10 text-medium{% endif %}">
                         {% set icon = activity.get_icon() %}
                         {% if icon == 'envelope' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
                         {% elif icon == 'check-circle' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         {% elif icon == 'zap' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                         {% elif icon == 'star' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                         </svg>
                         {% elif icon == 'flame' %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
                         </svg>
                         {% else %}
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                         {% endif %}
                     </div>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm text-gray-800 truncate">{{ activity.description }}</p>
-                    <p class="text-xs text-gray-500">{{ activity.timestamp.strftime('%I:%M %p') }}</p>
+                    <p class="text-sm text-high truncate">{{ activity.description }}</p>
+                    <p class="text-xs text-low">{{ activity.timestamp.strftime('%I:%M %p') }}</p>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-sm text-gray-500 text-center py-4">No recent activity yet.</p>
+        <p class="text-sm text-low text-center py-6">No recent activity yet.</p>
         {% endif %}
     </div>
 
-    <div id="calendarWidget" class="bg-gray-900 rounded-xl p-4 border border-white/10 hover:border-indigo-500/50 transition-colors cursor-pointer" onclick="openCalendarModal()">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold text-white">Calendar</h3>
-            <span id="miniCalendarMonth" class="text-sm text-gray-400"></span>
+    <div id="calendarWidget" class="glass-card p-5 hover:border-aqua/30 transition-all cursor-pointer" onclick="openCalendarModal()">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-high">Calendar</h3>
+            <span id="miniCalendarMonth" class="text-sm text-medium"></span>
         </div>
         <div id="miniCalendar" class="text-center">
             <div class="grid grid-cols-7 gap-1 mb-2">
-                <div class="text-xs text-gray-500 font-medium">M</div>
-                <div class="text-xs text-gray-500 font-medium">T</div>
-                <div class="text-xs text-gray-500 font-medium">W</div>
-                <div class="text-xs text-gray-500 font-medium">T</div>
-                <div class="text-xs text-gray-500 font-medium">F</div>
-                <div class="text-xs text-gray-500 font-medium">S</div>
-                <div class="text-xs text-gray-500 font-medium">S</div>
+                <div class="text-xs text-low font-medium py-1">M</div>
+                <div class="text-xs text-low font-medium py-1">T</div>
+                <div class="text-xs text-low font-medium py-1">W</div>
+                <div class="text-xs text-low font-medium py-1">T</div>
+                <div class="text-xs text-low font-medium py-1">F</div>
+                <div class="text-xs text-low font-medium py-1">S</div>
+                <div class="text-xs text-low font-medium py-1">S</div>
             </div>
             <div id="miniCalendarDays" class="grid grid-cols-7 gap-1"></div>
         </div>
-        <div class="mt-3 text-center">
-            <span class="text-xs text-indigo-400">Click to expand &rarr;</span>
+        <div class="mt-4 text-center">
+            <span class="text-xs text-aqua">Click to expand →</span>
         </div>
     </div>
 </div>
@@ -335,22 +351,22 @@
 
 {% macro render_lead_stats() %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Leads (Week)</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_week }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">New Leads (Week)</h3>
+        <p class="text-3xl font-bold text-aqua">{{ new_leads_week }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Leads (Month)</h3>
-        <p class="text-3xl font-bold text-indigo-600">{{ new_leads_month }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">New Leads (Month)</h3>
+        <p class="text-3xl font-bold text-aqua">{{ new_leads_month }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">New Clients (Month)</h3>
-        <p class="text-3xl font-bold text-green-600">{{ new_clients_month }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">New Clients (Month)</h3>
+        <p class="text-3xl font-bold text-green-400">{{ new_clients_month }}</p>
     </div>
     {% if settings.show_project_revenue_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Project Revenue (Month)</h3>
-        <p class="text-3xl font-bold text-green-600">${{ "%.2f"|format(project_revenue_month) }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">Project Revenue (Month)</h3>
+        <p class="text-3xl font-bold text-green-400">${{ "%.2f"|format(project_revenue_month) }}</p>
     </div>
     {% endif %}
 </div>
@@ -359,17 +375,17 @@
 {% macro render_outreach_stats() %}
 {% if settings.show_outreach_widget %}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach Today</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_today }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">Outreach Today</h3>
+        <p class="text-3xl font-bold text-aqua">{{ outreach_today }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach This Week</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_week }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">Outreach This Week</h3>
+        <p class="text-3xl font-bold text-aqua">{{ outreach_week }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Outreach This Month</h3>
-        <p class="text-3xl font-bold text-blue-600">{{ outreach_month }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">Outreach This Month</h3>
+        <p class="text-3xl font-bold text-aqua">{{ outreach_month }}</p>
     </div>
 </div>
 {% endif %}
@@ -379,23 +395,23 @@
 {% if settings.show_mrr_widget or settings.show_forecast_widget %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     {% if settings.show_mrr_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Hosting MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(hosting_mrr) }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">Hosting MRR</h3>
+        <p class="text-3xl font-bold text-purple-400">${{ "%.2f"|format(hosting_mrr) }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">SaaS MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(saas_mrr) }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">SaaS MRR</h3>
+        <p class="text-3xl font-bold text-purple-400">${{ "%.2f"|format(saas_mrr) }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">Total MRR</h3>
-        <p class="text-3xl font-bold text-purple-600">${{ "%.2f"|format(total_mrr) }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">Total MRR</h3>
+        <p class="text-3xl font-bold text-purple-400">${{ "%.2f"|format(total_mrr) }}</p>
     </div>
     {% endif %}
     {% if settings.show_forecast_widget %}
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-sm font-medium text-gray-500">3-Month Forecast</h3>
-        <p class="text-3xl font-bold text-yellow-600">${{ "%.2f"|format(forecast_3_months) }}</p>
+    <div class="glass-card p-5">
+        <h3 class="text-sm font-medium text-medium mb-1">3-Month Forecast</h3>
+        <p class="text-3xl font-bold text-yellow-400">${{ "%.2f"|format(forecast_3_months) }}</p>
     </div>
     {% endif %}
 </div>
@@ -403,13 +419,13 @@
 {% endmacro %}
 
 {% macro render_leads_by_status() %}
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Leads by Status</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+<div class="glass-card p-5 mb-8">
+    <h3 class="text-lg font-semibold text-high mb-4">Leads by Status</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         {% for status in lead_statuses %}
-        <div class="text-center p-3 bg-gray-50 rounded-lg">
-            <p class="text-2xl font-bold text-gray-700">{{ lead_counts.get(status, 0) }}</p>
-            <p class="text-xs text-gray-500 capitalize">{{ status.replace('_', ' ') }}</p>
+        <div class="text-center p-3 bg-white/5 rounded-xl border border-white/10 hover:border-aqua/30 transition-colors">
+            <p class="text-2xl font-bold text-high">{{ lead_counts.get(status, 0) }}</p>
+            <p class="text-xs text-medium capitalize mt-1">{{ status.replace('_', ' ') }}</p>
         </div>
         {% endfor %}
     </div>
@@ -420,14 +436,14 @@
 {% if settings.show_outreach_widget or settings.show_deals_widget %}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     {% if settings.show_outreach_widget %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Outreach (Last 12 Weeks)</h3>
+    <div class="glass-card p-5">
+        <h3 class="text-base font-semibold text-high mb-4">Outreach (Last 12 Weeks)</h3>
         <canvas id="outreachChart" height="120"></canvas>
     </div>
     {% endif %}
     {% if settings.show_deals_widget %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <h3 class="text-base font-semibold text-gray-900 mb-3">Deals Closed (Last 12 Weeks)</h3>
+    <div class="glass-card p-5">
+        <h3 class="text-base font-semibold text-high mb-4">Deals Closed (Last 12 Weeks)</h3>
         <canvas id="dealsChart" height="120"></canvas>
     </div>
     {% endif %}
@@ -437,15 +453,15 @@
 
 {% macro render_revenue_chart() %}
 {% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-<div class="bg-white rounded-lg shadow p-4 mb-6">
-    <div class="flex items-center justify-between mb-3">
-        <h3 class="text-base font-semibold text-gray-900" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
+<div class="glass-card p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-semibold text-high" id="revenueChartTitle">Monthly Revenue (Last 12 Months)</h3>
         <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-600" id="toggleLabel">Revenue</span>
-            <button type="button" id="revenueToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-indigo-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" role="switch" aria-checked="false">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggleKnob"></span>
+            <span class="text-sm text-medium" id="toggleLabel">Revenue</span>
+            <button type="button" id="revenueToggle" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-aqua transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-aqua/50 focus:ring-offset-2 focus:ring-offset-graphite" role="switch" aria-checked="false">
+                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-graphite shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggleKnob"></span>
             </button>
-            <span class="text-sm text-gray-600">MRR</span>
+            <span class="text-sm text-medium">MRR</span>
         </div>
     </div>
     <canvas id="revenueChart" height="120"></canvas>
@@ -471,40 +487,40 @@
 {% endif %}
 {% endfor %}
 
-<div id="calendarModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+<div id="calendarModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-gray-900 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-white/10">
+        <div class="glass-card w-full max-w-5xl max-h-[90vh] overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b border-white/10">
                 <div class="flex items-center gap-4">
-                    <button onclick="changeCalendarMonth(-1)" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
+                    <button onclick="changeCalendarMonth(-1)" class="p-2 hover:bg-white/10 rounded-lg text-medium hover:text-high transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
                     </button>
-                    <h2 id="fullCalendarTitle" class="text-xl font-bold text-white"></h2>
-                    <button onclick="changeCalendarMonth(1)" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
+                    <h2 id="fullCalendarTitle" class="text-xl font-bold text-high"></h2>
+                    <button onclick="changeCalendarMonth(1)" class="p-2 hover:bg-white/10 rounded-lg text-medium hover:text-high transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
-                    <button onclick="goToToday()" class="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Today</button>
+                    <button onclick="goToToday()" class="btn-primary text-sm">Today</button>
                 </div>
-                <button onclick="closeCalendarModal()" class="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
+                <button onclick="closeCalendarModal()" class="p-2 hover:bg-white/10 rounded-lg text-medium hover:text-high transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
             <div id="fullCalendarBoss" class="hidden px-4 py-2"></div>
-            <div class="p-4 overflow-y-auto" style="max-height: calc(90vh - 120px);">
+            <div class="p-4 overflow-y-auto scrollbar-thin" style="max-height: calc(90vh - 120px);">
                 <div class="grid grid-cols-7 gap-1 mb-2">
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Mon</div>
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Tue</div>
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Wed</div>
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Thu</div>
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Fri</div>
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Sat</div>
-                    <div class="text-center text-sm font-medium text-gray-400 py-2">Sun</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Mon</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Tue</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Wed</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Thu</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Fri</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Sat</div>
+                    <div class="text-center text-sm font-medium text-medium py-2">Sun</div>
                 </div>
                 <div id="fullCalendarGrid" class="grid grid-cols-7 gap-1"></div>
             </div>
@@ -512,52 +528,51 @@
     </div>
 </div>
 
-<div id="dayDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden">
+<div id="dayDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-gray-800 rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden border border-white/10">
+        <div class="glass-card w-full max-w-md max-h-[80vh] overflow-hidden">
             <div class="flex items-center justify-between p-4 border-b border-white/10">
-                <h3 id="dayDetailTitle" class="text-lg font-bold text-white"></h3>
-                <button onclick="closeDayDetailModal()" class="p-1 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white">
+                <h3 id="dayDetailTitle" class="text-lg font-bold text-high"></h3>
+                <button onclick="closeDayDetailModal()" class="p-1 hover:bg-white/10 rounded-lg text-medium hover:text-high">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div id="dayDetailContent" class="p-4 overflow-y-auto max-h-96"></div>
+            <div id="dayDetailContent" class="p-4 overflow-y-auto max-h-96 scrollbar-thin"></div>
         </div>
     </div>
 </div>
 
-<div id="widgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden">
+<div id="widgetModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl">
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-5">
+        <div class="glass-card w-full max-w-xl max-h-[85vh] overflow-hidden">
+            <div class="bg-gradient-to-r from-aqua/20 to-cyan-500/10 p-5 border-b border-white/10">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-xl font-bold text-white">Customize Your Dashboard</h3>
-                        <p class="text-indigo-100 text-sm mt-1">Drag to reorder, toggle to show/hide widgets</p>
+                        <h3 class="text-xl font-bold text-high">Customize Your Dashboard</h3>
+                        <p class="text-medium text-sm mt-1">Drag to reorder, toggle to show/hide widgets</p>
                     </div>
-                    <button onclick="closeWidgetModal()" class="p-2 hover:bg-white/20 rounded-lg text-white/80 hover:text-white transition-colors">
+                    <button onclick="closeWidgetModal()" class="p-2 hover:bg-white/10 rounded-lg text-medium hover:text-high transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
             </div>
-            <div class="p-5 overflow-y-auto max-h-[50vh] bg-gray-50">
-                <div id="widgetList" class="space-y-2">
-                </div>
+            <div class="p-5 overflow-y-auto max-h-[50vh] scrollbar-thin">
+                <div id="widgetList" class="space-y-2"></div>
             </div>
-            <div class="p-4 bg-white border-t border-gray-200 flex justify-between items-center">
-                <button onclick="resetWidgetSettings()" class="px-4 py-2 text-sm text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-lg font-medium transition-colors flex items-center gap-2">
+            <div class="p-4 border-t border-white/10 flex justify-between items-center">
+                <button onclick="resetWidgetSettings()" class="px-4 py-2 text-sm text-cinnabar hover:text-cinnabar/80 hover:bg-cinnabar/10 rounded-lg font-medium transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
                     Reset to Default
                 </button>
                 <div class="flex gap-3">
-                    <button onclick="closeWidgetModal()" class="px-5 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg font-medium transition-colors">Cancel</button>
-                    <button onclick="saveWidgetSettings()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                    <button onclick="closeWidgetModal()" class="btn-secondary">Cancel</button>
+                    <button onclick="saveWidgetSettings()" class="btn-primary flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
@@ -568,7 +583,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 let currentCalendarYear, currentCalendarMonth;
 let fullCalendarData = null;
@@ -583,21 +600,21 @@ function loadMiniCalendar() {
             
             let html = '';
             data.days.forEach(day => {
-                let classes = 'w-6 h-6 text-xs rounded-full flex items-center justify-center ';
+                let classes = 'w-7 h-7 text-xs rounded-lg flex items-center justify-center transition-all ';
                 if (!day.current_month) {
-                    classes += 'text-gray-700';
+                    classes += 'text-low';
                 } else if (day.is_today) {
-                    classes += 'bg-indigo-500 text-white font-bold ring-2 ring-indigo-400';
+                    classes += 'bg-aqua text-graphite font-bold ring-2 ring-aqua/50';
                 } else if (day.has_tasks || day.has_leads) {
                     if (day.has_tasks && day.has_leads) {
                         classes += 'bg-purple-500/30 text-purple-300';
                     } else if (day.has_tasks) {
-                        classes += 'bg-blue-500/30 text-blue-300';
+                        classes += 'bg-aqua/20 text-aqua';
                     } else {
                         classes += 'bg-yellow-500/30 text-yellow-300';
                     }
                 } else {
-                    classes += 'text-gray-400';
+                    classes += 'text-medium hover:bg-white/5';
                 }
                 html += `<div class="${classes}">${day.day}</div>`;
             });
@@ -646,15 +663,16 @@ function loadFullCalendar(year, month) {
             const bossEl = document.getElementById('fullCalendarBoss');
             if (data.boss) {
                 const pct = Math.min(100, Math.round((data.boss.progress / data.boss.target) * 100));
-                const colorClass = data.boss.is_completed ? 'from-green-500 to-emerald-600' : 'from-red-500 to-orange-600';
+                const colorClass = data.boss.is_completed ? 'from-green-500/20 to-emerald-600/10' : 'from-cinnabar/20 to-orange-600/10';
+                const barClass = data.boss.is_completed ? 'bg-green-500' : 'progress-bar-cinnabar';
                 bossEl.innerHTML = `
-                    <div class="bg-gradient-to-r ${colorClass} rounded-lg p-3">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-white font-medium">${data.boss.is_completed ? '🏆' : '👹'} ${data.boss.description}</span>
-                            <span class="text-white/80 text-sm">${data.boss.progress}/${data.boss.target}</span>
+                    <div class="glass-card p-4 bg-gradient-to-r ${colorClass}">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-high font-medium">${data.boss.is_completed ? '🏆' : '👹'} ${data.boss.description}</span>
+                            <span class="text-medium text-sm">${data.boss.progress}/${data.boss.target}</span>
                         </div>
-                        <div class="w-full bg-white/30 rounded-full h-1.5">
-                            <div class="h-1.5 rounded-full ${data.boss.is_completed ? 'bg-white' : 'bg-yellow-300'}" style="width:${pct}%"></div>
+                        <div class="progress-bar-container h-2">
+                            <div class="h-2 rounded-full ${barClass}" style="width:${pct}%"></div>
                         </div>
                     </div>`;
                 bossEl.classList.remove('hidden');
@@ -665,39 +683,39 @@ function loadFullCalendar(year, month) {
             let html = '';
             data.days.forEach(day => {
                 const hasItems = (day.tasks && day.tasks.length > 0) || (day.leads && day.leads.length > 0) || day.mission;
-                let cellClasses = 'min-h-20 p-1 rounded-lg border transition-colors ';
+                let cellClasses = 'min-h-24 p-2 rounded-xl border transition-all ';
                 if (!day.current_month) {
-                    cellClasses += 'bg-gray-800/30 border-white/5 text-gray-600';
+                    cellClasses += 'bg-white/3 border-white/5 text-low';
                 } else if (day.is_today) {
-                    cellClasses += 'bg-indigo-900/50 border-indigo-500 text-white';
+                    cellClasses += 'bg-aqua/10 border-aqua/50 text-high';
                 } else {
-                    cellClasses += 'bg-gray-800/50 border-white/10 text-gray-300 hover:border-indigo-500/50';
+                    cellClasses += 'bg-white/5 border-white/10 text-medium hover:border-aqua/30';
                 }
                 if (hasItems && day.date) cellClasses += ' cursor-pointer';
                 
                 html += `<div class="${cellClasses}" ${day.date && hasItems ? `onclick="openDayDetail('${day.date}')"` : ''}>
-                    <div class="text-sm font-medium mb-1 ${day.is_today ? 'text-indigo-300' : ''}">${day.day}</div>`;
+                    <div class="text-sm font-medium mb-1 ${day.is_today ? 'text-aqua' : ''}">${day.day}</div>`;
                 
                 if (day.tasks && day.tasks.length > 0) {
                     day.tasks.slice(0, 2).forEach(t => {
-                        const statusClass = t.status === 'done' ? 'bg-green-500/20 text-green-400 line-through' : 'bg-blue-500/20 text-blue-400';
-                        html += `<div class="text-xs truncate px-1 py-0.5 rounded mb-0.5 ${statusClass}">${t.title}</div>`;
+                        const statusClass = t.status === 'done' ? 'bg-green-500/20 text-green-400 line-through' : 'bg-aqua/20 text-aqua';
+                        html += `<div class="text-xs truncate px-1.5 py-0.5 rounded-md mb-1 ${statusClass}">${t.title}</div>`;
                     });
                     if (day.tasks.length > 2) {
-                        html += `<div class="text-xs text-gray-500">+${day.tasks.length - 2} more</div>`;
+                        html += `<div class="text-xs text-low">+${day.tasks.length - 2} more</div>`;
                     }
                 }
                 if (day.leads && day.leads.length > 0) {
                     day.leads.slice(0, 2).forEach(l => {
-                        html += `<div class="text-xs truncate px-1 py-0.5 rounded mb-0.5 bg-yellow-500/20 text-yellow-400">${l.name}</div>`;
+                        html += `<div class="text-xs truncate px-1.5 py-0.5 rounded-md mb-1 bg-yellow-500/20 text-yellow-400">${l.name}</div>`;
                     });
                     if (day.leads.length > 2) {
-                        html += `<div class="text-xs text-gray-500">+${day.leads.length - 2} more</div>`;
+                        html += `<div class="text-xs text-low">+${day.leads.length - 2} more</div>`;
                     }
                 }
                 if (day.mission) {
                     const mClass = day.mission.is_completed ? 'bg-green-500/20 text-green-400' : 'bg-purple-500/20 text-purple-400';
-                    html += `<div class="text-xs truncate px-1 py-0.5 rounded ${mClass}">Mission</div>`;
+                    html += `<div class="text-xs truncate px-1.5 py-0.5 rounded-md ${mClass}">Mission</div>`;
                 }
                 
                 html += '</div>';
@@ -715,35 +733,35 @@ function openDayDetail(dateStr) {
             
             let html = '';
             if (data.tasks.length === 0 && data.leads.length === 0 && !data.mission) {
-                html = '<p class="text-gray-400 text-center py-4">Nothing scheduled for this day.</p>';
+                html = '<p class="text-low text-center py-6">Nothing scheduled for this day.</p>';
             } else {
                 if (data.tasks.length > 0) {
-                    html += '<div class="mb-4"><h4 class="text-sm font-medium text-blue-400 mb-2">Tasks</h4>';
+                    html += '<div class="mb-4"><h4 class="text-sm font-medium text-aqua mb-3">Tasks</h4>';
                     data.tasks.forEach(t => {
                         const done = t.status === 'done';
-                        html += `<div class="flex items-center justify-between py-2 border-b border-white/10">
-                            <span class="text-sm ${done ? 'text-gray-500 line-through' : 'text-white'}">${t.title}</span>
-                            ${!done ? `<button onclick="markTaskDone(${t.id}, '${dateStr}')" class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Done</button>` : '<span class="text-xs text-green-400">Complete</span>'}
+                        html += `<div class="flex items-center justify-between py-3 border-b border-white/10">
+                            <span class="text-sm ${done ? 'text-low line-through' : 'text-high'}">${t.title}</span>
+                            ${!done ? `<button onclick="markTaskDone(${t.id}, '${dateStr}')" class="btn-primary text-xs py-1 px-2">Done</button>` : '<span class="pill pill-success">Complete</span>'}
                         </div>`;
                     });
                     html += '</div>';
                 }
                 if (data.leads.length > 0) {
-                    html += '<div class="mb-4"><h4 class="text-sm font-medium text-yellow-400 mb-2">Follow-ups</h4>';
+                    html += '<div class="mb-4"><h4 class="text-sm font-medium text-yellow-400 mb-3">Follow-ups</h4>';
                     data.leads.forEach(l => {
-                        html += `<div class="py-2 border-b border-white/10">
-                            <a href="/leads/${l.id}" class="text-sm text-white hover:text-indigo-400">${l.name}</a>
-                            <p class="text-xs text-gray-500">${l.status}</p>
+                        html += `<div class="py-3 border-b border-white/10">
+                            <a href="/leads/${l.id}" class="text-sm text-high hover:text-aqua transition-colors">${l.name}</a>
+                            <p class="text-xs text-low mt-1">${l.status}</p>
                         </div>`;
                     });
                     html += '</div>';
                 }
                 if (data.mission) {
                     const mDone = data.mission.is_completed;
-                    html += `<div><h4 class="text-sm font-medium text-purple-400 mb-2">Daily Mission</h4>
-                        <div class="py-2">
-                            <p class="text-sm ${mDone ? 'text-green-400' : 'text-white'}">${data.mission.description}</p>
-                            <p class="text-xs text-gray-500 mt-1">${data.mission.progress}/${data.mission.target} - ${mDone ? 'Complete!' : 'In Progress'}</p>
+                    html += `<div><h4 class="text-sm font-medium text-purple-400 mb-3">Daily Mission</h4>
+                        <div class="py-3">
+                            <p class="text-sm ${mDone ? 'text-green-400' : 'text-high'}">${data.mission.description}</p>
+                            <p class="text-xs text-low mt-2">${data.mission.progress}/${data.mission.target} - ${mDone ? 'Complete!' : 'In Progress'}</p>
                         </div>
                     </div>`;
                 }
@@ -820,8 +838,8 @@ function initSortable() {
     widgetSortable = new Sortable(container, {
         animation: 200,
         handle: '.drag-handle',
-        ghostClass: 'bg-indigo-100',
-        chosenClass: 'shadow-lg',
+        ghostClass: 'opacity-50',
+        chosenClass: 'ring-2 ring-aqua/50',
         dragClass: 'opacity-90',
         onEnd: function(evt) {
             const newOrder = [];
@@ -861,24 +879,24 @@ function renderWidgetList() {
         const iconPath = getWidgetIcon(widgetId);
         
         html += `
-        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all group" data-widget-id="${widgetId}">
-            <div class="drag-handle cursor-grab active:cursor-grabbing p-2 -m-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+        <div class="flex items-center gap-3 p-3 glass-card group" data-widget-id="${widgetId}">
+            <div class="drag-handle cursor-grab active:cursor-grabbing p-2 -m-1 rounded-lg hover:bg-white/10 text-medium hover:text-high transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
                 </svg>
             </div>
-            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-400'}">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-aqua/20 text-aqua' : 'bg-white/5 text-low'}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     ${iconPath}
                 </svg>
             </div>
             <div class="flex-1 min-w-0">
-                <span class="font-medium ${isActive ? 'text-gray-900' : 'text-gray-500'} block truncate">${name}</span>
-                <span class="text-xs ${isActive ? 'text-green-600' : 'text-gray-400'}">${isActive ? 'Visible on dashboard' : 'Hidden'}</span>
+                <span class="font-medium ${isActive ? 'text-high' : 'text-low'} block truncate">${name}</span>
+                <span class="text-xs ${isActive ? 'text-aqua' : 'text-low'}">${isActive ? 'Visible on dashboard' : 'Hidden'}</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input type="checkbox" class="sr-only peer" ${isActive ? 'checked' : ''} onchange="toggleWidget('${widgetId}', this.checked)">
-                <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                <div class="w-11 h-6 bg-white/10 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-aqua/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white/50 after:border-white/20 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-aqua peer-checked:after:bg-graphite"></div>
             </label>
         </div>`;
     });
@@ -904,227 +922,185 @@ function saveWidgetSettings() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            closeWidgetModal();
-            location.reload();
+            window.location.reload();
         }
     })
     .catch(err => console.error('Save widget settings error:', err));
 }
 
 function resetWidgetSettings() {
-    const defaultOrder = ['followups', 'gamification_stats', 'daily_mission', 'boss_battle', 'focus_session', 'activity_calendar', 'lead_stats', 'outreach_stats', 'mrr_forecast', 'leads_by_status', 'outreach_deals_charts', 'revenue_chart'];
-    const defaultActive = {
-        'followups': true,
-        'gamification_stats': true,
-        'daily_mission': true,
-        'boss_battle': true,
-        'focus_session': true,
-        'activity_calendar': true,
-        'lead_stats': true,
-        'outreach_stats': true,
-        'mrr_forecast': true,
-        'leads_by_status': true,
-        'outreach_deals_charts': true,
-        'revenue_chart': true
-    };
-    
-    widgetOrder = [...defaultOrder];
-    widgetActive = {...defaultActive};
-    
-    renderWidgetList();
-    saveWidgetSettings();
+    if (confirm('Reset all widget settings to default?')) {
+        fetch('/widget-settings/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            })
+            .catch(err => console.error('Reset widget settings error:', err));
+    }
 }
 
 document.getElementById('widgetModal').addEventListener('click', function(e) {
     if (e.target === this) closeWidgetModal();
 });
-</script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const weekLabels = {{ week_labels | tojson }};
-    const outreachData = {{ outreach_weekly_data | tojson }};
-    const dealsData = {{ deals_weekly_data | tojson }};
-    const monthLabels = {{ month_labels | tojson }};
-    const monthlyRevenueData = {{ monthly_revenue_data | tojson }};
-    const monthlyMrrData = {{ monthly_mrr_data | tojson }};
-    
-    {% if settings.show_outreach_widget %}
-    new Chart(document.getElementById('outreachChart'), {
+{% if settings.show_outreach_widget or settings.show_deals_widget or settings.show_project_revenue_widget or settings.show_mrr_widget %}
+Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+{% if settings.show_outreach_widget %}
+const outreachCtx = document.getElementById('outreachChart');
+if (outreachCtx) {
+    new Chart(outreachCtx, {
         type: 'bar',
         data: {
-            labels: weekLabels,
+            labels: {{ outreach_chart_labels | tojson }},
             datasets: [{
                 label: 'Outreach',
-                data: outreachData,
-                backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                borderColor: 'rgba(99, 102, 241, 1)',
-                borderWidth: 1
+                data: {{ outreach_chart_data | tojson }},
+                backgroundColor: 'rgba(49, 224, 247, 0.6)',
+                borderColor: '#31E0F7',
+                borderWidth: 1,
+                borderRadius: 6,
             }]
         },
         options: {
             responsive: true,
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                }
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
             }
         }
     });
-    {% endif %}
-    
-    {% if settings.show_deals_widget %}
-    new Chart(document.getElementById('dealsChart'), {
+}
+{% endif %}
+
+{% if settings.show_deals_widget %}
+const dealsCtx = document.getElementById('dealsChart');
+if (dealsCtx) {
+    new Chart(dealsCtx, {
         type: 'bar',
         data: {
-            labels: weekLabels,
-            datasets: [{
-                label: 'Deals Closed',
-                data: dealsData,
-                backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                borderColor: 'rgba(34, 197, 94, 1)',
-                borderWidth: 1
-            }]
+            labels: {{ deals_chart_labels | tojson }},
+            datasets: [
+                {
+                    label: 'Won',
+                    data: {{ deals_won_data | tojson }},
+                    backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                    borderColor: '#22c55e',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                },
+                {
+                    label: 'Lost',
+                    data: {{ deals_lost_data | tojson }},
+                    backgroundColor: 'rgba(235, 86, 78, 0.6)',
+                    borderColor: '#EB564E',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                }
+            ]
         },
         options: {
             responsive: true,
+            plugins: { legend: { position: 'top', labels: { color: 'rgba(255, 253, 247, 0.7)' } } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                }
+                y: { beginAtZero: true, stacked: false, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { stacked: false, grid: { display: false } }
             }
         }
     });
-    {% endif %}
-    
-    {% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-    let showMrr = false;
-    const revenueChart = new Chart(document.getElementById('revenueChart'), {
+}
+{% endif %}
+
+{% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
+const revenueCtx = document.getElementById('revenueChart');
+let revenueChart = null;
+let showingMrr = false;
+
+const revenueData = {
+    labels: {{ revenue_chart_labels | tojson }},
+    revenue: {{ revenue_chart_data | tojson }},
+    mrr: {{ mrr_chart_data | tojson }}
+};
+
+function createRevenueChart(data, label) {
+    if (revenueChart) revenueChart.destroy();
+    revenueChart = new Chart(revenueCtx, {
         type: 'line',
         data: {
-            labels: monthLabels,
+            labels: revenueData.labels,
             datasets: [{
-                label: 'Revenue',
-                data: monthlyRevenueData,
-                backgroundColor: 'rgba(34, 197, 94, 0.2)',
-                borderColor: 'rgba(34, 197, 94, 1)',
+                label: label,
+                data: data,
+                borderColor: '#31E0F7',
+                backgroundColor: 'rgba(49, 224, 247, 0.1)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.3
+                tension: 0.4,
+                pointBackgroundColor: '#31E0F7',
+                pointBorderColor: '#31E0F7',
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         },
         options: {
             responsive: true,
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value.toLocaleString();
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return '$' + context.parsed.y.toLocaleString();
-                        }
-                    }
-                }
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
             }
         }
     });
+}
+
+if (revenueCtx) {
+    createRevenueChart(revenueData.revenue, 'Revenue');
     
-    const toggleBtn = document.getElementById('revenueToggle');
+    const toggle = document.getElementById('revenueToggle');
     const toggleKnob = document.getElementById('toggleKnob');
-    const chartTitle = document.getElementById('revenueChartTitle');
+    const titleEl = document.getElementById('revenueChartTitle');
     
-    toggleBtn.addEventListener('click', function() {
-        showMrr = !showMrr;
-        
-        if (showMrr) {
-            toggleKnob.classList.remove('translate-x-0');
+    toggle.addEventListener('click', function() {
+        showingMrr = !showingMrr;
+        if (showingMrr) {
             toggleKnob.classList.add('translate-x-5');
-            toggleBtn.classList.remove('bg-indigo-600');
-            toggleBtn.classList.add('bg-purple-600');
-            chartTitle.textContent = 'Monthly Recurring Revenue (Last 12 Months)';
-            revenueChart.data.datasets[0].label = 'MRR';
-            revenueChart.data.datasets[0].data = monthlyMrrData;
-            revenueChart.data.datasets[0].backgroundColor = 'rgba(147, 51, 234, 0.2)';
-            revenueChart.data.datasets[0].borderColor = 'rgba(147, 51, 234, 1)';
+            toggleKnob.classList.remove('translate-x-0');
+            createRevenueChart(revenueData.mrr, 'MRR');
+            titleEl.textContent = 'MRR Growth (Last 12 Months)';
         } else {
             toggleKnob.classList.remove('translate-x-5');
             toggleKnob.classList.add('translate-x-0');
-            toggleBtn.classList.remove('bg-purple-600');
-            toggleBtn.classList.add('bg-indigo-600');
-            chartTitle.textContent = 'Monthly Revenue (Last 12 Months)';
-            revenueChart.data.datasets[0].label = 'Revenue';
-            revenueChart.data.datasets[0].data = monthlyRevenueData;
-            revenueChart.data.datasets[0].backgroundColor = 'rgba(34, 197, 94, 0.2)';
-            revenueChart.data.datasets[0].borderColor = 'rgba(34, 197, 94, 1)';
+            createRevenueChart(revenueData.revenue, 'Revenue');
+            titleEl.textContent = 'Monthly Revenue (Last 12 Months)';
         }
-        
-        revenueChart.update();
     });
-    {% endif %}
-});
-</script>
+}
+{% endif %}
+{% endif %}
 
-<script>
 let focusInterval = null;
 let focusEndTime = null;
 
-function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function updateFocusDisplay(remaining) {
-    document.getElementById('focusTimer').textContent = formatTime(remaining);
-}
-
-function showActiveControls() {
-    document.getElementById('focusStartControls').classList.add('hidden');
-    document.getElementById('focusActiveControls').classList.remove('hidden');
-    document.getElementById('focusActiveControls').classList.add('flex');
-    document.getElementById('focusSubtitle').textContent = 'Session in progress...';
-    document.getElementById('focusSessionCard').classList.remove('from-cyan-50', 'to-blue-50', 'border-cyan-200');
-    document.getElementById('focusSessionCard').classList.add('from-cyan-100', 'to-blue-100', 'border-cyan-400');
-}
-
-function showStartControls() {
-    document.getElementById('focusStartControls').classList.remove('hidden');
-    document.getElementById('focusActiveControls').classList.add('hidden');
-    document.getElementById('focusActiveControls').classList.remove('flex');
-    document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
-    document.getElementById('focusSessionCard').classList.add('from-cyan-50', 'to-blue-50', 'border-cyan-200');
-    document.getElementById('focusSessionCard').classList.remove('from-cyan-100', 'to-blue-100', 'border-cyan-400');
-}
-
 function startFocusSession() {
     const duration = document.getElementById('focusDuration').value;
-    
-    const formData = new FormData();
-    formData.append('duration', duration);
-    
-    fetch('/focus/start', { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                focusEndTime = new Date(data.end_time);
-                showActiveControls();
-                startTimer();
-                updateNavbarTimer(true);
-            } else if (data.error) {
-                alert(data.error);
-            }
-        })
-        .catch(err => console.error('Start focus error:', err));
+    fetch('/focus/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration_minutes: parseInt(duration) })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            focusEndTime = new Date(data.end_time);
+            showFocusActive();
+            startFocusTimer();
+        }
+    })
+    .catch(err => console.error('Start focus error:', err));
 }
 
 function cancelFocusSession() {
@@ -1132,98 +1108,81 @@ function cancelFocusSession() {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                stopTimer();
-                showStartControls();
-                updateNavbarTimer(false);
+                stopFocusTimer();
+                showFocusInactive();
             }
         })
         .catch(err => console.error('Cancel focus error:', err));
 }
 
-function startTimer() {
-    if (focusInterval) clearInterval(focusInterval);
-    
-    focusInterval = setInterval(() => {
-        checkFocusStatus();
-    }, 1000);
+function showFocusActive() {
+    document.getElementById('focusStartControls').classList.add('hidden');
+    document.getElementById('focusActiveControls').classList.remove('hidden');
+    document.getElementById('focusActiveControls').classList.add('flex');
+    document.getElementById('focusSubtitle').textContent = 'Stay focused to earn bonus tokens!';
 }
 
-function stopTimer() {
+function showFocusInactive() {
+    document.getElementById('focusStartControls').classList.remove('hidden');
+    document.getElementById('focusActiveControls').classList.add('hidden');
+    document.getElementById('focusActiveControls').classList.remove('flex');
+    document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
+}
+
+function startFocusTimer() {
+    updateFocusTimer();
+    focusInterval = setInterval(updateFocusTimer, 1000);
+}
+
+function stopFocusTimer() {
     if (focusInterval) {
         clearInterval(focusInterval);
         focusInterval = null;
     }
-    focusEndTime = null;
 }
 
-function checkFocusStatus() {
-    fetch('/focus/check')
+function updateFocusTimer() {
+    if (!focusEndTime) return;
+    
+    const now = new Date();
+    const diff = Math.max(0, Math.floor((focusEndTime - now) / 1000));
+    
+    if (diff <= 0) {
+        stopFocusTimer();
+        checkFocusComplete();
+        return;
+    }
+    
+    const mins = Math.floor(diff / 60);
+    const secs = diff % 60;
+    document.getElementById('focusTimer').textContent = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function checkFocusComplete() {
+    fetch('/focus/status')
         .then(r => r.json())
         .then(data => {
-            if (data.completed) {
-                stopTimer();
-                showStartControls();
-                updateNavbarTimer(false);
-                showCompletionMessage(data.message);
-            } else if (data.active) {
-                updateFocusDisplay(data.remaining_seconds);
-                updateNavbarTimerDisplay(data.remaining_seconds);
-            } else {
-                stopTimer();
-                showStartControls();
-                updateNavbarTimer(false);
+            if (!data.active) {
+                showFocusInactive();
+                if (data.just_completed) {
+                    alert(`Focus session complete! You earned ${data.tokens_earned} tokens!`);
+                    window.location.reload();
+                }
             }
         })
         .catch(err => console.error('Check focus error:', err));
 }
 
-function showCompletionMessage(message) {
-    const card = document.getElementById('focusSessionCard');
-    const originalClasses = card.className;
-    card.classList.remove('from-cyan-50', 'to-blue-50', 'from-cyan-100', 'to-blue-100');
-    card.classList.add('from-green-100', 'to-emerald-100', 'border-green-400');
-    document.getElementById('focusSubtitle').textContent = message || 'Session complete! +3 tokens, +5 XP';
-    
-    setTimeout(() => {
-        card.className = originalClasses;
-        document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
-    }, 5000);
-}
-
-function updateNavbarTimer(active) {
-    const navTimer = document.getElementById('navbarFocusTimer');
-    if (navTimer) {
-        if (active) {
-            navTimer.classList.remove('hidden');
-        } else {
-            navTimer.classList.add('hidden');
+fetch('/focus/status')
+    .then(r => r.json())
+    .then(data => {
+        if (data.active) {
+            focusEndTime = new Date(data.end_time);
+            showFocusActive();
+            startFocusTimer();
         }
-    }
-}
-
-function updateNavbarTimerDisplay(seconds) {
-    const navTimerText = document.getElementById('navbarFocusTimerText');
-    if (navTimerText) {
-        navTimerText.textContent = formatTime(seconds);
-    }
-}
-
-function initFocusSession() {
-    fetch('/focus/status')
-        .then(r => r.json())
-        .then(data => {
-            if (data.active) {
-                focusEndTime = new Date(data.end_time);
-                showActiveControls();
-                updateFocusDisplay(data.remaining_seconds);
-                startTimer();
-                updateNavbarTimer(true);
-                updateNavbarTimerDisplay(data.remaining_seconds);
-            }
-        })
-        .catch(err => console.error('Init focus error:', err));
-}
-
-initFocusSession();
+    })
+    .catch(err => console.error('Initial focus check error:', err));
 </script>
 {% endblock %}

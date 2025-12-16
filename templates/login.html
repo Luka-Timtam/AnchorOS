@@ -4,19 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Personal CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        aqua: '#31E0F7',
+                        porcelain: '#FFFDF7',
+                        graphite: '#2E2F37',
+                        cinnabar: '#EB564E',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #2E2F37 0%, #1a1b20 50%, #2E2F37 100%);
+            background-attachment: fixed;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .input-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #FFFDF7;
+            transition: all 0.2s ease;
+        }
+        
+        .input-glass::placeholder {
+            color: rgba(255, 253, 247, 0.4);
+        }
+        
+        .input-glass:focus {
+            outline: none;
+            border-color: #31E0F7;
+            box-shadow: 0 0 0 3px rgba(49, 224, 247, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #31E0F7 0%, #1bc4dc 100%);
+            color: #2E2F37;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(49, 224, 247, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(49, 224, 247, 0.4);
+        }
+        
+        .flash-error {
+            background: rgba(235, 86, 78, 0.15);
+            border: 1px solid rgba(235, 86, 78, 0.3);
+            color: #EB564E;
+            border-radius: 12px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-8">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Personal CRM</h1>
-            <p class="text-gray-600 mt-2">Enter your password to continue</p>
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-aqua to-cyan-400 flex items-center justify-center mx-auto mb-4">
+                <span class="text-graphite font-bold text-2xl">C</span>
+            </div>
+            <h1 class="text-3xl font-bold text-porcelain">Personal CRM</h1>
+            <p class="text-porcelain/60 mt-2">Enter your password to continue</p>
         </div>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="mb-4 p-4 rounded-md bg-red-100 text-red-700">
+                    <div class="mb-6 p-4 flash-error">
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -25,12 +103,11 @@
         
         <form method="POST" action="{{ url_for('auth.login') }}">
             <div class="mb-6">
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                <input type="password" name="password" id="password" required autofocus
-                    class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <label for="password" class="block text-sm font-medium text-porcelain/70 mb-2">Password</label>
+                <input type="password" name="password" id="password" required autofocus autocomplete="current-password"
+                    class="w-full px-4 py-3 input-glass text-lg">
             </div>
-            <button type="submit" 
-                class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 font-medium">
+            <button type="submit" class="w-full btn-primary py-3 px-4 text-lg">
                 Login
             </button>
         </form>

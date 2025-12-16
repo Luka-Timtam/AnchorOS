@@ -4,83 +4,83 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Settings</h1>
+    <h1 class="text-3xl font-bold text-high mb-8">Settings</h1>
     
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="glass-card p-6 mb-6">
+        <h2 class="text-xl font-semibold text-high mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             Pause Mode
         </h2>
         
         {% if settings.pause_active %}
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-            <div class="flex items-center gap-2 mb-3">
-                <span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full">ACTIVE</span>
-                <span class="text-gray-600 text-sm">Streaks and consistency are frozen</span>
+        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-5 mb-4">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="pill pill-warning">ACTIVE</span>
+                <span class="text-medium text-sm">Streaks and consistency are frozen</span>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <p class="text-sm text-gray-500">Pause Started</p>
-                    <p class="font-medium text-gray-700">{{ settings.pause_start.strftime('%B %d, %Y') if settings.pause_start else 'N/A' }}</p>
+                    <p class="text-sm text-low">Pause Started</p>
+                    <p class="font-medium text-high">{{ settings.pause_start.strftime('%B %d, %Y') if settings.pause_start else 'N/A' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Pause Ends</p>
-                    <p class="font-medium text-gray-700">{{ settings.pause_end.strftime('%B %d, %Y') if settings.pause_end else 'N/A' }}</p>
+                    <p class="text-sm text-low">Pause Ends</p>
+                    <p class="font-medium text-high">{{ settings.pause_end.strftime('%B %d, %Y') if settings.pause_end else 'N/A' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Remaining Days</p>
-                    <p class="font-medium text-gray-700">{{ settings.remaining_pause_days() }} day(s)</p>
+                    <p class="text-sm text-low">Remaining Days</p>
+                    <p class="font-medium text-high">{{ settings.remaining_pause_days() }} day(s)</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Reason</p>
-                    <p class="font-medium text-gray-700">{{ settings.pause_reason or 'N/A' }}</p>
+                    <p class="text-sm text-low">Reason</p>
+                    <p class="font-medium text-high">{{ settings.pause_reason or 'N/A' }}</p>
                 </div>
             </div>
             
             <form action="{{ url_for('settings.pause_end') }}" method="POST">
-                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                <button type="submit" class="btn-danger">
                     End Pause Early
                 </button>
             </form>
         </div>
         {% else %}
-        <p class="text-gray-600 mb-4">
+        <p class="text-medium mb-4">
             Pause mode temporarily freezes your streaks, consistency score, and daily goal tracking. 
             Tasks will still become overdue normally. Boss fights continue as usual.
         </p>
         
         <form action="{{ url_for('settings.pause_activate') }}" method="POST" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Pause Duration (1-14 days)</label>
+                <label class="block text-sm font-medium text-medium mb-2">Pause Duration (1-14 days)</label>
                 <input type="number" name="duration" min="1" max="14" value="1" required
-                    class="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    class="w-full md:w-48 input-glass">
             </div>
             
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Reason for Pause (required)</label>
+                <label class="block text-sm font-medium text-medium mb-2">Reason for Pause (required)</label>
                 <textarea name="reason" rows="3" required placeholder="Why are you pausing? (e.g., vacation, illness, personal time)"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    class="w-full input-glass"></textarea>
             </div>
             
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+            <button type="submit" class="btn-primary">
                 Activate Pause Mode
             </button>
         </form>
         {% endif %}
         
-        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h3 class="text-sm font-medium text-gray-700 mb-2">What gets frozen during pause:</h3>
-            <ul class="text-sm text-gray-600 space-y-1">
+        <div class="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+            <h3 class="text-sm font-medium text-high mb-2">What gets frozen during pause:</h3>
+            <ul class="text-sm text-medium space-y-1">
                 <li>- Outreach streak does not decrease</li>
                 <li>- Consistency score does not decay</li>
                 <li>- Daily goals do not count as failed</li>
                 <li>- Daily missions do not count as failed</li>
             </ul>
-            <h3 class="text-sm font-medium text-gray-700 mt-3 mb-2">What continues normally:</h3>
-            <ul class="text-sm text-gray-600 space-y-1">
+            <h3 class="text-sm font-medium text-high mt-4 mb-2">What continues normally:</h3>
+            <ul class="text-sm text-medium space-y-1">
                 <li>- Tasks still become overdue</li>
                 <li>- Boss fights progress continues</li>
                 <li>- Manual actions still award XP/tokens</li>
@@ -88,34 +88,34 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="glass-card p-6 mb-6">
+        <h2 class="text-xl font-semibold text-high mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
             </svg>
             Theme Settings
         </h2>
-        <p class="text-gray-500 text-sm">Coming soon...</p>
+        <p class="text-low text-sm">Coming soon...</p>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="glass-card p-6 mb-6">
+        <h2 class="text-xl font-semibold text-high mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
             </svg>
             Sound Settings
         </h2>
-        <p class="text-gray-500 text-sm">Coming soon...</p>
+        <p class="text-low text-sm">Coming soon...</p>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="glass-card p-6">
+        <h2 class="text-xl font-semibold text-high mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
             </svg>
             Notifications
         </h2>
-        <p class="text-gray-500 text-sm">Coming soon...</p>
+        <p class="text-low text-sm">Coming soon...</p>
     </div>
 </div>
 {% endblock %}

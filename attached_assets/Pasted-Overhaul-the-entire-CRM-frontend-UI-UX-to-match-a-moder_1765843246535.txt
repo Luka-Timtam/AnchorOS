@@ -1,0 +1,212 @@
+Overhaul the entire CRM frontend UI/UX to match a modern, premium, glassmorphic design system using the following brand colours:
+
+Electric Aqua: #31E0F7  
+Porcelain: #FFFDF7  
+Graphite: #2E2F37  
+Cinnabar: #EB564E  
+
+This is a pure style/design refactor.  
+DO NOT change backend logic, DO NOT modify widget order or widget sizing, and DO NOT alter dashboard functionality or layout structure.  
+Everything should LOOK different but BEHAVE the same.
+
+===========================================================
+GLOBAL DESIGN SYSTEM
+===========================================================
+
+Apply a unified visual identity across all pages:
+
+1. Switch the entire app to a DARK-FIRST aesthetic using Graphite (#2E2F37) as the base background colour.
+
+2. Implement glassmorphic components throughout the UI:
+   - background: rgba(255,255,255,0.08–0.14)
+   - border: 1px solid rgba(255,255,255,0.18)
+   - backdrop-filter: blur(16–24px)
+   - border-radius: 16–22px
+   - soft ambient shadows: 0 8px 24px rgba(0,0,0,0.25)
+
+3. Use Porcelain (#FFFDF7) for text, with appropriate opacity levels:
+   - High emphasis: 100%
+   - Medium: 70%
+   - Low: 50%
+
+4. Use Electric Aqua (#31E0F7) as the primary action colour.
+   Examples:
+   - buttons
+   - highlights
+   - active states
+   - progress bars
+   - selected navigation items
+
+5. Use Cinnabar (#EB564E) for important warnings, negative numbers, streak flames, boss battles, overdue statuses, etc.
+
+6. Increase spacing and padding globally.  
+   The current design feels compressed; move to a more breathable layout.
+
+7. Apply smooth transitions on hover for:
+   - cards
+   - buttons
+   - navigation items
+   - table rows
+   - widgets
+
+8. Replace all default shadows with soft, diffused shadows:
+   - 0 8px 20px rgba(0,0,0,0.25)
+   - 0 4px 12px rgba(0,0,0,0.15)
+
+9. Use rounded corners consistently at 16–20px.
+
+
+===========================================================
+NAVIGATION BAR (TOP)
+===========================================================
+
+Replace the current solid nav bar with a glassmorphic floating header:
+
+- height: slimmer and more modern
+- backdrop-filter: blur(18px)
+- background: rgba(255,255,255,0.1)
+- border-bottom: 1px solid rgba(255,255,255,0.12)
+- navigation items should use icon + text but text appears only when hovered or selected
+- active nav item uses an Electric Aqua glow or underline
+- add subtle shadow beneath the nav bar for depth
+- modernise the search box as a floating, rounded glass pill with electric aqua focus ring
+- move logout into a profile/avatar dropdown menu
+
+
+===========================================================
+DASHBOARD WIDGETS
+===========================================================
+
+Completely restyle all widgets WITHOUT changing their size, layout, or order.
+
+Each widget becomes a glassmorphic tile:
+
+- background: rgba(255,255,255,0.08)
+- border: 1px solid rgba(255,255,255,0.15)
+- rounded corners: 18–22px
+- hover: increase opacity, slight inner glow, aqua highlight
+- text uses Porcelain (#FFFDF7)
+- icons should be neon aqua outlines when active/hovered
+
+XP widget:
+- use aqua gradient for progress bar glow
+
+Tokens widget:
+- subtle shimmering effect on hover
+
+Streak widget:
+- flame icon in Cinnabar, glowing slightly
+
+Consistency widget:
+- use green/aqua tones but remain within brand palette
+
+Boss Battle widget:
+- cinnabar → orange gradient overlay
+- add subtle animated pulse behind boss icon
+
+Daily Mission widget:
+- neon aqua completion bar with glow
+
+
+===========================================================
+CALENDAR COMPONENT
+===========================================================
+
+Redesign the calendar to match the new aesthetic:
+
+- glass card container
+- remove heavy borders
+- lighter Porcelain text
+- selected date uses aqua ring glow
+- hover state softens date background with rgba(255,255,255,0.12)
+- header becomes a semi-transparent bar with aqua arrows for month navigation
+
+
+===========================================================
+TABLES (Leads, Clients, Outreach, Tasks)
+===========================================================
+
+Restyle all tables without changing structure:
+
+- remove heavy outlines
+- add subtle row separators using rgba(255,255,255,0.06)
+- zebra-strip rows using very light glass tints
+- row hover effect: background: rgba(255,255,255,0.10)
+- table headers: glassmorphic container with stronger blur and aqua underline to indicate sorts
+- status pills get redesigned:
+    - rounded
+    - translucent
+    - brand colours (Aqua for active, Cinnabar for lost, etc.)
+
+
+===========================================================
+CHARTS (Analytics + Dashboard)
+===========================================================
+
+Use your brand colours exclusively:
+
+- Aqua (#31E0F7) for revenue lines/bars
+- Cinnabar (#EB564E) for overdue/negative metrics
+- Remove default axes styling and use soft Porcelain text
+- Round bar corners
+- Subtle glow behind active datasets
+- Remove chart borders entirely
+- Background of the chart container should be glassy
+
+
+===========================================================
+GAMIFICATION PAGE
+===========================================================
+
+This page must feel dynamic and premium:
+
+- XP card: gradient aqua glow + glass + animated progress fill
+- Streak card: cinnabar flame animation or pulsating glow
+- Rewards shop: treat each reward like a collectible card (glass, glow, border highlight)
+- Wins log: cards become mini floating tiles
+- Achievements: redesigned as lock/unlock cards with glass and neon borders
+
+
+===========================================================
+NOTES PAGE
+===========================================================
+
+Update notes to a modern card grid:
+
+- glass tiles with depth
+- rounded corners
+- subtle glow on tags
+- increased spacing
+- floating “New Note” button using aqua
+
+
+===========================================================
+GLOBAL TYPOGRAPHY
+===========================================================
+
+Switch app-wide font to something cleaner and more modern (e.g. Inter, Plus Jakarta Sans, or Poppins).
+
+Use:
+- headings: semibold
+- labels: medium
+- body: regular
+
+
+===========================================================
+SUMMARY OF WHAT NOT TO CHANGE
+===========================================================
+
+DO NOT:
+- modify widget sizing
+- modify widget order
+- change data logic
+- move dashboard elements around
+- alter backend routes
+- change functional behaviour
+
+This is a purely visual/UI overhaul across all templates and CSS.
+
+
+===========================================================
+END OF PROMPT
+===========================================================
