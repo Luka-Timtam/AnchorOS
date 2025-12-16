@@ -28,6 +28,27 @@ The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchem
 **Project Structure:**
 The application follows a modular structure with Flask Blueprints separating concerns for different features (e.g., `auth.py`, `leads.py`, `gamification.py`). Templates are organized hierarchically within the `templates/` directory.
 
+## Design System (December 2025)
+Dark glassmorphic design with modern aesthetics:
+
+**Brand Colors:**
+- Electric Aqua (#31E0F7) - Primary accent, buttons, links
+- Porcelain (#FFFDF7) - High emphasis text
+- Graphite (#2E2F37) - Base background
+- Cinnabar (#EB564E) - Warnings, errors, boss fights
+
+**UI Components:**
+- `.glass` / `.glass-card` - Frosted glass panels with backdrop blur and white/10 borders
+- `.glass-nav` - Floating navigation with blur effects
+- `.btn-primary` - Aqua gradient buttons with glow
+- `.input-glass` / `.select-glass` - Styled form inputs
+- `.pill-aqua` / `.pill-success` / `.pill-warning` - Status indicators
+- `.progress-bar-aqua` / `.progress-bar-cinnabar` - Progress bars
+
+**Typography:**
+- Inter font family from Google Fonts
+- Text hierarchy: `.text-high` (porcelain), `.text-medium` (gray-400), `.text-low` (gray-500)
+
 ## External Dependencies
 *   **Python 3:** Core programming language.
 *   **Flask:** Web framework.
