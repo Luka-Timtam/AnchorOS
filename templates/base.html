@@ -437,6 +437,34 @@
             padding-left: calc(1rem - 3px);
         }
         
+        .nav-indicator {
+            position: absolute;
+            left: 0;
+            height: 44px;
+            width: calc(100% - 0px);
+            background: rgba(49, 224, 247, 0.1);
+            border-left: 3px solid #31E0F7;
+            border-radius: 0 12px 12px 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+            opacity: 0;
+            z-index: 0;
+        }
+        
+        .nav-indicator.visible {
+            opacity: 1;
+        }
+        
+        .sidebar-item {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .sidebar-item.active {
+            background: transparent !important;
+            border-left: none !important;
+        }
+        
         .sidebar-search-btn {
             width: 100%;
             display: flex;
@@ -565,7 +593,8 @@
             </button>
         </div>
         
-        <nav class="flex-1 px-3 overflow-y-auto scrollbar-thin">
+        <nav class="flex-1 px-3 overflow-y-auto scrollbar-thin relative">
+            <div id="navIndicator" class="nav-indicator"></div>
             <a href="{{ url_for('dashboard.index') }}" class="sidebar-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 <span class="nav-label">Dashboard</span>
@@ -964,7 +993,11 @@
         
         function updateActiveNav() {
             const currentPath = window.location.pathname;
-            const navItems = document.querySelectorAll('#sidebar .sidebar-item');
+            const navItems = document.querySelectorAll('#sidebar nav .sidebar-item');
+            const indicator = document.getElementById('navIndicator');
+            const nav = document.querySelector('#sidebar nav');
+            
+            let activeItem = null;
             
             navItems.forEach(function(item) {
                 const href = item.getAttribute('href');
@@ -974,11 +1007,26 @@
                 
                 if (href === currentPath) {
                     item.classList.add('active');
+                    activeItem = item;
                 } else if (href !== '/' && currentPath.startsWith(href)) {
                     item.classList.add('active');
+                    activeItem = item;
                 }
             });
+            
+            if (activeItem && indicator && nav) {
+                const navRect = nav.getBoundingClientRect();
+                const itemRect = activeItem.getBoundingClientRect();
+                const offsetTop = itemRect.top - navRect.top + nav.scrollTop;
+                
+                indicator.style.transform = 'translateY(' + offsetTop + 'px)';
+                indicator.classList.add('visible');
+            } else if (indicator) {
+                indicator.classList.remove('visible');
+            }
         }
+        
+        updateActiveNav();
         
         swup.hooks.on('content:replace', initPageScripts);
         swup.hooks.on('content:replace', updateActiveNav);
