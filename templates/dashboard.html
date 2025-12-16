@@ -955,10 +955,10 @@ if (outreachCtx) {
     new Chart(outreachCtx, {
         type: 'bar',
         data: {
-            labels: {{ outreach_chart_labels | tojson }},
+            labels: {{ week_labels | tojson }},
             datasets: [{
                 label: 'Outreach',
-                data: {{ outreach_chart_data | tojson }},
+                data: {{ outreach_weekly_data | tojson }},
                 backgroundColor: 'rgba(49, 224, 247, 0.6)',
                 borderColor: '#31E0F7',
                 borderWidth: 1,
@@ -983,32 +983,22 @@ if (dealsCtx) {
     new Chart(dealsCtx, {
         type: 'bar',
         data: {
-            labels: {{ deals_chart_labels | tojson }},
-            datasets: [
-                {
-                    label: 'Won',
-                    data: {{ deals_won_data | tojson }},
-                    backgroundColor: 'rgba(34, 197, 94, 0.6)',
-                    borderColor: '#22c55e',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                },
-                {
-                    label: 'Lost',
-                    data: {{ deals_lost_data | tojson }},
-                    backgroundColor: 'rgba(235, 86, 78, 0.6)',
-                    borderColor: '#EB564E',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                }
-            ]
+            labels: {{ week_labels | tojson }},
+            datasets: [{
+                label: 'Deals Closed',
+                data: {{ deals_weekly_data | tojson }},
+                backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                borderColor: '#22c55e',
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top', labels: { color: 'rgba(255, 253, 247, 0.7)' } } },
+            plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, stacked: false, grid: { color: 'rgba(255,255,255,0.05)' } },
-                x: { stacked: false, grid: { display: false } }
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
             }
         }
     });
@@ -1021,9 +1011,9 @@ let revenueChart = null;
 let showingMrr = false;
 
 const revenueData = {
-    labels: {{ revenue_chart_labels | tojson }},
-    revenue: {{ revenue_chart_data | tojson }},
-    mrr: {{ mrr_chart_data | tojson }}
+    labels: {{ month_labels | tojson }},
+    revenue: {{ monthly_revenue_data | tojson }},
+    mrr: {{ monthly_mrr_data | tojson }}
 };
 
 function createRevenueChart(data, label) {
