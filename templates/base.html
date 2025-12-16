@@ -450,7 +450,7 @@
             position: absolute;
             left: 0;
             height: 44px;
-            width: 56px;
+            width: 52px;
             background: rgba(49, 224, 247, 0.08);
             border-left: 3px solid #31E0F7;
             border-radius: 0 12px 12px 0;
@@ -461,7 +461,7 @@
         }
         
         #sidebar:hover .nav-indicator {
-            width: calc(100% - 0px);
+            width: 100%;
         }
         
         .nav-indicator.visible {
@@ -610,7 +610,7 @@
             </button>
         </div>
         
-        <nav class="flex-1 px-3 overflow-y-auto scrollbar-thin relative">
+        <nav class="flex-1 px-4 overflow-y-auto scrollbar-thin relative">
             <div id="navIndicator" class="nav-indicator"></div>
             <a href="{{ url_for('dashboard.index') }}" class="sidebar-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
@@ -650,7 +650,7 @@
             </a>
         </nav>
         
-        <div class="px-3 pb-3 border-t border-white/10 pt-3 mt-auto">
+        <div class="px-4 pb-3 border-t border-white/10 pt-3 mt-auto">
             <a href="{{ url_for('dashboard.index') }}" id="sidebarFocusTimer" class="hidden mb-2 px-3 py-2 rounded-xl bg-gradient-to-r from-aqua to-cyan-400 text-graphite font-semibold items-center gap-2 transition-all text-sm">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
