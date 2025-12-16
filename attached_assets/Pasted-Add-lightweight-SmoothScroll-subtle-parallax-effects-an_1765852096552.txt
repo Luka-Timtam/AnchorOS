@@ -1,0 +1,190 @@
+Add lightweight SmoothScroll, subtle parallax effects, and micro page-entry animations using Swup.js. 
+Do NOT modify backend logic, page layouts, widget sizes, or dashboard structure. 
+These enhancements should ONLY affect motion and presentation.
+
+===============================================================
+1. ADD SMOOTH SCROLLING (LIGHT, PREMIUM FEEL)
+===============================================================
+
+Add this script to the base template. 
+It overrides scroll physics only for the main window, without interfering with scrollable elements.
+
+<script>
+(function() {
+    let targetScroll = window.scrollY;
+    let currentScroll = window.scrollY;
+
+    function ease(current, target) {
+        return current + (target - current) * 0.12;
+    }
+
+    function updateScroll() {
+        currentScroll = ease(currentScroll, targetScroll);
+        window.scrollTo(0, currentScroll);
+        requestAnimationFrame(updateScroll);
+    }
+
+    window.addEventListener("wheel", (e) => {
+        // Ignore if scrolling inside scrollable containers
+        const insideScrollable = e.target.closest('.no-scroll-enhance, [data-scrollable="true"]');
+        if (insideScrollable) return;
+
+        e.preventDefault();
+        const delta = e.deltaY * 0.85;
+        targetScroll = Math.min(document.body.scrollHeight, Math.max(0, targetScroll + delta));
+    }, { passive: false });
+
+    requestAnimationFrame(updateScroll);
+})();
+</script>
+
+
+===============================================================
+2. ADD BASIC PARALLAX EFFECT (SAFE + SUBTLE)
+===============================================================
+
+Add these styles:
+
+/* Basic parallax class for subtle vertical drift */
+.parallax-float {
+  transform: translateY(0px);
+  will-change: transform;
+  transition: transform 0.25s ease-out;
+}
+
+Then add the JS:
+
+<script>
+document.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    document.querySelectorAll('.parallax-float').forEach(el => {
+        const intensity = Number(el.getAttribute('data-parallax')) || 3;
+        el.style.transform = `translateY(${(y * intensity) / 100}px)`;
+    });
+});
+</script>
+
+Only apply `.parallax-float` to decorative or header elements, not widgets, charts, or tables.
+
+
+===============================================================
+3. UPGRADE B — MICRO PAGE-ENTRY ANIMATIONS (SWUP)
+===============================================================
+
+Every time Swup loads new content, fade and lift elements slightly to create a premium, smooth entrance animation.
+
+Add this CSS:
+
+/* Base state before animation */
+.page-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Animation on enter */
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+/* Optional slight delay for staggered feeling */
+.page-enter-delayed {
+  transition-delay: 0.08s;
+}
+
+Add this JS (after Swup initialization):
+
+<script>
+document.addEventListener('swup:contentReplaced', () => {
+
+    // Find all entry elements (widgets, headers, cards, etc.)
+    const elements = document.querySelectorAll('.animate-entry');
+
+    elements.forEach((el, index) => {
+        el.classList.add('page-enter');
+
+        // Delay each element for a subtle stagger (index * 20ms)
+        setTimeout(() => {
+            el.classList.add('page-enter-active');
+        }, index * 20);
+    });
+
+    // Re-run parallax on new content
+    window.dispatchEvent(new Event('scroll'));
+});
+</script>
+
+
+===============================================================
+4. APPLY ENTRY ANIMATION TO SAFE ELEMENTS ONLY
+===============================================================
+
+Add the class `animate-entry` ONLY to:
+
+• dashboard cards  
+• section headers  
+• gamification widgets  
+• notes cards  
+• analytics sections  
+• reward tiles  
+• boss fight panel  
+• settings panels  
+
+Example:
+
+<h1 class="animate-entry parallax-float" data-parallax="4">Dashboard</h1>
+<div class="widget-card animate-entry">...</div>
+
+Do NOT apply to:
+
+• forms  
+• tables  
+• long lists  
+• anything scroll-heavy  
+
+
+===============================================================
+5. ENSURE COMPATIBILITY WITH SWUP + SIDEBAR
+===============================================================
+
+• Sidebar must not animate away — only content inside #swup-content is animated  
+• SmoothScroll must NOT animate the sidebar  
+• Parallax must not apply to navigation elements  
+• Entry animation must run after every Swup route change  
+
+
+===============================================================
+6. FAILSAFE BEHAVIOR
+===============================================================
+
+If the browser or device performs poorly:
+
+• animations should gracefully degrade  
+• content must appear fully visible even if animation fails  
+• no layout shifts or flickering  
+• disable smooth scrolling inside scrollable sections (tables, notes list, etc.)  
+
+
+===============================================================
+7. FOCUS ON CLEAN, MINIMAL MOTION
+===============================================================
+
+The goal:
+
+• subtle movement  
+• premium feel  
+• soft transitions  
+• nothing excessive  
+• everything feels effortless  
+
+Do NOT add:
+• bounce  
+• exaggerated drifting  
+• large parallax  
+• heavy easing  
+
+
+===============================================================
+END OF PROMPT
+===============================================================
