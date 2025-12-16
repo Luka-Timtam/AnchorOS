@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://unpkg.com/swup@4/dist/Swup.umd.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -475,6 +476,35 @@
             color: #FFFDF7;
         }
         
+        .transition-fade {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        html.is-changing .transition-fade {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        
+        html.is-animating {
+            overflow: hidden;
+        }
+        
+        #page-transition-glow {
+            position: fixed;
+            pointer-events: none;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(49,224,247,0.25), rgba(49,224,247,0) 70%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            z-index: 9999;
+        }
+        
+        html.is-changing #page-transition-glow {
+            opacity: 1;
+        }
+        
         @media (max-width: 768px) {
             #sidebar {
                 position: fixed;
@@ -507,6 +537,7 @@
     </style>
 </head>
 <body class="min-h-screen text-porcelain">
+    <div id="page-transition-glow"></div>
     <div class="mobile-overlay" id="mobileOverlay"></div>
     
     <button id="mobileMenuBtn" class="fixed top-4 left-4 z-50 md:hidden toggle-btn">
@@ -598,7 +629,7 @@
     </aside>
 
     <div id="mainContent" class="min-h-screen">
-        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <main id="swup-content" class="transition-fade max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -907,6 +938,31 @@
         }
         
         initGlobalFocusCheck();
+    })();
+    </script>
+    
+    <script>
+    (function() {
+        const swup = new Swup({
+            containers: ['#swup-content'],
+            animateHistoryBrowsing: true,
+            cache: true
+        });
+        
+        document.addEventListener('submit', function(e) {
+            if (e.target.tagName === 'FORM') {
+                document.documentElement.classList.remove('is-changing');
+            }
+        });
+        
+        function initPageScripts() {
+            if (window.initCharts) window.initCharts();
+            if (window.initGamification) window.initGamification();
+            if (window.initCalendar) window.initCalendar();
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+        
+        swup.hooks.on('content:replace', initPageScripts);
     })();
     </script>
     

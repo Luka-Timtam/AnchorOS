@@ -65,4 +65,13 @@ Dark glassmorphic design with modern aesthetics:
 *   **Jinja2:** Templating engine.
 *   **Tailwind CSS (CDN):** For styling and UI.
 *   **Chart.js:** For data visualization and charts.
+*   **Swup.js:** For smooth page transitions (native-app-like navigation).
 *   **External Scheduler:** (Implied for Daily Summary Email) To trigger the `/internal/run-daily-summary` endpoint.
+
+## Page Transitions (December 2025)
+- Swup.js integration for smooth, native-app-like page transitions
+- Fade + slide animation (0.3s) on content area only
+- Electric Aqua (#31E0F7) radial glow overlay during transitions
+- Sidebar stays persistent (not animated)
+- Form submissions bypass transitions to prevent issues
+- Page scripts reinitialize on content replace via `swup.hooks.on('content:replace')`

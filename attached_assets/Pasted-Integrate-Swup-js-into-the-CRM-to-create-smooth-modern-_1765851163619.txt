@@ -1,0 +1,187 @@
+Integrate Swup.js into the CRM to create smooth, modern, native-app-like transitions between all pages. 
+Do NOT change backend logic or routing. 
+This must be a frontend-only enhancement.
+
+===============================================
+1. INSTALL & INITIALIZE SWUP
+===============================================
+
+Add Swup.js via CDN in the base template:
+
+<script src="https://unpkg.com/swup@latest/dist/swup.min.js"></script>
+
+Below that, initialize Swup:
+
+<script>
+  const swup = new Swup({
+    containers: ['#swup-content'],
+    animateHistoryBrowsing: true,
+    cache: true
+  });
+</script>
+
+===============================================
+2. WRAP PAGE CONTENT FOR SWUP
+===============================================
+
+In the base layout template (base.html or equivalent), wrap the MAIN CONTENT AREA ONLY with:
+
+<div id="swup-content" class="transition-fade">
+    {% block content %}{% endblock %}
+</div>
+
+Do NOT wrap the sidebar or navbar.
+Only wrap the area that changes between pages.
+
+===============================================
+3. ADD CORE TRANSITION ANIMATIONS (FADE + SLIDE)
+===============================================
+
+In the main stylesheet, add:
+
+/* Fade transition */
+.transition-fade {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+html.is-changing .transition-fade {
+  opacity: 0;
+  transform: translateY(8px); /* small slide downward */
+}
+
+/* Ensure background stays smooth */
+html.is-animating {
+  overflow: hidden;
+}
+
+===============================================
+4. ADD ELECTRIC AQUA GLOW TRANSITION EFFECT
+===============================================
+
+Use the brand color #31E0F7 to create a neon glow flash between pages.
+
+Add this to CSS:
+
+/* Aqua glow overlay */
+#page-transition-glow {
+  position: fixed;
+  pointer-events: none;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(49,224,247,0.35), rgba(49,224,247,0) 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+}
+
+/* Glow on page change */
+html.is-changing #page-transition-glow {
+  opacity: 1;
+}
+
+Then insert this element right under the sidebar/nav in the base template:
+
+<div id="page-transition-glow"></div>
+
+The effect:  
+A very subtle aqua pulse during transitions that matches the CRM’s brand style.
+
+===============================================
+5. PREVENT FORM SUBMISSIONS FROM BREAKING SWUP
+===============================================
+
+When a form is submitted, Swup should NOT animate the page away until the response loads.
+Add this script:
+
+<script>
+document.addEventListener('submit', function (e) {
+  if (e.target.tagName === 'FORM') {
+    document.documentElement.classList.remove('is-changing');
+  }
+});
+</script>
+
+===============================================
+6. ENSURE COMPLEX PAGES RE-INITIALIZE JS ON LOAD
+===============================================
+
+Any page that uses:
+- modals
+- dropdowns
+- custom JS components
+- charts
+- gamification animations
+
+…must re-initialize after Swup loads new content.
+
+Add this:
+
+<script>
+document.addEventListener('swup:contentReplaced', () => {
+    // Reinit components here
+    // e.g. re-render charts, rebind buttons, dropdowns, etc.
+
+    if (window.initCharts) window.initCharts();
+    if (window.initGamification) window.initGamification();
+    if (window.initCalendar) window.initCalendar();
+    if (window.initSidebar) window.initSidebar();
+
+    // Smooth scroll reset
+    window.scrollTo({ top: 0, behavior: 'instant' });
+});
+</script>
+
+===============================================
+7. MAKE TRANSITIONS WORK ACROSS ALL ROUTES
+===============================================
+
+Ensure all navigation links use normal <a href="..."> elements.
+Do NOT use target="_blank" unless needed.
+
+For links that MUST bypass transitions, add:
+data-no-swup
+
+===============================================
+8. NAVIGATION SIDEBAR COMPATIBILITY
+===============================================
+
+Transition should only animate the content area.
+Do NOT animate or reload the sidebar.
+
+Ensure CSS sets:
+
+#sidebar {
+  position: fixed;
+  z-index: 2000;
+}
+
+===============================================
+9. REMOVE PAGE FLASHING / WHITE SCREEN
+===============================================
+
+In base CSS, ensure body background is never white:
+
+body {
+  background: #2E2F37; /* Graphite */
+  color: #FFFDF7;
+}
+
+This permanently removes the flash.
+
+===============================================
+10. FINAL CHECKLIST
+===============================================
+
+• No routes changed  
+• No backend touched  
+• Only content container transitions  
+• Aqua glow effect overlays cleanly  
+• Forms behave normally  
+• Sidebar stays persistent  
+• Smooth fade + slide between every page  
+
+===============================================
+END OF PROMPT
+===============================================
