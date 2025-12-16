@@ -962,7 +962,26 @@
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
         
+        function updateActiveNav() {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('#sidebar .sidebar-item');
+            
+            navItems.forEach(function(item) {
+                const href = item.getAttribute('href');
+                if (!href) return;
+                
+                item.classList.remove('active');
+                
+                if (href === currentPath) {
+                    item.classList.add('active');
+                } else if (href !== '/' && currentPath.startsWith(href)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
         swup.hooks.on('content:replace', initPageScripts);
+        swup.hooks.on('content:replace', updateActiveNav);
     })();
     </script>
     
