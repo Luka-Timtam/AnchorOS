@@ -255,7 +255,7 @@
                         </td>
                         <td class="space-x-3">
                             <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
-                            <form method="POST" action="{{ url_for('leads.restore', id=lead.id) }}" class="inline">
+                            <form method="POST" action="{{ url_for('leads.unarchive', id=lead.id) }}" class="inline">
                                 <button type="submit" class="text-green-400 hover:text-green-300 text-sm transition-colors">Restore</button>
                             </form>
                         </td>
