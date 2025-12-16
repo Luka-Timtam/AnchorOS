@@ -3,18 +3,21 @@
 {% block title %}Outreach Templates - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Outreach Templates</h1>
-    <a href="{{ url_for('outreach_templates.new') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-        + New Template
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-high">Outreach Templates</h1>
+    <a href="{{ url_for('outreach_templates.new') }}" class="btn-primary flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        New Template
     </a>
 </div>
 
-<div class="bg-white rounded-lg shadow p-4 mb-6">
-    <form method="GET" class="flex flex-wrap gap-4 items-end">
+<div class="glass-card p-5 mb-6">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select name="category" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <label class="block text-sm font-medium text-medium mb-2">Category</label>
+            <select name="category" class="w-full select-glass">
                 <option value="">All Categories</option>
                 {% for cat in categories %}
                 <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat|title }}</option>
@@ -22,65 +25,65 @@
             </select>
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
-            <select name="subcategory" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <label class="block text-sm font-medium text-medium mb-2">Subcategory</label>
+            <select name="subcategory" class="w-full select-glass">
                 <option value="">All Subcategories</option>
                 {% for sub in subcategories %}
                 <option value="{{ sub }}" {% if current_subcategory == sub %}selected{% endif %}>{{ sub|replace('_', ' ')|title }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="flex-1 min-w-48">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+        <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-medium mb-2">Search</label>
             <input type="text" name="search" value="{{ current_search }}" placeholder="Search name or content..."
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                   class="w-full input-glass">
         </div>
         <div class="flex gap-2">
-            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Filter</button>
-            <a href="{{ url_for('outreach_templates.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">Clear</a>
+            <button type="submit" class="flex-1 btn-primary">Filter</button>
+            <a href="{{ url_for('outreach_templates.index') }}" class="px-4 py-2.5 rounded-xl bg-white/10 border border-white/10 text-medium hover:bg-white/20 transition-colors">Clear</a>
         </div>
     </form>
 </div>
 
 {% if email_templates %}
-<div class="mb-8">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md mr-2">Email</span>
-        Templates ({{ email_templates|length }})
-    </h2>
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+<div class="mb-6">
+    <div class="flex items-center gap-3 mb-4">
+        <span class="px-3 py-1 rounded-lg bg-blue-500/20 text-blue-400 font-medium text-sm">Email</span>
+        <h2 class="text-lg font-semibold text-high">Templates ({{ email_templates|length }})</h2>
+    </div>
+    <div class="glass-card overflow-hidden">
+        <table class="min-w-full table-glass">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subcategory</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Subcategory</th>
+                    <th class="text-left">Preview</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody>
                 {% for template in email_templates %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">
-                        <div class="flex items-center">
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-2">
                             {% if template.is_favourite %}
-                            <span class="text-yellow-500 mr-2">&#9733;</span>
+                            <span class="text-yellow-400">&#9733;</span>
                             {% endif %}
-                            <span class="font-medium text-gray-900">{{ template.name }}</span>
+                            <span class="font-medium text-high">{{ template.name }}</span>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-600">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
-                    <td class="px-4 py-3 text-right">
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View</a>
-                            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-gray-600 hover:text-gray-900 text-sm">Edit</a>
-                            <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-600 hover:text-green-900 text-sm">Copy</button>
-                            <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-600 hover:text-yellow-900 text-sm" id="fav-btn-{{ template.id }}">
+                    <td class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
+                    <td class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-3">
+                            <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-medium hover:text-high text-sm transition-colors">Edit</a>
+                            <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-400 hover:text-green-300 text-sm transition-colors">Copy</button>
+                            <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-400 hover:text-yellow-300 text-sm transition-colors" id="fav-btn-{{ template.id }}">
                                 {% if template.is_favourite %}Unfav{% else %}Fav{% endif %}
                             </button>
                             <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" onsubmit="return confirm('Delete this template?')">
-                                <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                                <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>
                         </div>
                     </td>
@@ -93,44 +96,44 @@
 {% endif %}
 
 {% if dm_templates %}
-<div class="mb-8">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-md mr-2">DM</span>
-        Templates ({{ dm_templates|length }})
-    </h2>
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+<div class="mb-6">
+    <div class="flex items-center gap-3 mb-4">
+        <span class="px-3 py-1 rounded-lg bg-purple-500/20 text-purple-400 font-medium text-sm">DM</span>
+        <h2 class="text-lg font-semibold text-high">Templates ({{ dm_templates|length }})</h2>
+    </div>
+    <div class="glass-card overflow-hidden">
+        <table class="min-w-full table-glass">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subcategory</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Subcategory</th>
+                    <th class="text-left">Preview</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody>
                 {% for template in dm_templates %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">
-                        <div class="flex items-center">
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-2">
                             {% if template.is_favourite %}
-                            <span class="text-yellow-500 mr-2">&#9733;</span>
+                            <span class="text-yellow-400">&#9733;</span>
                             {% endif %}
-                            <span class="font-medium text-gray-900">{{ template.name }}</span>
+                            <span class="font-medium text-high">{{ template.name }}</span>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-600">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
-                    <td class="px-4 py-3 text-right">
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View</a>
-                            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-gray-600 hover:text-gray-900 text-sm">Edit</a>
-                            <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-600 hover:text-green-900 text-sm">Copy</button>
-                            <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-600 hover:text-yellow-900 text-sm" id="fav-btn-{{ template.id }}">
+                    <td class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
+                    <td class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-3">
+                            <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-medium hover:text-high text-sm transition-colors">Edit</a>
+                            <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-400 hover:text-green-300 text-sm transition-colors">Copy</button>
+                            <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-400 hover:text-yellow-300 text-sm transition-colors" id="fav-btn-{{ template.id }}">
                                 {% if template.is_favourite %}Unfav{% else %}Fav{% endif %}
                             </button>
                             <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" onsubmit="return confirm('Delete this template?')">
-                                <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                                <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>
                         </div>
                     </td>
@@ -143,44 +146,44 @@
 {% endif %}
 
 {% if call_templates %}
-<div class="mb-8">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-md mr-2">Call</span>
-        Scripts ({{ call_templates|length }})
-    </h2>
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+<div class="mb-6">
+    <div class="flex items-center gap-3 mb-4">
+        <span class="px-3 py-1 rounded-lg bg-green-500/20 text-green-400 font-medium text-sm">Call</span>
+        <h2 class="text-lg font-semibold text-high">Scripts ({{ call_templates|length }})</h2>
+    </div>
+    <div class="glass-card overflow-hidden">
+        <table class="min-w-full table-glass">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subcategory</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Subcategory</th>
+                    <th class="text-left">Preview</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody>
                 {% for template in call_templates %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">
-                        <div class="flex items-center">
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-2">
                             {% if template.is_favourite %}
-                            <span class="text-yellow-500 mr-2">&#9733;</span>
+                            <span class="text-yellow-400">&#9733;</span>
                             {% endif %}
-                            <span class="font-medium text-gray-900">{{ template.name }}</span>
+                            <span class="font-medium text-high">{{ template.name }}</span>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-600">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
-                    <td class="px-4 py-3 text-right">
-                        <div class="flex justify-end gap-2">
-                            <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm">View</a>
-                            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-gray-600 hover:text-gray-900 text-sm">Edit</a>
-                            <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-600 hover:text-green-900 text-sm">Copy</button>
-                            <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-600 hover:text-yellow-900 text-sm" id="fav-btn-{{ template.id }}">
+                    <td class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
+                    <td class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-3">
+                            <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-medium hover:text-high text-sm transition-colors">Edit</a>
+                            <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-400 hover:text-green-300 text-sm transition-colors">Copy</button>
+                            <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-400 hover:text-yellow-300 text-sm transition-colors" id="fav-btn-{{ template.id }}">
                                 {% if template.is_favourite %}Unfav{% else %}Fav{% endif %}
                             </button>
                             <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" onsubmit="return confirm('Delete this template?')">
-                                <button type="submit" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                                <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>
                         </div>
                     </td>
@@ -193,14 +196,21 @@
 {% endif %}
 
 {% if not email_templates and not dm_templates and not call_templates %}
-<div class="bg-white rounded-lg shadow p-8 text-center">
-    <p class="text-gray-500 mb-4">No templates found. Create your first template to get started!</p>
-    <a href="{{ url_for('outreach_templates.new') }}" class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-        + Create Template
+<div class="glass-card p-12 text-center">
+    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+        <svg class="w-8 h-8 text-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+    </div>
+    <p class="text-medium mb-4">No templates found. Create your first template to get started!</p>
+    <a href="{{ url_for('outreach_templates.new') }}" class="inline-block btn-primary">
+        Create Template
     </a>
 </div>
 {% endif %}
+{% endblock %}
 
+{% block scripts %}
 <script>
 function copyToClipboard(id, content) {
     const decoded = content.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");

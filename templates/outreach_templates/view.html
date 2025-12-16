@@ -4,52 +4,59 @@
 
 {% block content %}
 <div class="mb-6">
-    <a href="{{ url_for('outreach_templates.index') }}" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Templates</a>
+    <a href="{{ url_for('outreach_templates.index') }}" class="text-aqua hover:text-aqua/80 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Templates
+    </a>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6 max-w-4xl">
-    <div class="flex justify-between items-start mb-6">
+<div class="glass-card p-6 max-w-4xl">
+    <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
         <div>
-            <div class="flex items-center gap-3 mb-2">
+            <div class="flex items-center gap-3 mb-3">
                 {% if template.is_favourite %}
-                <span class="text-yellow-500 text-2xl">&#9733;</span>
+                <span class="text-yellow-400 text-2xl">&#9733;</span>
                 {% endif %}
-                <h1 class="text-2xl font-bold text-gray-900">{{ template.name }}</h1>
+                <h1 class="text-2xl font-bold text-high">{{ template.name }}</h1>
             </div>
             <div class="flex gap-2">
-                <span class="inline-block px-2 py-1 text-xs font-medium rounded-full
-                    {% if template.category == 'email' %}bg-blue-100 text-blue-800
-                    {% elif template.category == 'dm' %}bg-purple-100 text-purple-800
-                    {% else %}bg-green-100 text-green-800{% endif %}">
+                <span class="px-3 py-1 rounded-lg text-sm font-medium
+                    {% if template.category == 'email' %}bg-blue-500/20 text-blue-400
+                    {% elif template.category == 'dm' %}bg-purple-500/20 text-purple-400
+                    {% else %}bg-green-500/20 text-green-400{% endif %}">
                     {{ template.category|title }}
                 </span>
                 {% if template.subcategory %}
-                <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                <span class="px-3 py-1 rounded-lg text-sm font-medium bg-white/10 text-medium">
                     {{ template.subcategory|replace('_', ' ')|title }}
                 </span>
                 {% endif %}
             </div>
         </div>
         <div class="flex gap-2">
-            <button onclick="copyContent()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm">
+            <button onclick="copyContent()" class="px-4 py-2 rounded-xl bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors text-sm font-medium">
                 Copy to Clipboard
             </button>
-            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm">
+            <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="btn-primary text-sm">
                 Edit
             </a>
         </div>
     </div>
     
-    <div class="bg-gray-50 rounded-lg p-6 mb-6">
-        <pre id="template-content" class="whitespace-pre-wrap font-mono text-sm text-gray-800">{{ template.content }}</pre>
+    <div class="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
+        <pre id="template-content" class="whitespace-pre-wrap font-mono text-sm text-high leading-relaxed">{{ template.content }}</pre>
     </div>
     
-    <div class="text-sm text-gray-500">
+    <div class="text-sm text-low space-y-1">
         <p>Created: {{ template.created_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
         <p>Last updated: {{ template.updated_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 function copyContent() {
     const content = document.getElementById('template-content').textContent;

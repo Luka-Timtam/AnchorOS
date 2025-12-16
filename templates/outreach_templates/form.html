@@ -4,24 +4,29 @@
 
 {% block content %}
 <div class="mb-6">
-    <a href="{{ url_for('outreach_templates.index') }}" class="text-indigo-600 hover:text-indigo-900">&larr; Back to Templates</a>
+    <a href="{{ url_for('outreach_templates.index') }}" class="text-aqua hover:text-aqua/80 transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Templates
+    </a>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6 max-w-3xl">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">{% if template %}Edit{% else %}New{% endif %} Template</h1>
+<div class="glass-card p-6 max-w-3xl">
+    <h1 class="text-2xl font-bold text-high mb-6">{% if template %}Edit{% else %}New{% endif %} Template</h1>
     
     <form method="POST" class="space-y-6">
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+            <label class="block text-sm font-medium text-medium mb-2">Name *</label>
             <input type="text" name="name" required value="{{ template.name if template else '' }}"
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                   class="w-full input-glass"
                    placeholder="e.g., Cold Email - Web Design Offer">
         </div>
         
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                <select name="category" required class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <label class="block text-sm font-medium text-medium mb-2">Category *</label>
+                <select name="category" required class="w-full select-glass">
                     <option value="">Select category...</option>
                     {% for cat in categories %}
                     <option value="{{ cat }}" {% if template and template.category == cat %}selected{% endif %}>{{ cat|title }}</option>
@@ -29,8 +34,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
-                <select name="subcategory" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <label class="block text-sm font-medium text-medium mb-2">Subcategory</label>
+                <select name="subcategory" class="w-full select-glass">
                     <option value="">Select subcategory...</option>
                     {% for sub in subcategories %}
                     <option value="{{ sub }}" {% if template and template.subcategory == sub %}selected{% endif %}>{{ sub|replace('_', ' ')|title }}</option>
@@ -40,24 +45,27 @@
         </div>
         
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Content *</label>
+            <label class="block text-sm font-medium text-medium mb-2">Content *</label>
             <textarea name="content" required rows="12"
-                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
+                      class="w-full input-glass font-mono text-sm"
                       placeholder="Enter your template content here...">{{ template.content if template else '' }}</textarea>
-            <p class="mt-1 text-sm text-gray-500">You can use placeholders like {name}, {business}, {niche} etc.</p>
+            <p class="mt-2 text-sm text-low">You can use placeholders like {name}, {business}, {niche} etc.</p>
         </div>
         
-        <div class="flex items-center">
-            <input type="checkbox" name="is_favourite" id="is_favourite" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+        <div class="flex items-center gap-3">
+            <input type="checkbox" name="is_favourite" id="is_favourite" 
+                   class="w-5 h-5 rounded bg-white/10 border-white/20 text-aqua focus:ring-aqua/50"
                    {% if template and template.is_favourite %}checked{% endif %}>
-            <label for="is_favourite" class="ml-2 text-sm text-gray-700">Mark as favourite</label>
+            <label for="is_favourite" class="text-medium">Mark as favourite</label>
         </div>
         
-        <div class="flex gap-4">
-            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+        <div class="flex gap-4 pt-4">
+            <button type="submit" class="btn-primary">
                 {% if template %}Update{% else %}Create{% endif %} Template
             </button>
-            <a href="{{ url_for('outreach_templates.index') }}" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300">Cancel</a>
+            <a href="{{ url_for('outreach_templates.index') }}" class="px-6 py-2.5 rounded-xl bg-white/10 border border-white/10 text-medium hover:bg-white/20 transition-colors">
+                Cancel
+            </a>
         </div>
     </form>
 </div>
