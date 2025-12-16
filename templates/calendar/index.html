@@ -3,25 +3,25 @@
 {% block title %}Calendar - Personal CRM{% endblock %}
 
 {% block content %}
-<div class="mb-6">
+<div class="mb-8">
     <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Calendar</h1>
+        <h1 class="text-3xl font-bold text-high">Calendar</h1>
         <div class="flex items-center gap-2">
             <a href="{{ url_for('calendar.index', year=prev_year, month=prev_month) }}" 
-               class="p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="p-2 rounded-xl glass-card hover:border-aqua/50 transition-colors">
+                <svg class="w-5 h-5 text-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
             </a>
-            <span class="text-xl font-semibold text-gray-800 min-w-[180px] text-center">{{ month_name }} {{ year }}</span>
+            <span class="text-xl font-semibold text-high min-w-[180px] text-center">{{ month_name }} {{ year }}</span>
             <a href="{{ url_for('calendar.index', year=next_year, month=next_month) }}" 
-               class="p-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="p-2 rounded-xl glass-card hover:border-aqua/50 transition-colors">
+                <svg class="w-5 h-5 text-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
             </a>
             <a href="{{ url_for('calendar.index') }}" 
-               class="ml-2 px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm font-medium">
+               class="ml-2 btn-primary text-sm">
                 Today
             </a>
         </div>
@@ -29,43 +29,43 @@
 </div>
 
 {% if current_boss %}
-<div class="mb-6 bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 border border-purple-500/30">
+<div class="mb-6 glass-card p-4 bg-gradient-to-r from-cinnabar/20 to-orange-600/10 border-cinnabar/30">
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
             <span class="text-3xl">👹</span>
             <div>
-                <h3 class="text-white font-bold">Monthly Boss: {{ current_boss.description }}</h3>
-                <p class="text-purple-300 text-sm">{{ current_boss.progress_value }}/{{ current_boss.target_value }} - {{ current_boss.reward_tokens }} tokens reward</p>
+                <h3 class="text-high font-bold">Monthly Boss: {{ current_boss.description }}</h3>
+                <p class="text-medium text-sm">{{ current_boss.progress_value }}/{{ current_boss.target_value }} - {{ current_boss.reward_tokens }} tokens reward</p>
             </div>
         </div>
         {% if current_boss.is_completed %}
-        <span class="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-bold">DEFEATED!</span>
+        <span class="pill pill-success font-bold">DEFEATED!</span>
         {% else %}
-        <div class="w-32 bg-purple-800 rounded-full h-3">
-            <div class="bg-purple-400 h-3 rounded-full" style="width: {{ (current_boss.progress_value / current_boss.target_value * 100)|int if current_boss.target_value else 0 }}%"></div>
+        <div class="w-32 progress-bar-container h-3">
+            <div class="progress-bar-cinnabar h-3 rounded-full" style="width: {{ (current_boss.progress_value / current_boss.target_value * 100)|int if current_boss.target_value else 0 }}%"></div>
         </div>
         {% endif %}
     </div>
 </div>
 {% endif %}
 
-<div class="bg-gray-900 rounded-xl overflow-hidden border border-white/10">
+<div class="glass-card overflow-hidden">
     <div class="grid grid-cols-7 border-b border-white/10">
         {% for day_name in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
-        <div class="py-3 text-center text-sm font-semibold text-gray-400 uppercase tracking-wider">{{ day_name }}</div>
+        <div class="py-3 text-center text-sm font-semibold text-medium uppercase tracking-wider">{{ day_name }}</div>
         {% endfor %}
     </div>
     
     <div class="grid grid-cols-7">
         {% for day in days %}
         <div class="min-h-[120px] border-b border-r border-white/5 p-2 
-            {% if day.current_month %}bg-gray-900 hover:bg-white/5{% else %}bg-gray-950{% endif %}
-            {% if day.is_today %}ring-2 ring-inset ring-indigo-500{% endif %}
+            {% if day.current_month %}bg-white/[0.02] hover:bg-white/5{% else %}bg-black/20{% endif %}
+            {% if day.is_today %}ring-2 ring-inset ring-aqua{% endif %}
             cursor-pointer transition-colors calendar-day"
             {% if day.date %}data-date="{{ day.date }}"{% endif %}>
             
             <div class="flex justify-between items-start mb-1">
-                <span class="text-sm font-medium {% if day.current_month %}{% if day.is_today %}text-indigo-400{% else %}text-gray-300{% endif %}{% else %}text-gray-600{% endif %}">
+                <span class="text-sm font-medium {% if day.current_month %}{% if day.is_today %}text-aqua{% else %}text-high{% endif %}{% else %}text-low{% endif %}">
                     {{ day.day }}
                 </span>
                 {% if day.current_month and day.mission %}
@@ -77,23 +77,23 @@
             <div class="space-y-1">
                 {% for task in day.tasks[:3] %}
                 <div class="text-xs px-1.5 py-0.5 rounded truncate
-                    {% if task.status == 'done' %}bg-green-900/50 text-green-300 line-through
-                    {% elif task.status == 'in_progress' %}bg-blue-900/50 text-blue-300
-                    {% else %}bg-gray-800 text-gray-300{% endif %}">
+                    {% if task.status == 'done' %}bg-green-500/20 text-green-300 line-through
+                    {% elif task.status == 'in_progress' %}bg-aqua/20 text-aqua
+                    {% else %}bg-white/10 text-medium{% endif %}">
                     {{ task.title }}
                 </div>
                 {% endfor %}
                 {% if day.tasks|length > 3 %}
-                <div class="text-xs text-gray-500">+{{ day.tasks|length - 3 }} more</div>
+                <div class="text-xs text-low">+{{ day.tasks|length - 3 }} more</div>
                 {% endif %}
                 
                 {% for lead in day.leads[:2] %}
-                <div class="text-xs px-1.5 py-0.5 rounded truncate bg-yellow-900/50 text-yellow-300">
+                <div class="text-xs px-1.5 py-0.5 rounded truncate bg-yellow-500/20 text-yellow-300">
                     📞 {{ lead.name }}
                 </div>
                 {% endfor %}
                 {% if day.leads|length > 2 %}
-                <div class="text-xs text-gray-500">+{{ day.leads|length - 2 }} more</div>
+                <div class="text-xs text-low">+{{ day.leads|length - 2 }} more</div>
                 {% endif %}
             </div>
             {% endif %}
@@ -103,24 +103,26 @@
 </div>
 
 <div id="dayModal" class="fixed inset-0 z-50 hidden">
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" id="dayModalBackdrop"></div>
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-md" id="dayModalBackdrop"></div>
     <div class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="bg-gray-900 rounded-xl shadow-2xl w-full max-w-lg border border-gray-700">
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-                <h3 id="dayModalTitle" class="text-lg font-semibold text-white">Date</h3>
-                <button id="closeDayModal" class="text-gray-400 hover:text-white">
+        <div class="glass-card w-full max-w-lg">
+            <div class="p-5 border-b border-white/10 flex justify-between items-center">
+                <h3 id="dayModalTitle" class="text-lg font-semibold text-high">Date</h3>
+                <button id="closeDayModal" class="text-medium hover:text-high transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div id="dayModalContent" class="p-4 max-h-[60vh] overflow-y-auto">
-                <div class="text-center text-gray-500 py-8">Loading...</div>
+            <div id="dayModalContent" class="p-5 max-h-[60vh] overflow-y-auto scrollbar-thin">
+                <div class="text-center text-low py-8">Loading...</div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 (function() {
     const modal = document.getElementById('dayModal');
@@ -131,7 +133,7 @@
     
     function openModal(dateStr) {
         modal.classList.remove('hidden');
-        content.innerHTML = '<div class="text-center text-gray-500 py-8">Loading...</div>';
+        content.innerHTML = '<div class="text-center text-low py-8">Loading...</div>';
         
         fetch('/calendar/day/' + dateStr)
             .then(r => r.json())
@@ -140,7 +142,7 @@
                 renderDayContent(data);
             })
             .catch(err => {
-                content.innerHTML = '<div class="text-center text-red-400 py-8">Error loading data</div>';
+                content.innerHTML = '<div class="text-center text-cinnabar py-8">Error loading data</div>';
             });
     }
     
@@ -153,10 +155,10 @@
         
         if (data.mission) {
             html += `<div class="mb-4">
-                <h4 class="text-sm font-semibold text-gray-400 uppercase mb-2">🎯 Daily Mission</h4>
-                <div class="bg-gray-800 rounded-lg p-3">
+                <h4 class="text-sm font-semibold text-medium uppercase mb-2">🎯 Daily Mission</h4>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-white">${data.mission.description}</span>
+                        <span class="text-high">${data.mission.description}</span>
                         ${data.mission.is_completed ? 
                             '<span class="text-green-400 text-sm">Completed!</span>' : 
                             `<span class="text-yellow-400 text-sm">${data.mission.progress}/${data.mission.target}</span>`}
@@ -167,63 +169,48 @@
         
         if (data.tasks.length > 0) {
             html += `<div class="mb-4">
-                <h4 class="text-sm font-semibold text-gray-400 uppercase mb-2">Tasks (${data.tasks.length})</h4>
+                <h4 class="text-sm font-semibold text-medium uppercase mb-2">Tasks (${data.tasks.length})</h4>
                 <div class="space-y-2">`;
             data.tasks.forEach(task => {
-                const statusClass = task.status === 'done' ? 'bg-green-900/50 border-green-700' : 
-                                   task.status === 'in_progress' ? 'bg-blue-900/50 border-blue-700' : 
-                                   'bg-gray-800 border-gray-700';
-                html += `<div class="rounded-lg p-3 border ${statusClass}">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-white ${task.status === 'done' ? 'line-through' : ''}">${task.title}</span>
-                            ${task.description ? `<p class="text-gray-400 text-sm mt-1">${task.description}</p>` : ''}
-                        </div>
-                        ${task.status !== 'done' ? 
-                            `<button onclick="completeTask(${task.id})" class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Done</button>` : 
-                            '<span class="text-green-400 text-xs">✓</span>'}
-                    </div>
+                const statusClass = task.status === 'done' ? 'bg-green-500/10 border-green-500/30' : 
+                                   task.status === 'in_progress' ? 'bg-aqua/10 border-aqua/30' : 
+                                   'bg-white/5 border-white/10';
+                const textClass = task.status === 'done' ? 'line-through text-green-300' : 
+                                 task.status === 'in_progress' ? 'text-aqua' : 
+                                 'text-high';
+                html += `<div class="p-3 rounded-xl border ${statusClass}">
+                    <p class="${textClass}">${task.title}</p>
+                    <p class="text-xs text-low mt-1">${task.priority} priority</p>
                 </div>`;
             });
-            html += '</div></div>';
+            html += `</div></div>`;
         }
         
         if (data.leads.length > 0) {
             html += `<div class="mb-4">
-                <h4 class="text-sm font-semibold text-gray-400 uppercase mb-2">Follow-ups (${data.leads.length})</h4>
+                <h4 class="text-sm font-semibold text-medium uppercase mb-2">📞 Follow-ups (${data.leads.length})</h4>
                 <div class="space-y-2">`;
             data.leads.forEach(lead => {
-                html += `<a href="/leads/${lead.id}" class="block rounded-lg p-3 bg-yellow-900/30 border border-yellow-700/50 hover:bg-yellow-900/50 transition-colors">
-                    <div class="text-white">${lead.name}</div>
-                    ${lead.business_name ? `<div class="text-yellow-300 text-sm">${lead.business_name}</div>` : ''}
-                    <div class="text-yellow-400 text-xs capitalize mt-1">${lead.status.replace('_', ' ')}</div>
-                </a>`;
+                html += `<div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                    <a href="/leads/${lead.id}" class="text-yellow-300 hover:text-yellow-200 font-medium">${lead.name}</a>
+                    ${lead.company ? `<p class="text-xs text-medium">${lead.company}</p>` : ''}
+                </div>`;
             });
-            html += '</div></div>';
+            html += `</div></div>`;
         }
         
         if (!data.mission && data.tasks.length === 0 && data.leads.length === 0) {
-            html = '<div class="text-center text-gray-500 py-8">Nothing scheduled for this day</div>';
+            html = '<div class="text-center text-low py-8">No activities scheduled for this day.</div>';
         }
         
         content.innerHTML = html;
     }
     
-    window.completeTask = function(taskId) {
-        fetch('/calendar/task/' + taskId + '/complete', { method: 'POST' })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            });
-    };
-    
     document.querySelectorAll('.calendar-day').forEach(day => {
         day.addEventListener('click', function() {
-            const dateStr = this.dataset.date;
-            if (dateStr) {
-                openModal(dateStr);
+            const date = this.dataset.date;
+            if (date) {
+                openModal(date);
             }
         });
     });
