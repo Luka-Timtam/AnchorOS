@@ -59,51 +59,83 @@
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
         }
         
-        .glass-nav {
-            background: rgba(255, 255, 255, 0.08);
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.10);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
         }
         
-        .nav-item {
+        .sidebar-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 10px;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
             color: rgba(255, 253, 247, 0.7);
             transition: all 0.2s ease;
             font-weight: 500;
             font-size: 0.875rem;
+            margin: 0.25rem 0;
+            position: relative;
         }
         
-        .nav-item:hover {
+        .sidebar-item:hover {
             color: #FFFDF7;
             background: rgba(255, 255, 255, 0.08);
         }
         
-        .nav-item.active {
+        .sidebar-item:hover svg {
+            filter: drop-shadow(0 0 6px rgba(49, 224, 247, 0.4));
+        }
+        
+        .sidebar-item.active {
             color: #31E0F7;
-            background: rgba(49, 224, 247, 0.12);
-            box-shadow: 0 0 12px rgba(49, 224, 247, 0.2);
+            background: rgba(49, 224, 247, 0.22);
+            border-left: 3px solid #31E0F7;
+            padding-left: calc(1rem - 3px);
         }
         
-        .nav-item svg {
-            width: 18px;
-            height: 18px;
+        .sidebar-item svg {
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
+            transition: filter 0.2s ease;
         }
         
-        .nav-item span {
-            display: none;
+        .sidebar-item .nav-label {
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.2s ease, width 0.2s ease;
         }
         
-        @media (min-width: 1280px) {
-            .nav-item span {
-                display: inline;
-            }
+        .sidebar-collapsed .sidebar-item .nav-label {
+            opacity: 0;
+            width: 0;
+        }
+        
+        .sidebar-collapsed .sidebar-item {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+        
+        .sidebar-collapsed .sidebar-item.active {
+            padding-left: 0.75rem;
+            border-left: 3px solid #31E0F7;
+        }
+        
+        .sidebar-collapsed:hover .sidebar-item .nav-label {
+            opacity: 1;
+            width: auto;
+        }
+        
+        .sidebar-collapsed:hover .sidebar-item {
+            justify-content: flex-start;
+            padding: 0.75rem 1rem;
+        }
+        
+        .sidebar-collapsed:hover .sidebar-item.active {
+            padding-left: calc(1rem - 3px);
         }
         
         .btn-primary {
@@ -358,123 +390,236 @@
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.25);
         }
+        
+        #sidebar {
+            width: 260px;
+            transition: width 0.25s ease;
+        }
+        
+        #sidebar.sidebar-collapsed {
+            width: 80px;
+        }
+        
+        #sidebar.sidebar-collapsed:hover {
+            width: 260px;
+        }
+        
+        #mainContent {
+            margin-left: 260px;
+            transition: margin-left 0.25s ease;
+        }
+        
+        #mainContent.content-collapsed {
+            margin-left: 80px;
+        }
+        
+        .sidebar-search-input {
+            transition: opacity 0.2s ease, width 0.2s ease;
+        }
+        
+        .sidebar-collapsed .sidebar-search-input {
+            opacity: 0;
+            width: 0;
+            padding: 0;
+        }
+        
+        .sidebar-collapsed:hover .sidebar-search-input {
+            opacity: 1;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .sidebar-collapsed .search-icon-only {
+            display: flex;
+        }
+        
+        .sidebar-collapsed:hover .search-icon-only {
+            display: none;
+        }
+        
+        .search-icon-only {
+            display: none;
+        }
+        
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 0.5rem;
+            color: rgba(255, 253, 247, 0.7);
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #FFFDF7;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.25s ease;
+        }
+        
+        .sidebar-collapsed .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .sidebar-collapsed:hover .toggle-icon {
+            transform: rotate(0deg);
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -280px;
+                width: 280px !important;
+                z-index: 50;
+                height: 100vh;
+            }
+            
+            #sidebar.mobile-open {
+                left: 0;
+            }
+            
+            #mainContent {
+                margin-left: 0 !important;
+            }
+            
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.6);
+                z-index: 40;
+            }
+            
+            .mobile-overlay.active {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen text-porcelain">
-    <nav class="glass-nav sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex justify-between h-14">
-                <div class="flex items-center gap-2">
-                    <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-2 mr-4">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-aqua to-cyan-400 flex items-center justify-center">
-                            <span class="text-graphite font-bold text-sm">C</span>
-                        </div>
-                        <span class="font-bold text-lg text-high hidden sm:block">CRM</span>
-                    </a>
-                    <div class="hidden md:flex items-center gap-1">
-                        <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                            <span>Dashboard</span>
-                        </a>
-                        <a href="{{ url_for('leads.index') }}" class="nav-item {% if 'leads' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span>Leads</span>
-                        </a>
-                        <a href="{{ url_for('clients.index') }}" class="nav-item {% if 'clients' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                            <span>Clients</span>
-                        </a>
-                        <a href="{{ url_for('outreach.index') }}" class="nav-item {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                            <span>Outreach</span>
-                        </a>
-                        <a href="{{ url_for('tasks.index') }}" class="nav-item {% if 'tasks' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                            <span>Tasks</span>
-                        </a>
-                        <a href="{{ url_for('analytics.index') }}" class="nav-item {% if 'analytics' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                            <span>Analytics</span>
-                        </a>
-                        <a href="{{ url_for('outreach_templates.index') }}" class="nav-item {% if 'outreach_templates' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <span>Templates</span>
-                        </a>
-                        <a href="{{ url_for('gamification.index') }}" class="nav-item {% if 'gamification' in request.endpoint or 'goals' in request.endpoint or 'rewards' in request.endpoint or 'missions' in request.endpoint or 'boss' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span>Game</span>
-                        </a>
-                        <a href="{{ url_for('notes.index') }}" class="nav-item {% if 'notes' in request.endpoint %}active{% endif %}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            <span>Notes</span>
-                        </a>
-                    </div>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <button id="mobileMenuBtn" class="fixed top-4 left-4 z-50 md:hidden toggle-btn">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+    
+    <aside id="sidebar" class="glass-sidebar fixed left-0 top-0 h-screen z-40 flex flex-col">
+        <div class="p-5">
+            <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-aqua to-cyan-400 flex items-center justify-center flex-shrink-0">
+                    <span class="text-graphite font-bold text-lg">C</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="{{ url_for('dashboard.index') }}" id="navbarFocusTimer" class="hidden px-3 py-1.5 rounded-full bg-gradient-to-r from-aqua to-cyan-400 text-graphite font-semibold items-center gap-2 transition-all text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span id="navbarFocusTimerText" class="font-mono font-bold">00:00</span>
-                    </a>
-                    <button type="button" id="openSearchBtn" class="search-pill px-3 py-1.5 flex items-center gap-2 text-medium hover:text-high" title="Search (Ctrl+K)">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        <span class="hidden sm:inline text-xs text-low">Ctrl+K</span>
+                <span class="nav-label font-bold text-xl text-high">CRM</span>
+            </a>
+        </div>
+        
+        <div class="px-4 mb-4">
+            <div class="search-pill flex items-center">
+                <button type="button" id="sidebarSearchBtn" class="search-icon-only w-full p-2.5 flex justify-center text-medium hover:text-high">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+                <div class="sidebar-search-input flex items-center gap-2 px-3 py-2 w-full">
+                    <svg class="w-4 h-4 text-medium flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <button type="button" id="openSearchBtn" class="flex-1 text-left text-sm text-low hover:text-medium">
+                        Search... <span class="text-xs opacity-60">Ctrl+K</span>
                     </button>
-                    <a href="{{ url_for('settings.index') }}" class="nav-item {% if 'settings' in request.endpoint %}active{% endif %}" title="Settings">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </a>
-                    <a href="{{ url_for('auth.logout') }}" class="nav-item" title="Logout">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
-                    </a>
                 </div>
             </div>
         </div>
-        <div class="md:hidden px-4 pb-3 pt-2 flex flex-wrap gap-2 border-t border-white/5">
-            <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"></path></svg>
-            </a>
-            <a href="{{ url_for('leads.index') }}" class="nav-item {% if 'leads' in request.endpoint %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            </a>
-            <a href="{{ url_for('clients.index') }}" class="nav-item {% if 'clients' in request.endpoint %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-            </a>
-            <a href="{{ url_for('outreach.index') }}" class="nav-item {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-            </a>
-            <a href="{{ url_for('tasks.index') }}" class="nav-item {% if 'tasks' in request.endpoint %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-            </a>
-            <a href="{{ url_for('gamification.index') }}" class="nav-item {% if 'gamification' in request.endpoint or 'goals' in request.endpoint or 'rewards' in request.endpoint or 'missions' in request.endpoint or 'boss' in request.endpoint %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            </a>
-            <a href="{{ url_for('notes.index') }}" class="nav-item {% if 'notes' in request.endpoint %}active{% endif %}">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-            </a>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="mb-6 p-4 {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
         
-        {% block content %}{% endblock %}
-    </main>
+        <nav class="flex-1 px-3 overflow-y-auto scrollbar-thin">
+            <a href="{{ url_for('dashboard.index') }}" class="sidebar-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="{{ url_for('leads.index') }}" class="sidebar-item {% if 'leads' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="nav-label">Leads</span>
+            </a>
+            <a href="{{ url_for('clients.index') }}" class="sidebar-item {% if 'clients' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <span class="nav-label">Clients</span>
+            </a>
+            <a href="{{ url_for('outreach.index') }}" class="sidebar-item {% if 'outreach' in request.endpoint and 'outreach_templates' not in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                <span class="nav-label">Outreach</span>
+            </a>
+            <a href="{{ url_for('tasks.index') }}" class="sidebar-item {% if 'tasks' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <span class="nav-label">Tasks</span>
+            </a>
+            <a href="{{ url_for('analytics.index') }}" class="sidebar-item {% if 'analytics' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span class="nav-label">Analytics</span>
+            </a>
+            <a href="{{ url_for('outreach_templates.index') }}" class="sidebar-item {% if 'outreach_templates' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <span class="nav-label">Templates</span>
+            </a>
+            <a href="{{ url_for('gamification.index') }}" class="sidebar-item {% if 'gamification' in request.endpoint or 'goals' in request.endpoint or 'rewards' in request.endpoint or 'missions' in request.endpoint or 'boss' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                <span class="nav-label">Gamification</span>
+            </a>
+            <a href="{{ url_for('notes.index') }}" class="sidebar-item {% if 'notes' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="nav-label">Notes</span>
+            </a>
+        </nav>
+        
+        <div class="px-3 pb-3 border-t border-white/10 pt-3 mt-auto">
+            <a href="{{ url_for('dashboard.index') }}" id="sidebarFocusTimer" class="hidden mb-2 px-3 py-2 rounded-xl bg-gradient-to-r from-aqua to-cyan-400 text-graphite font-semibold items-center gap-2 transition-all text-sm">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="sidebarFocusTimerText" class="nav-label font-mono font-bold">00:00</span>
+            </a>
+            
+            <a href="{{ url_for('settings.index') }}" class="sidebar-item {% if 'settings' in request.endpoint %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <span class="nav-label">Settings</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-item text-cinnabar hover:text-cinnabar">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span class="nav-label">Logout</span>
+            </a>
+            
+            <button id="toggleSidebar" class="toggle-btn w-full mt-3 flex items-center justify-center gap-2">
+                <svg class="toggle-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                </svg>
+                <span class="nav-label text-sm">Collapse</span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="mainContent" class="min-h-screen">
+        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-6 p-4 {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
     <div id="searchModal" class="fixed inset-0 z-50 hidden">
         <div class="fixed inset-0 bg-black/70 backdrop-blur-md" id="searchBackdrop"></div>
@@ -511,10 +656,59 @@
 
     <script>
     (function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        const STORAGE_KEY = 'sidebar_expanded';
+        
+        function isExpanded() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored === null ? true : stored === 'true';
+        }
+        
+        function setExpanded(expanded) {
+            localStorage.setItem(STORAGE_KEY, expanded);
+            if (expanded) {
+                sidebar.classList.remove('sidebar-collapsed');
+                mainContent.classList.remove('content-collapsed');
+            } else {
+                sidebar.classList.add('sidebar-collapsed');
+                mainContent.classList.add('content-collapsed');
+            }
+        }
+        
+        if (window.innerWidth >= 768) {
+            setExpanded(isExpanded());
+        }
+        
+        toggleBtn.addEventListener('click', function() {
+            setExpanded(!isExpanded());
+        });
+        
+        if (mobileMenuBtn && mobileOverlay) {
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('mobile-open');
+                mobileOverlay.classList.toggle('active');
+            });
+            
+            mobileOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('active');
+            });
+        }
+    })();
+    </script>
+
+    <script>
+    (function() {
         const modal = document.getElementById('searchModal');
         const backdrop = document.getElementById('searchBackdrop');
         const input = document.getElementById('searchInput');
         const openBtn = document.getElementById('openSearchBtn');
+        const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
         const resultsEmpty = document.getElementById('searchEmpty');
         const resultsLoading = document.getElementById('searchLoading');
         const resultsContent = document.getElementById('searchResultsContent');
@@ -657,6 +851,10 @@
             openBtn.addEventListener('click', openModal);
         }
         
+        if (sidebarSearchBtn) {
+            sidebarSearchBtn.addEventListener('click', openModal);
+        }
+        
         backdrop.addEventListener('click', closeModal);
         
         document.addEventListener('keydown', function(e) {
@@ -710,8 +908,8 @@
         }
         
         function updateGlobalNavbarTimer(active, seconds) {
-            const navTimer = document.getElementById('navbarFocusTimer');
-            const navTimerText = document.getElementById('navbarFocusTimerText');
+            const navTimer = document.getElementById('sidebarFocusTimer');
+            const navTimerText = document.getElementById('sidebarFocusTimerText');
             if (navTimer && navTimerText) {
                 if (active) {
                     navTimer.classList.remove('hidden');

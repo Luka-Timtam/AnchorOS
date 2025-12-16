@@ -1,0 +1,124 @@
+Convert the current horizontal top navigation bar into a vertical left-side collapsible sidebar. 
+Do NOT change any backend routes or page logic. This is a frontend structural and style update only.
+
+====================================
+SIDEBAR LAYOUT
+====================================
+
+1. Move the entire navigation into a fixed left sidebar:
+   - width: 260px when expanded
+   - width: 80px when collapsed
+   - height: 100vh
+   - position: fixed; left: 0; top: 0
+   - z-index: high enough to overlay content
+   - main content area should shift right based on sidebar width
+
+2. Sidebar should use the existing glassmorphic aesthetic:
+   - background: rgba(255,255,255,0.10)
+   - backdrop-filter: blur(18px)
+   - border-right: 1px solid rgba(255,255,255,0.15)
+   - padding-top: 20px
+
+3. Navigation items:
+   - each nav item is a horizontal glass button inside the sidebar
+   - icon on the left, label on the right (hidden when collapsed)
+   - use brand colours for active states:
+       active background: rgba(49,224,247,0.22)
+       active border-left: 3px solid #31E0F7
+       active text/icon: #31E0F7
+   - hover: slightly brighter glass layer + icon glow
+
+4. Replace textual navigation with:
+   - an icon for each page
+   - text appears only when expanded OR when hovering in collapsed mode
+
+Icons to assign:
+   Dashboard → grid icon
+   Leads → users icon
+   Clients → briefcase icon
+   Outreach → send icon
+   Tasks → check-square icon
+   Analytics → bar chart icon
+   Templates → layers icon
+   Gamification → trophy icon
+   Notes → notebook icon
+   Search → magnifying glass icon
+   Settings → cog icon
+   Logout → power icon
+
+Use simple SVGs or Heroicons/Feather icons depending on what you already use.
+
+====================================
+COLLAPSE / EXPAND BEHAVIOR
+====================================
+
+Add a collapse/expand toggle button at the top or bottom of the sidebar:
+
+- When collapsed:
+    - width shrinks to ~80px
+    - labels fade out & hide
+    - only icons remain centered
+    - sidebar should animate smoothly (200–300ms)
+
+- On hover over the sidebar while collapsed:
+    - temporarily expand (like Arc Browser)
+    - labels appear
+    - on mouseleave, collapse again
+
+- Expanded state should persist via localStorage:
+    - "sidebar_expanded": true/false
+
+====================================
+CONTENT AREA ADJUSTMENT
+====================================
+
+All page content must shift to the right:
+
+- When expanded, content-left-margin = 260px
+- When collapsed, margin-left = 80px
+
+This should NOT alter any child layout on the pages—  
+just add a wrapper around main content for consistent padding.
+
+====================================
+SEARCH BAR & USER CONTROLS
+====================================
+
+Move the search bar and user avatar/menu into the sidebar as well.
+
+Placement:
+   - Search box near the top (glass pill style)
+   - Avatar + settings + logout grouped at bottom
+
+Search bar:
+   - collapsed mode: display just a search icon
+   - expanded mode: show full search input
+
+====================================
+MOBILE RESPONSIVE BEHAVIOR
+====================================
+
+On mobile:
+   - Sidebar becomes hidden behind a hamburger menu
+   - Tapping hamburger slides the sidebar out with the same glass style
+   - Sidebar covers the content (no margin shift)
+
+====================================
+NON-BREAKING REQUIREMENTS
+====================================
+
+DO NOT:
+- change the route URLs
+- change widget order or dashboard layout
+- alter any backend files
+- modify page content structure except for margin-left to accommodate sidebar
+- remove or rename any template files
+
+ONLY modify:
+- base template layout
+- navbar HTML
+- CSS/JS needed for sidebar expand/collapse behavior
+
+====================================
+END OF PROMPT
+====================================

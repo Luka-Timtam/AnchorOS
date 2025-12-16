@@ -39,11 +39,20 @@ Dark glassmorphic design with modern aesthetics:
 
 **UI Components:**
 - `.glass` / `.glass-card` - Frosted glass panels with backdrop blur and white/10 borders
-- `.glass-nav` - Floating navigation with blur effects
+- `.glass-sidebar` - Fixed left sidebar with glassmorphic styling (260px expanded, 80px collapsed)
+- `.sidebar-item` - Navigation items with active states (aqua left border + background)
 - `.btn-primary` - Aqua gradient buttons with glow
 - `.input-glass` / `.select-glass` - Styled form inputs
 - `.pill-aqua` / `.pill-success` / `.pill-warning` - Status indicators
 - `.progress-bar-aqua` / `.progress-bar-cinnabar` - Progress bars
+
+**Sidebar Navigation (December 2025):**
+- Vertical left-side collapsible sidebar replacing horizontal top nav
+- 260px width when expanded, 80px when collapsed
+- Hover-to-expand when collapsed (Arc Browser style)
+- State persists via localStorage (`sidebar_expanded`)
+- Mobile: hamburger menu slides out sidebar overlay
+- Contains: Logo, Search, all nav items, Focus Timer, Settings, Logout, Collapse toggle
 
 **Typography:**
 - Inter font family from Google Fonts
