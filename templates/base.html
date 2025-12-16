@@ -392,53 +392,63 @@
         }
         
         #sidebar {
-            width: 260px;
+            width: 80px;
             transition: width 0.25s ease;
         }
         
-        #sidebar.sidebar-collapsed {
-            width: 80px;
-        }
-        
-        #sidebar.sidebar-collapsed:hover {
+        #sidebar:hover {
             width: 260px;
         }
         
         #mainContent {
-            margin-left: 260px;
+            margin-left: 80px;
             transition: margin-left 0.25s ease;
         }
         
-        #mainContent.content-collapsed {
-            margin-left: 80px;
-        }
-        
-        .sidebar-search-input {
+        .nav-label {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
             transition: opacity 0.2s ease, width 0.2s ease;
         }
         
-        .sidebar-collapsed .sidebar-search-input {
+        #sidebar:hover .nav-label {
+            opacity: 1;
+            width: auto;
+        }
+        
+        .sidebar-item {
+            justify-content: center;
+        }
+        
+        #sidebar:hover .sidebar-item {
+            justify-content: flex-start;
+        }
+        
+        .sidebar-search-btn {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 0.625rem;
+            transition: all 0.2s ease;
+        }
+        
+        #sidebar:hover .sidebar-search-btn {
+            justify-content: flex-start;
+            padding: 0.625rem 0.75rem;
+        }
+        
+        .search-text {
             opacity: 0;
             width: 0;
-            padding: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease, width 0.2s ease;
         }
         
-        .sidebar-collapsed:hover .sidebar-search-input {
+        #sidebar:hover .search-text {
             opacity: 1;
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-        }
-        
-        .sidebar-collapsed .search-icon-only {
-            display: flex;
-        }
-        
-        .sidebar-collapsed:hover .search-icon-only {
-            display: none;
-        }
-        
-        .search-icon-only {
-            display: none;
+            width: auto;
+            margin-left: 0.5rem;
         }
         
         .toggle-btn {
@@ -453,18 +463,6 @@
         .toggle-btn:hover {
             background: rgba(255, 255, 255, 0.12);
             color: #FFFDF7;
-        }
-        
-        .toggle-icon {
-            transition: transform 0.25s ease;
-        }
-        
-        .sidebar-collapsed .toggle-icon {
-            transform: rotate(180deg);
-        }
-        
-        .sidebar-collapsed:hover .toggle-icon {
-            transform: rotate(0deg);
         }
         
         @media (max-width: 768px) {
@@ -518,21 +516,12 @@
         </div>
         
         <div class="px-4 mb-4">
-            <div class="search-pill flex items-center">
-                <button type="button" id="sidebarSearchBtn" class="search-icon-only w-full p-2.5 flex justify-center text-medium hover:text-high">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                </button>
-                <div class="sidebar-search-input flex items-center gap-2 px-3 py-2 w-full">
-                    <svg class="w-4 h-4 text-medium flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <button type="button" id="openSearchBtn" class="flex-1 text-left text-sm text-low hover:text-medium">
-                        Search... <span class="text-xs opacity-60">Ctrl+K</span>
-                    </button>
-                </div>
-            </div>
+            <button type="button" id="openSearchBtn" class="search-pill sidebar-search-btn text-medium hover:text-high hover:bg-white/5">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <span class="search-text text-sm text-left">Search... <span class="text-xs opacity-60">Ctrl+K</span></span>
+            </button>
         </div>
         
         <nav class="flex-1 px-3 overflow-y-auto scrollbar-thin">
@@ -595,13 +584,6 @@
                 </svg>
                 <span class="nav-label">Logout</span>
             </a>
-            
-            <button id="toggleSidebar" class="toggle-btn w-full mt-3 flex items-center justify-center gap-2">
-                <svg class="toggle-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
-                </svg>
-                <span class="nav-label text-sm">Collapse</span>
-            </button>
         </div>
     </aside>
 
@@ -657,36 +639,8 @@
     <script>
     (function() {
         const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const toggleBtn = document.getElementById('toggleSidebar');
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileOverlay = document.getElementById('mobileOverlay');
-        
-        const STORAGE_KEY = 'sidebar_expanded';
-        
-        function isExpanded() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            return stored === null ? true : stored === 'true';
-        }
-        
-        function setExpanded(expanded) {
-            localStorage.setItem(STORAGE_KEY, expanded);
-            if (expanded) {
-                sidebar.classList.remove('sidebar-collapsed');
-                mainContent.classList.remove('content-collapsed');
-            } else {
-                sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.add('content-collapsed');
-            }
-        }
-        
-        if (window.innerWidth >= 768) {
-            setExpanded(isExpanded());
-        }
-        
-        toggleBtn.addEventListener('click', function() {
-            setExpanded(!isExpanded());
-        });
         
         if (mobileMenuBtn && mobileOverlay) {
             mobileMenuBtn.addEventListener('click', function() {
@@ -708,7 +662,6 @@
         const backdrop = document.getElementById('searchBackdrop');
         const input = document.getElementById('searchInput');
         const openBtn = document.getElementById('openSearchBtn');
-        const sidebarSearchBtn = document.getElementById('sidebarSearchBtn');
         const resultsEmpty = document.getElementById('searchEmpty');
         const resultsLoading = document.getElementById('searchLoading');
         const resultsContent = document.getElementById('searchResultsContent');
@@ -849,10 +802,6 @@
         
         if (openBtn) {
             openBtn.addEventListener('click', openModal);
-        }
-        
-        if (sidebarSearchBtn) {
-            sidebarSearchBtn.addEventListener('click', openModal);
         }
         
         backdrop.addEventListener('click', closeModal);

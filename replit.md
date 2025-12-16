@@ -47,12 +47,11 @@ Dark glassmorphic design with modern aesthetics:
 - `.progress-bar-aqua` / `.progress-bar-cinnabar` - Progress bars
 
 **Sidebar Navigation (December 2025):**
-- Vertical left-side collapsible sidebar replacing horizontal top nav
-- 260px width when expanded, 80px when collapsed
-- Hover-to-expand when collapsed (Arc Browser style)
-- State persists via localStorage (`sidebar_expanded`)
+- Vertical left-side auto-collapsing sidebar replacing horizontal top nav
+- 80px width collapsed, 260px when hovered (no toggle button)
+- Hover-to-expand: sidebar expands when mouse enters, collapses when mouse leaves
 - Mobile: hamburger menu slides out sidebar overlay
-- Contains: Logo, Search, all nav items, Focus Timer, Settings, Logout, Collapse toggle
+- Contains: Logo, Search button, all nav items, Focus Timer, Settings, Logout
 
 **Typography:**
 - Inter font family from Google Fonts
