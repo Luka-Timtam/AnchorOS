@@ -24,33 +24,48 @@
         </div>
         <h3 class="text-lg font-semibold text-high">Generate New Review</h3>
     </div>
-    {% if available_months %}
-    <form method="POST" action="{{ url_for('monthly_review.generate') }}" class="flex flex-col sm:flex-row gap-4 items-end" data-swup-form>
-        <div class="flex-1 w-full">
-            <label class="block text-sm font-medium text-medium mb-2">Select Month</label>
-            <select name="year_month" class="select-glass w-full">
-                {% for month in available_months %}
-                <option value="{{ month.value }}">{{ month.label }}</option>
-                {% endfor %}
-            </select>
+    
+    <form method="POST" action="{{ url_for('monthly_review.generate') }}" class="flex flex-col sm:flex-row gap-4 items-end" data-swup-form id="reviewForm">
+        <div class="flex gap-3 flex-1">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-medium mb-2">Month</label>
+                <select name="month" id="monthSelect" class="select-glass w-full">
+                    {% for month in months %}
+                    <option value="{{ month.value }}" {% if month.value == current_month %}selected{% endif %}>{{ month.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="w-32">
+                <label class="block text-sm font-medium text-medium mb-2">Year</label>
+                <select name="year" id="yearSelect" class="select-glass w-full">
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <button type="submit" class="btn-primary whitespace-nowrap">
+        <input type="hidden" name="year_month" id="yearMonthInput">
+        <button type="submit" id="generateBtn" class="btn-primary whitespace-nowrap">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             Generate Review
         </button>
     </form>
-    {% else %}
-    <div class="text-center py-6">
-        <div class="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
-            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-        </div>
-        <p class="text-medium">All available months have been reviewed!</p>
+    
+    <div id="existsWarning" class="hidden mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-400 text-sm flex items-center gap-2">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <span>A review for this month already exists. Generating will replace the existing review.</span>
     </div>
-    {% endif %}
+    
+    <div id="futureWarning" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm flex items-center gap-2">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Cannot generate a review for a future month.</span>
+    </div>
 </div>
 
 <div class="glass-card p-6">
@@ -138,8 +153,59 @@
             </svg>
         </div>
         <h4 class="text-lg font-semibold text-high mb-2">No Reviews Yet</h4>
-        <p class="text-medium">Select a month above to generate your first performance review!</p>
+        <p class="text-medium">Select a month and year above to generate your first performance review!</p>
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    const existingMonths = {{ existing_months | tojson }};
+    const currentYear = {{ current_year }};
+    const currentMonth = {{ current_month }};
+    
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const yearMonthInput = document.getElementById('yearMonthInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const existsWarning = document.getElementById('existsWarning');
+    const futureWarning = document.getElementById('futureWarning');
+    const reviewForm = document.getElementById('reviewForm');
+    
+    function updateYearMonth() {
+        const month = monthSelect.value.padStart(2, '0');
+        const year = yearSelect.value;
+        const yearMonth = `${year}-${month}`;
+        yearMonthInput.value = yearMonth;
+        
+        const selectedYear = parseInt(year);
+        const selectedMonth = parseInt(monthSelect.value);
+        
+        const isFuture = (selectedYear > currentYear) || 
+                         (selectedYear === currentYear && selectedMonth > currentMonth);
+        
+        const exists = existingMonths.includes(yearMonth);
+        
+        existsWarning.classList.toggle('hidden', !exists || isFuture);
+        futureWarning.classList.toggle('hidden', !isFuture);
+        generateBtn.disabled = isFuture;
+        generateBtn.classList.toggle('opacity-50', isFuture);
+        generateBtn.classList.toggle('cursor-not-allowed', isFuture);
+    }
+    
+    monthSelect.addEventListener('change', updateYearMonth);
+    yearSelect.addEventListener('change', updateYearMonth);
+    
+    updateYearMonth();
+    
+    reviewForm.addEventListener('submit', function(e) {
+        if (generateBtn.disabled) {
+            e.preventDefault();
+            return false;
+        }
+    });
+})();
+</script>
 {% endblock %}

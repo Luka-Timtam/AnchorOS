@@ -217,30 +217,81 @@ def generate_review_content(year_month):
     return content
 
 
+def auto_generate_monthly_review_if_needed():
+    """Auto-generate a review on the last day of the month if not already generated."""
+    today = date.today()
+    
+    if today.month == 12:
+        next_month_first = date(today.year + 1, 1, 1)
+    else:
+        next_month_first = date(today.year, today.month + 1, 1)
+    
+    last_day_of_month = next_month_first - timedelta(days=1)
+    
+    if today == last_day_of_month:
+        year_month = today.strftime('%Y-%m')
+        existing_review = MonthlyReview.get_review(year_month)
+        
+        if not existing_review:
+            try:
+                content = generate_review_content(year_month)
+                MonthlyReview.save_review(year_month, content)
+                return year_month
+            except Exception:
+                pass
+    
+    return None
+
+
+def get_newly_generated_review():
+    """Check if a review was auto-generated today."""
+    today = date.today()
+    
+    if today.month == 12:
+        next_month_first = date(today.year + 1, 1, 1)
+    else:
+        next_month_first = date(today.year, today.month + 1, 1)
+    
+    last_day_of_month = next_month_first - timedelta(days=1)
+    
+    if today == last_day_of_month:
+        year_month = today.strftime('%Y-%m')
+        review = MonthlyReview.get_review(year_month)
+        if review and review.generated_at.date() == today:
+            return {
+                'year_month': year_month,
+                'label': datetime.strptime(year_month, '%Y-%m').strftime('%B %Y')
+            }
+    
+    return None
+
+
 @monthly_review_bp.route('/monthly-review')
 def index():
+    auto_generate_monthly_review_if_needed()
+    
     reviews = MonthlyReview.get_all_reviews()
     existing_months = {r.year_month for r in reviews}
     
     today = date.today()
-    available_months = []
+    current_year = today.year
+    current_month = today.month
     
-    for i in range(24):
-        year = today.year
-        month = today.month - i
-        
-        while month <= 0:
-            month += 12
-            year -= 1
-        
-        month_date = date(year, month, 1)
-        year_month = month_date.strftime('%Y-%m')
-        
-        if year_month not in existing_months:
-            available_months.append({
-                'value': year_month,
-                'label': month_date.strftime('%B %Y')
-            })
+    years = list(range(current_year, current_year - 3, -1))
+    months = [
+        {'value': 1, 'label': 'January'},
+        {'value': 2, 'label': 'February'},
+        {'value': 3, 'label': 'March'},
+        {'value': 4, 'label': 'April'},
+        {'value': 5, 'label': 'May'},
+        {'value': 6, 'label': 'June'},
+        {'value': 7, 'label': 'July'},
+        {'value': 8, 'label': 'August'},
+        {'value': 9, 'label': 'September'},
+        {'value': 10, 'label': 'October'},
+        {'value': 11, 'label': 'November'},
+        {'value': 12, 'label': 'December'},
+    ]
     
     reviews_with_content = []
     for review in reviews:
@@ -254,7 +305,11 @@ def index():
     
     return render_template('monthly_review/index.html',
                          reviews=reviews_with_content,
-                         available_months=available_months)
+                         years=years,
+                         months=months,
+                         current_year=current_year,
+                         current_month=current_month,
+                         existing_months=list(existing_months))
 
 
 @monthly_review_bp.route('/monthly-review/generate', methods=['POST'])

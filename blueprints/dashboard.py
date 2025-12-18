@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
+from blueprints.monthly_review import auto_generate_monthly_review_if_needed, get_newly_generated_review
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -190,6 +191,9 @@ def index():
         RevenueReward.unlocked_at >= seven_days_ago
     ).order_by(RevenueReward.target_revenue).all()
     
+    auto_generate_monthly_review_if_needed()
+    new_monthly_review = get_newly_generated_review()
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -228,7 +232,8 @@ def index():
         widget_order=widget_order,
         widget_active=widget_active,
         widget_names=widget_names,
-        revenue_notifications=revenue_notifications
+        revenue_notifications=revenue_notifications,
+        new_monthly_review=new_monthly_review
     )
 
 
