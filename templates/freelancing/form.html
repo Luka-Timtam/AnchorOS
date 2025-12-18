@@ -13,7 +13,7 @@
         <h1 class="text-3xl font-bold text-high">{{ 'Edit' if job else 'Add' }} Freelance Job</h1>
     </div>
     
-    <form method="POST" class="glass-card p-6">
+    <form method="POST" class="glass-card p-7 rounded-2xl">
         <div class="space-y-6">
             <div>
                 <label for="title" class="block text-sm font-medium text-high mb-2">Job Title *</label>
@@ -22,13 +22,13 @@
                        name="title" 
                        value="{{ job.title if job else '' }}"
                        required
-                       class="input-glass w-full"
+                       class="input-glass w-full rounded-xl"
                        placeholder="e.g., Wedding Photography Session">
             </div>
             
             <div>
                 <label for="category" class="block text-sm font-medium text-high mb-2">Category</label>
-                <select id="category" name="category" class="select-glass w-full">
+                <select id="category" name="category" class="select-glass w-full rounded-xl">
                     {% for value, label in categories %}
                     <option value="{{ value }}" {% if job and job.category == value %}selected{% elif not job and value == 'other' %}selected{% endif %}>
                         {{ label }}
@@ -47,7 +47,7 @@
                            required
                            step="0.01"
                            min="0"
-                           class="input-glass w-full"
+                           class="input-glass w-full rounded-xl"
                            placeholder="0.00">
                 </div>
                 
@@ -57,7 +57,7 @@
                            id="date_completed" 
                            name="date_completed" 
                            value="{{ job.date_completed.isoformat() if job and job.date_completed else '' }}"
-                           class="input-glass w-full">
+                           class="input-glass w-full rounded-xl">
                 </div>
             </div>
             
@@ -67,7 +67,7 @@
                        id="client_name" 
                        name="client_name" 
                        value="{{ job.client_name if job else '' }}"
-                       class="input-glass w-full"
+                       class="input-glass w-full rounded-xl"
                        placeholder="e.g., John Smith">
             </div>
             
@@ -76,7 +76,7 @@
                 <textarea id="description" 
                           name="description" 
                           rows="3"
-                          class="input-glass w-full"
+                          class="input-glass w-full rounded-xl"
                           placeholder="Brief description of the work done...">{{ job.description if job else '' }}</textarea>
             </div>
             
@@ -85,16 +85,16 @@
                 <textarea id="notes" 
                           name="notes" 
                           rows="2"
-                          class="input-glass w-full"
+                          class="input-glass w-full rounded-xl"
                           placeholder="Any additional notes...">{{ job.notes if job else '' }}</textarea>
             </div>
         </div>
         
         <div class="mt-8 flex items-center gap-4">
-            <button type="submit" class="btn-primary px-6 py-2.5">
+            <button type="submit" class="btn-primary px-6 py-2.5 rounded-xl">
                 {{ 'Save Changes' if job else 'Add Job' }}
             </button>
-            <a href="{{ url_for('freelancing.index') }}" class="btn-secondary px-6 py-2.5">
+            <a href="{{ url_for('freelancing.index') }}" class="btn-secondary px-6 py-2.5 rounded-xl">
                 Cancel
             </a>
         </div>
