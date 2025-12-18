@@ -300,7 +300,10 @@ window.updateTaskStatus = function(taskId, newStatus, selectEl) {
     
     fetch('/tasks/' + taskId + '/update-status', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
     })
     .then(function(response) {
         if (response.ok) {

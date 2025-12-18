@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import db, Task, Lead, Client, ActivityLog
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
@@ -119,9 +119,13 @@ def update_status(id):
             add_tokens(TOKEN_RULES['task_done'], 'Task completed')
             update_mission_progress('complete_tasks')
             ActivityLog.log_activity('task_completed', f'Completed task: {task.title}', task.id, 'task')
-            flash('Task completed! +8 XP, +1 token', 'success')
+            message = 'Task completed! +8 XP, +1 token'
         else:
-            flash('Task status updated!', 'success')
+            message = 'Task status updated!'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': message})
+    
     return redirect(request.referrer or url_for('tasks.index'))
 
 @tasks_bp.route('/<int:id>/delete', methods=['POST'])
