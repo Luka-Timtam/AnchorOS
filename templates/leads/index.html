@@ -13,13 +13,18 @@
     </a>
 </div>
 
-{% if current_next_action %}
-<div class="glass-card p-4 mb-6 border-l-4 {% if current_next_action == 'overdue' %}border-cinnabar{% else %}border-yellow-400{% endif %}">
+{% if current_next_action or current_status or current_niche or current_source or current_search %}
+<div class="glass-card p-4 mb-6 border-l-4 {% if current_next_action == 'overdue' %}border-cinnabar{% else %}border-cinnabar{% endif %}">
     <div class="flex justify-between items-center">
-        <span class="font-medium {% if current_next_action == 'overdue' %}text-cinnabar{% else %}text-yellow-400{% endif %}">
-            {% if current_next_action == 'overdue' %}Showing Overdue Follow-Ups{% else %}Showing Follow-Ups Due Today{% endif %}
+        <span class="font-medium text-high">
+            Filters Applied:
+            {% if current_next_action == 'overdue' %}Overdue Follow-Ups{% elif current_next_action == 'today' %}Due Today{% endif %}
+            {% if current_status %}{% if current_next_action %}, {% endif %}Status: {{ current_status.replace('_', ' ').title() }}{% endif %}
+            {% if current_niche %}{% if current_next_action or current_status %}, {% endif %}Niche: {{ current_niche }}{% endif %}
+            {% if current_source %}{% if current_next_action or current_status or current_niche %}, {% endif %}Source: {{ current_source }}{% endif %}
+            {% if current_search %}{% if current_next_action or current_status or current_niche or current_source %}, {% endif %}Search: "{{ current_search }}"{% endif %}
         </span>
-        <a href="{{ url_for('leads.index') }}" class="text-sm text-aqua hover:text-aqua/80 transition-colors">Clear Filter</a>
+        <a href="{{ url_for('leads.index') }}" class="text-sm text-cinnabar hover:text-cinnabar/80 transition-colors font-medium">Clear Filter</a>
     </div>
 </div>
 {% endif %}

@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 
-{% block title %}New Note - Personal CRM{% endblock %}
+{% block title %}New Note - AnchorOS{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('notes.index') }}" class="text-indigo-600 hover:text-indigo-800">&larr; Back to Notes</a>
+<div class="flex items-center gap-4 mb-8">
+    <a href="{{ url_for('notes.index') }}" class="text-medium hover:text-aqua transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+    </a>
+    <h1 class="text-3xl font-bold text-high">New Note</h1>
 </div>
 
-<div class="bg-white rounded-lg shadow p-6">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">New Note</h1>
-    
+<div class="glass-card p-6 max-w-3xl">
     <form method="POST" action="{{ url_for('notes.new') }}">
-        <div class="mb-4">
-            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+        <div class="mb-6">
+            <label for="title" class="block text-sm font-medium text-medium mb-2">Title *</label>
             <input type="text" name="title" id="title" value="{{ title if title else '' }}"
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                   placeholder="Note title" required>
-        </div>
-        
-        <div class="mb-4">
-            <label for="content" class="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-            <textarea name="content" id="content" rows="10"
-                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Write your note here..." required>{{ content if content else '' }}</textarea>
+                   class="w-full input-glass" placeholder="Note title" required>
         </div>
         
         <div class="mb-6">
-            <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags (optional)</label>
+            <label for="content" class="block text-sm font-medium text-medium mb-2">Content *</label>
+            <textarea name="content" id="content" rows="10"
+                      class="w-full input-glass" placeholder="Write your note here..." required>{{ content if content else '' }}</textarea>
+        </div>
+        
+        <div class="mb-6">
+            <label for="tags" class="block text-sm font-medium text-medium mb-2">Tags (optional)</label>
             <input type="text" name="tags" id="tags" value="{{ tags if tags else '' }}"
-                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                   placeholder="Enter tags separated by commas (e.g., idea, project, urgent)">
-            <p class="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+                   class="w-full input-glass" placeholder="Enter tags separated by commas (e.g., idea, project, urgent)">
+            <p class="text-xs text-low mt-2">Separate multiple tags with commas</p>
             
             {% if all_tags %}
-            <div class="mt-3">
-                <p class="text-xs text-gray-600 mb-2">Click to add existing tags:</p>
+            <div class="mt-4">
+                <p class="text-xs text-medium mb-2">Click to add existing tags:</p>
                 <div class="flex flex-wrap gap-2">
                     {% for tag in all_tags %}
                     <button type="button" onclick="addTag('{{ tag }}')" 
-                            class="inline-block bg-gray-100 hover:bg-indigo-100 text-gray-700 hover:text-indigo-700 text-xs px-2 py-1 rounded border border-gray-300 hover:border-indigo-300 transition-colors">
+                            class="pill pill-neutral hover:bg-aqua/20 hover:border-aqua/30 hover:text-aqua transition-colors cursor-pointer">
                         + {{ tag }}
                     </button>
                     {% endfor %}
@@ -47,17 +47,19 @@
             {% endif %}
         </div>
         
-        <div class="flex gap-3">
-            <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+        <div class="flex gap-4">
+            <button type="submit" class="btn-primary">
                 Save Note
             </button>
-            <a href="{{ url_for('notes.index') }}" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300">
+            <a href="{{ url_for('notes.index') }}" class="btn-secondary">
                 Cancel
             </a>
         </div>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 function addTag(tag) {
     const tagsInput = document.getElementById('tags');

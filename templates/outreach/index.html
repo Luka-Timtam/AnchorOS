@@ -168,15 +168,17 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
     const toggleBtn = document.getElementById('toggleForm');
     const formContainer = document.getElementById('formContainer');
     const toggleIcon = document.getElementById('toggleIcon');
     
-    toggleBtn.addEventListener('click', function() {
-        formContainer.classList.toggle('hidden');
-        toggleIcon.classList.toggle('rotate-180');
-    });
-});
+    if (toggleBtn) {
+        toggleBtn.onclick = function() {
+            formContainer.classList.toggle('hidden');
+            toggleIcon.classList.toggle('rotate-180');
+        };
+    }
+})();
 </script>
 {% endblock %}
