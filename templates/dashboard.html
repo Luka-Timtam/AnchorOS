@@ -941,9 +941,19 @@ function resetWidgetSettings() {
     }
 }
 
-document.getElementById('widgetModal').addEventListener('click', function(e) {
+function initWidgetModalListeners() {
+    const widgetModal = document.getElementById('widgetModal');
+    if (widgetModal) {
+        widgetModal.removeEventListener('click', handleWidgetModalClick);
+        widgetModal.addEventListener('click', handleWidgetModalClick);
+    }
+}
+
+function handleWidgetModalClick(e) {
     if (e.target === this) closeWidgetModal();
-});
+}
+
+initWidgetModalListeners();
 
 {% if settings.show_outreach_widget or settings.show_deals_widget or settings.show_project_revenue_widget or settings.show_mrr_widget %}
 Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
