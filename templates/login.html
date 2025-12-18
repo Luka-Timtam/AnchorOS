@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Personal CRM</title>
+    <title>Login - AnchorOS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -84,10 +84,8 @@
 <body class="min-h-screen flex items-center justify-center p-4">
     <div class="glass-card max-w-md w-full p-8">
         <div class="text-center mb-8">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-aqua to-cyan-400 flex items-center justify-center mx-auto mb-4">
-                <span class="text-graphite font-bold text-2xl">C</span>
-            </div>
-            <h1 class="text-3xl font-bold text-porcelain">Personal CRM</h1>
+            <img src="{{ url_for('static', filename='images/anchor_logo.png') }}" alt="AnchorOS" class="w-16 h-16 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-porcelain">AnchorOS</h1>
             <p class="text-porcelain/60 mt-2">Enter your password to continue</p>
         </div>
         

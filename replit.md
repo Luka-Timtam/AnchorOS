@@ -1,7 +1,7 @@
-# Personal CRM
+# AnchorOS
 
 ## Overview
-A private, single-user personal CRM web application designed to manage leads, clients, outreach, and tasks efficiently. It aims to streamline CRM processes, enhance productivity through gamification, and provide insightful analytics for business growth. The application tracks lead progression, client relationships, revenue, and user performance, offering a comprehensive toolkit for individual business development.
+A private, single-user personal CRM web application named "AnchorOS" designed to manage leads, clients, outreach, and tasks efficiently. It aims to streamline CRM processes, enhance productivity through gamification, and provide insightful analytics for business growth. The application tracks lead progression, client relationships, revenue, and user performance, offering a comprehensive toolkit for individual business development.
 
 ## User Preferences
 I prefer simple language and clear explanations. I want iterative development, with small, testable changes. Please ask before making any major architectural changes or adding new external dependencies. Do not make changes to the `database.db` file directly. I prefer detailed explanations for complex logic.
