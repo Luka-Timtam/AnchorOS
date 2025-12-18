@@ -20,6 +20,7 @@ ICON_CHOICES = [
     ('dinner', '🍽️ Dinner'),
     ('hourglass', '⏳ Hourglass'),
     ('camera', '📸 Camera'),
+    ('cityscape', '🏙️ Cityscape'),
 ]
 
 
