@@ -13,6 +13,21 @@
     </a>
 </div>
 
+{% if current_status or current_project_type or current_hosting or current_saas %}
+<div class="glass-card p-4 mb-4 border-l-4 border-aqua">
+    <div class="flex items-center justify-between">
+        <span class="font-medium text-aqua">
+            Filters Applied:
+            {% if current_status %}Status: {{ current_status.title() }}{% endif %}
+            {% if current_project_type %}{% if current_status %}, {% endif %}Type: {{ current_project_type.replace('_', ' ').title() }}{% endif %}
+            {% if current_hosting %}{% if current_status or current_project_type %}, {% endif %}Hosting: {{ current_hosting.title() }}{% endif %}
+            {% if current_saas %}{% if current_status or current_project_type or current_hosting %}, {% endif %}SaaS: {{ current_saas.title() }}{% endif %}
+        </span>
+        <a href="{{ url_for('clients.index') }}" class="text-sm text-aqua hover:text-aqua/80 transition-colors">Clear Filter</a>
+    </div>
+</div>
+{% endif %}
+
 <div class="glass-card p-5 mb-6">
     <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div>
