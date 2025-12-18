@@ -162,8 +162,31 @@ def check_milestone_rewards(current_level):
 
 
 def get_lifetime_revenue():
-    total = db.session.query(func.sum(Client.amount_charged)).scalar() or 0
-    return float(total)
+    """Calculate total lifetime revenue including:
+    - One-time project fees (amount_charged)
+    - Accumulated hosting revenue (months since start × monthly_hosting_fee)
+    - Accumulated SaaS revenue (months since start × monthly_saas_fee)
+    """
+    from datetime import date
+    
+    total_revenue = 0.0
+    clients = Client.query.all()
+    today = date.today()
+    
+    for client in clients:
+        total_revenue += float(client.amount_charged or 0)
+        
+        if client.start_date:
+            months_active = (today.year - client.start_date.year) * 12 + (today.month - client.start_date.month)
+            months_active = max(1, months_active)
+            
+            if client.hosting_active and client.monthly_hosting_fee:
+                total_revenue += float(client.monthly_hosting_fee) * months_active
+            
+            if client.saas_active and client.monthly_saas_fee:
+                total_revenue += float(client.monthly_saas_fee) * months_active
+    
+    return total_revenue
 
 
 def check_revenue_rewards():
