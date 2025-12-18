@@ -710,6 +710,8 @@
             {% endwith %}
             
             {% block content %}{% endblock %}
+            
+            {% block scripts %}{% endblock %}
         </main>
     </div>
 
@@ -1074,7 +1076,5 @@
         swup.hooks.on('content:replace', updateActiveNav);
     })();
     </script>
-    
-    {% block scripts %}{% endblock %}
 </body>
 </html>

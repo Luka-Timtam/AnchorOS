@@ -587,8 +587,8 @@
 
 {% block scripts %}
 <script>
-let currentCalendarYear, currentCalendarMonth;
-let fullCalendarData = null;
+var currentCalendarYear, currentCalendarMonth;
+var fullCalendarData = null;
 
 function loadMiniCalendar() {
     fetch('/calendar/mini')
@@ -808,11 +808,11 @@ document.addEventListener('keydown', function(e) {
 
 loadMiniCalendar();
 
-let widgetOrder = {{ widget_order | tojson }};
-let widgetActive = {{ widget_active | tojson }};
-const widgetNames = {{ widget_names | tojson }};
+var widgetOrder = {{ widget_order | tojson }};
+var widgetActive = {{ widget_active | tojson }};
+var widgetNames = {{ widget_names | tojson }};
 
-let widgetSortable = null;
+var widgetSortable = null;
 
 function openWidgetModal() {
     renderWidgetList();
@@ -982,7 +982,7 @@ Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
 Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
 
 {% if settings.show_outreach_widget %}
-const outreachCtx = document.getElementById('outreachChart');
+var outreachCtx = document.getElementById('outreachChart');
 if (outreachCtx) {
     new Chart(outreachCtx, {
         type: 'bar',
@@ -1010,7 +1010,7 @@ if (outreachCtx) {
 {% endif %}
 
 {% if settings.show_deals_widget %}
-const dealsCtx = document.getElementById('dealsChart');
+var dealsCtx = document.getElementById('dealsChart');
 if (dealsCtx) {
     new Chart(dealsCtx, {
         type: 'bar',
@@ -1038,11 +1038,11 @@ if (dealsCtx) {
 {% endif %}
 
 {% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-const revenueCtx = document.getElementById('revenueChart');
-let revenueChart = null;
-let showingMrr = false;
+var revenueCtx = document.getElementById('revenueChart');
+var revenueChart = null;
+var showingMrr = false;
 
-const revenueData = {
+var revenueData = {
     labels: {{ month_labels | tojson }},
     revenue: {{ monthly_revenue_data | tojson }},
     mrr: {{ monthly_mrr_data | tojson }}
@@ -1082,9 +1082,9 @@ function createRevenueChart(data, label) {
 if (revenueCtx) {
     createRevenueChart(revenueData.revenue, 'Revenue');
     
-    const toggle = document.getElementById('revenueToggle');
-    const toggleKnob = document.getElementById('toggleKnob');
-    const titleEl = document.getElementById('revenueChartTitle');
+    var toggle = document.getElementById('revenueToggle');
+    var toggleKnob = document.getElementById('toggleKnob');
+    var titleEl = document.getElementById('revenueChartTitle');
     
     toggle.addEventListener('click', function() {
         showingMrr = !showingMrr;
@@ -1104,8 +1104,8 @@ if (revenueCtx) {
 {% endif %}
 {% endif %}
 
-let focusInterval = null;
-let focusEndTime = null;
+var focusInterval = null;
+var focusEndTime = null;
 
 function startFocusSession() {
     const duration = document.getElementById('focusDuration').value;

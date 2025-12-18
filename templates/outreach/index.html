@@ -168,17 +168,15 @@
 
 {% block scripts %}
 <script>
-(function() {
-    const toggleBtn = document.getElementById('toggleForm');
-    const formContainer = document.getElementById('formContainer');
-    const toggleIcon = document.getElementById('toggleIcon');
-    
-    if (toggleBtn) {
-        toggleBtn.onclick = function() {
-            formContainer.classList.toggle('hidden');
-            toggleIcon.classList.toggle('rotate-180');
-        };
-    }
-})();
+var toggleBtn = document.getElementById('toggleForm');
+var formContainer = document.getElementById('formContainer');
+var toggleIcon = document.getElementById('toggleIcon');
+
+if (toggleBtn) {
+    toggleBtn.onclick = function() {
+        formContainer.classList.toggle('hidden');
+        toggleIcon.classList.toggle('rotate-180');
+    };
+}
 </script>
 {% endblock %}

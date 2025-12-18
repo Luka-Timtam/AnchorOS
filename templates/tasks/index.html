@@ -273,26 +273,24 @@
 
 {% block scripts %}
 <script>
-(function() {
-    const toggleBtn = document.getElementById('toggleForm');
-    const container = document.getElementById('formContainer');
-    const icon = document.getElementById('toggleIcon');
-    
-    if (toggleBtn) {
-        toggleBtn.onclick = function() {
-            container.classList.toggle('hidden');
-            icon.classList.toggle('rotate-180');
-        };
-    }
-    
-    window.toggleCompletedSection = function() {
-        const section = document.getElementById('completedSection');
-        const chevron = document.getElementById('completedChevron');
-        if (section) {
-            section.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-        }
+var toggleBtn = document.getElementById('toggleForm');
+var container = document.getElementById('formContainer');
+var icon = document.getElementById('toggleIcon');
+
+if (toggleBtn) {
+    toggleBtn.onclick = function() {
+        container.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
     };
-})();
+}
+
+window.toggleCompletedSection = function() {
+    var section = document.getElementById('completedSection');
+    var chevron = document.getElementById('completedChevron');
+    if (section) {
+        section.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+    }
+};
 </script>
 {% endblock %}
