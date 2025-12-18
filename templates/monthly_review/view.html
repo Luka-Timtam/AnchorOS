@@ -1,216 +1,404 @@
 {% extends "base.html" %}
 
-{% block title %}{{ label }} Review - Personal CRM{% endblock %}
+{% block title %}{{ label }} Review - AnchorOS{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <div class="flex items-center justify-between">
+<div class="mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ label }} Review</h1>
-            <p class="text-gray-600 mt-1">Generated {{ review.generated_at.strftime('%B %d, %Y at %H:%M') }}</p>
+            <div class="flex items-center gap-3 mb-2">
+                <a href="{{ url_for('monthly_review.index') }}" class="text-medium hover:text-aqua transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <span class="text-3xl">📊</span>
+                <h1 class="text-3xl font-bold text-high">{{ label }} Review</h1>
+            </div>
+            <p class="text-medium ml-8">Generated {{ review.generated_at.strftime('%B %d, %Y at %H:%M') }}</p>
         </div>
-        <div class="flex gap-3">
-            <form method="POST" action="{{ url_for('monthly_review.regenerate', year_month=review.year_month) }}" class="inline">
-                <button type="submit" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center">
+        <div class="flex gap-3 ml-8 lg:ml-0">
+            <form method="POST" action="{{ url_for('monthly_review.regenerate', year_month=review.year_month) }}" class="inline" data-swup-form>
+                <button type="submit" class="px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-medium hover:bg-white/20 hover:text-high transition-all flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
                     Regenerate
                 </button>
             </form>
-            <a href="{{ url_for('monthly_review.index') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="glass-card p-5 relative overflow-hidden group">
+        <div class="absolute inset-0 bg-gradient-to-br from-aqua/20 to-transparent opacity-50"></div>
+        <div class="relative">
+            <div class="flex items-center gap-2 text-sm text-aqua mb-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
-                Back to Reviews
-            </a>
+                Total XP Earned
+            </div>
+            <div class="text-3xl font-bold text-high">{{ "{:,}".format(content.total_xp) }}</div>
+        </div>
+    </div>
+    <div class="glass-card p-5 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/20 to-transparent opacity-50"></div>
+        <div class="relative">
+            <div class="flex items-center gap-2 text-sm text-yellow-400 mb-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.736 6.979C9.208 6.193 9.696 6 10 6c.304 0 .792.193 1.264.979a1 1 0 001.715-1.029C12.279 4.784 11.232 4 10 4s-2.279.784-2.979 1.95c-.285.475-.507 1-.67 1.55H6a1 1 0 000 2h.013a9.358 9.358 0 000 1H6a1 1 0 100 2h.351c.163.55.385 1.075.67 1.55C7.721 15.216 8.768 16 10 16s2.279-.784 2.979-1.95a1 1 0 10-1.715-1.029c-.472.786-.96.979-1.264.979-.304 0-.792-.193-1.264-.979a4.265 4.265 0 01-.264-.521H10a1 1 0 100-2H8.017a7.36 7.36 0 010-1H10a1 1 0 100-2H8.472c.08-.185.167-.36.264-.521z"/>
+                </svg>
+                Tokens Earned
+            </div>
+            <div class="text-3xl font-bold text-high">{{ "{:,}".format(content.total_tokens) }}</div>
+        </div>
+    </div>
+    <div class="glass-card p-5 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent opacity-50"></div>
+        <div class="relative">
+            <div class="flex items-center gap-2 text-sm text-green-400 mb-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                Outreach Volume
+            </div>
+            <div class="text-3xl font-bold text-high">{{ "{:,}".format(content.outreach_volume) }}</div>
+        </div>
+    </div>
+    <div class="glass-card p-5 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent opacity-50"></div>
+        <div class="relative">
+            <div class="flex items-center gap-2 text-sm text-purple-400 mb-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Consistency
+            </div>
+            <div class="text-3xl font-bold text-high">{{ content.consistency_score }}%</div>
         </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow p-5 text-white">
-        <div class="text-sm opacity-80 mb-1">Total XP Earned</div>
-        <div class="text-3xl font-bold">{{ content.total_xp }}</div>
-    </div>
-    <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg shadow p-5 text-white">
-        <div class="text-sm opacity-80 mb-1">Tokens Earned</div>
-        <div class="text-3xl font-bold">{{ content.total_tokens }}</div>
-    </div>
-    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg shadow p-5 text-white">
-        <div class="text-sm opacity-80 mb-1">Outreach Volume</div>
-        <div class="text-3xl font-bold">{{ content.outreach_volume }}</div>
-    </div>
-    <div class="bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg shadow p-5 text-white">
-        <div class="text-sm opacity-80 mb-1">Consistency Score</div>
-        <div class="text-3xl font-bold">{{ content.consistency_score }}%</div>
-    </div>
-</div>
-
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Summary</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="p-4 bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 rounded-lg text-center">
-            <div class="text-sm text-green-600 mb-1">Total Revenue</div>
-            <div class="text-2xl font-bold text-green-700">${{ "%.2f"|format(content.total_revenue|default(0)) }}</div>
+<div class="glass-card p-6 mb-8">
+    <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
         </div>
-        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-center">
-            <div class="text-sm text-gray-600 mb-1">Project Revenue</div>
-            <div class="text-2xl font-bold text-gray-900">${{ "%.2f"|format(content.project_revenue|default(0)) }}</div>
-            <div class="text-xs text-gray-500 mt-1">{{ content.new_clients|default(0) }} new client{{ 's' if content.new_clients|default(0) != 1 else '' }}</div>
-        </div>
-        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <div class="text-sm text-blue-600 mb-1">Monthly Recurring</div>
-            <div class="text-2xl font-bold text-blue-700">${{ "%.2f"|format(content.mrr|default(0)) }}</div>
-            <div class="text-xs text-blue-500 mt-1">Hosting + SaaS fees</div>
-        </div>
-        <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg text-center">
-            <div class="text-sm text-purple-600 mb-1">Avg Deal Value</div>
-            <div class="text-2xl font-bold text-purple-700">${{ "%.2f"|format(content.avg_deal_value|default(0)) }}</div>
-            <div class="text-xs text-purple-500 mt-1">{{ content.active_clients|default(0) }} active client{{ 's' if content.active_clients|default(0) != 1 else '' }}</div>
-        </div>
+        <h3 class="text-lg font-semibold text-high">Revenue Summary</h3>
     </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Sales Performance</h3>
-        <div class="space-y-4">
-            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span class="text-gray-600">Calls Booked</span>
-                <span class="text-xl font-bold text-gray-900">{{ content.calls_booked }}</span>
-            </div>
-            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span class="text-gray-600">Proposals Sent</span>
-                <span class="text-xl font-bold text-gray-900">{{ content.proposals_sent }}</span>
-            </div>
-            <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                <span class="text-green-700">Deals Won</span>
-                <span class="text-xl font-bold text-green-700">{{ content.deals_won }}</span>
-            </div>
-            <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                <span class="text-red-700">Deals Lost</span>
-                <span class="text-xl font-bold text-red-700">{{ content.deals_lost }}</span>
-            </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 bg-gradient-to-br from-green-500/20 to-green-500/5 border border-green-500/30 rounded-xl text-center">
+            <div class="text-sm text-green-400 mb-1">Total Revenue</div>
+            <div class="text-2xl font-bold text-green-400">${{ "{:,.2f}".format(content.total_revenue|default(0)) }}</div>
         </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Streaks & Consistency</h3>
-        <div class="space-y-4">
-            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span class="text-gray-600">Current Streak</span>
-                <span class="text-xl font-bold text-orange-500">{{ content.streak_current }} days</span>
-            </div>
-            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span class="text-gray-600">Longest Streak</span>
-                <span class="text-xl font-bold text-gray-900">{{ content.streak_longest }} days</span>
-            </div>
-            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span class="text-gray-600">Missions Completed</span>
-                <span class="text-xl font-bold text-purple-600">{{ content.missions_completed }}</span>
-            </div>
+        <div class="p-4 bg-white/5 border border-white/10 rounded-xl text-center">
+            <div class="text-sm text-medium mb-1">Project Revenue</div>
+            <div class="text-2xl font-bold text-high">${{ "{:,.2f}".format(content.project_revenue|default(0)) }}</div>
+            <div class="text-xs text-low mt-1">{{ content.new_clients|default(0) }} new client{{ 's' if content.new_clients|default(0) != 1 else '' }}</div>
+        </div>
+        <div class="p-4 bg-aqua/10 border border-aqua/30 rounded-xl text-center">
+            <div class="text-sm text-aqua mb-1">Monthly Recurring</div>
+            <div class="text-2xl font-bold text-aqua">${{ "{:,.2f}".format(content.mrr|default(0)) }}</div>
+            <div class="text-xs text-low mt-1">Hosting + SaaS</div>
+        </div>
+        <div class="p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl text-center">
+            <div class="text-sm text-purple-400 mb-1">Avg Deal Value</div>
+            <div class="text-2xl font-bold text-purple-400">${{ "{:,.2f}".format(content.avg_deal_value|default(0)) }}</div>
+            <div class="text-xs text-low mt-1">{{ content.active_clients|default(0) }} active client{{ 's' if content.active_clients|default(0) != 1 else '' }}</div>
         </div>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Activity Insights</h3>
-        <div class="space-y-4">
-            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div class="text-sm text-green-600 mb-1">Most Active Day</div>
-                <div class="font-semibold text-green-800">{{ content.most_active_day }}</div>
-                <div class="text-sm text-green-600">{{ content.most_active_count }} outreaches</div>
+    <div class="glass-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-aqua/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
             </div>
-            <div class="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                <div class="text-sm text-orange-600 mb-1">Least Active Day</div>
-                <div class="font-semibold text-orange-800">{{ content.least_active_day }}</div>
-                <div class="text-sm text-orange-600">{{ content.least_active_count }} outreaches</div>
+            <h3 class="text-lg font-semibold text-high">Sales Pipeline</h3>
+        </div>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-medium">Calls Booked</span>
+                </div>
+                <span class="text-xl font-bold text-high">{{ content.calls_booked }}</span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-medium">Proposals Sent</span>
+                </div>
+                <span class="text-xl font-bold text-high">{{ content.proposals_sent }}</span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-green-400 font-medium">Deals Won</span>
+                </div>
+                <span class="text-xl font-bold text-green-400">{{ content.deals_won }}</span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-red-400 font-medium">Deals Lost</span>
+                </div>
+                <span class="text-xl font-bold text-red-400">{{ content.deals_lost }}</span>
+            </div>
+            {% set total_deals = content.deals_won + content.deals_lost %}
+            {% if total_deals > 0 %}
+            <div class="mt-4 p-4 bg-gradient-to-r from-aqua/10 to-purple-500/10 border border-aqua/20 rounded-xl">
+                <div class="flex justify-between items-center">
+                    <span class="text-medium">Win Rate</span>
+                    <span class="text-xl font-bold text-aqua">{{ ((content.deals_won / total_deals) * 100)|round|int }}%</span>
+                </div>
+                <div class="mt-2 w-full bg-white/10 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-aqua to-green-400 rounded-full h-2 transition-all" 
+                         style="width: {{ ((content.deals_won / total_deals) * 100)|int }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="glass-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-high">Streaks & Consistency</h3>
+        </div>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🔥</span>
+                    <span class="text-orange-400 font-medium">Current Streak</span>
+                </div>
+                <span class="text-xl font-bold text-orange-400">{{ content.streak_current }} days</span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🏆</span>
+                    <span class="text-medium">Longest Streak</span>
+                </div>
+                <span class="text-xl font-bold text-high">{{ content.streak_longest }} days</span>
+            </div>
+            <div class="flex justify-between items-center p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎯</span>
+                    <span class="text-purple-400 font-medium">Missions Completed</span>
+                </div>
+                <span class="text-xl font-bold text-purple-400">{{ content.missions_completed }}</span>
+            </div>
+            {% if content.outreach_volume > 0 and content.calls_booked > 0 %}
+            <div class="mt-4 p-4 bg-gradient-to-r from-green-500/10 to-aqua/10 border border-green-500/20 rounded-xl">
+                <div class="flex justify-between items-center">
+                    <span class="text-medium">Outreach to Call Rate</span>
+                    <span class="text-xl font-bold text-green-400">{{ ((content.calls_booked / content.outreach_volume) * 100)|round(1) }}%</span>
+                </div>
+                <div class="text-xs text-low mt-1">{{ content.calls_booked }} calls from {{ content.outreach_volume }} outreaches</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="glass-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-aqua/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-high">Activity Insights</h3>
+        </div>
+        <div class="space-y-4">
+            <div class="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                <div class="flex items-center gap-2 text-sm text-green-400 mb-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                    </svg>
+                    Most Active Day
+                </div>
+                <div class="text-lg font-semibold text-high">{{ content.most_active_day }}</div>
+                <div class="text-sm text-green-400">{{ content.most_active_count }} outreaches</div>
+            </div>
+            <div class="p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+                <div class="flex items-center gap-2 text-sm text-orange-400 mb-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                    Least Active Day
+                </div>
+                <div class="text-lg font-semibold text-high">{{ content.least_active_day }}</div>
+                <div class="text-sm text-orange-400">{{ content.least_active_count }} outreaches</div>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Boss Fight</h3>
+    <div class="glass-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                <span class="text-lg">👹</span>
+            </div>
+            <h3 class="text-lg font-semibold text-high">Boss Fight</h3>
+        </div>
         {% if content.boss_result %}
-        <div class="p-4 {% if content.boss_result.is_completed %}bg-green-50 border-green-200{% else %}bg-gray-50 border-gray-200{% endif %} border rounded-lg">
-            <div class="flex items-center justify-between mb-2">
-                <span class="font-semibold text-gray-900">{{ content.boss_result.description }}</span>
+        <div class="p-5 {% if content.boss_result.is_completed %}bg-gradient-to-br from-green-500/20 to-green-500/5 border-green-500/30{% else %}bg-gradient-to-br from-red-500/20 to-red-500/5 border-red-500/30{% endif %} border rounded-xl">
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-semibold text-high">{{ content.boss_result.description }}</span>
                 {% if content.boss_result.is_completed %}
-                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">DEFEATED</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-green-500 text-white animate-pulse">DEFEATED</span>
                 {% else %}
-                <span class="bg-gray-400 text-white text-xs px-2 py-1 rounded-full">IN PROGRESS</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full bg-red-500/50 text-red-200">IN PROGRESS</span>
                 {% endif %}
             </div>
-            <div class="text-sm text-gray-600 mb-2">Progress: {{ content.boss_result.progress }} / {{ content.boss_result.target }}</div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="{% if content.boss_result.is_completed %}bg-green-500{% else %}bg-indigo-500{% endif %} rounded-full h-2" 
-                     style="width: {{ (content.boss_result.progress / content.boss_result.target * 100) | int if content.boss_result.target else 0 }}%"></div>
+            <div class="text-sm text-medium mb-3">Progress: {{ content.boss_result.progress }} / {{ content.boss_result.target }}</div>
+            <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                <div class="{% if content.boss_result.is_completed %}bg-gradient-to-r from-green-500 to-green-400{% else %}bg-gradient-to-r from-red-500 to-orange-500{% endif %} rounded-full h-3 transition-all duration-500" 
+                     style="width: {{ [(content.boss_result.progress / content.boss_result.target * 100)|int, 100]|min if content.boss_result.target else 0 }}%"></div>
             </div>
             {% if content.boss_result.is_completed %}
-            <div class="mt-2 text-sm text-green-600">Reward: +{{ content.boss_result.reward_tokens }} tokens</div>
+            <div class="mt-3 flex items-center gap-2 text-green-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="font-semibold">Reward: +{{ content.boss_result.reward_tokens }} tokens</span>
+            </div>
             {% endif %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-center py-8">No boss fight this month</p>
+        <div class="text-center py-8">
+            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                <span class="text-3xl opacity-50">👹</span>
+            </div>
+            <p class="text-medium">No boss fight this month</p>
+        </div>
         {% endif %}
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Win Reasons</h3>
+    <div class="glass-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-high">Top Win Reasons</h3>
+        </div>
         {% if content.top_win_reasons %}
         <div class="space-y-3">
             {% for reason, count in content.top_win_reasons %}
-            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <span class="text-gray-700">{{ reason }}</span>
-                <span class="bg-green-500 text-white text-sm px-3 py-1 rounded-full">{{ count }}</span>
+            <div class="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-xl group hover:bg-green-500/20 transition-all">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg">✅</span>
+                    <span class="text-high group-hover:text-green-400 transition-colors">{{ reason }}</span>
+                </div>
+                <span class="px-3 py-1 text-sm font-bold rounded-full bg-green-500 text-white">{{ count }}</span>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-center py-4">No deals won this month</p>
+        <div class="text-center py-8">
+            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <p class="text-medium">No deals won this month</p>
+        </div>
         {% endif %}
     </div>
     
-    <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Loss Reasons</h3>
+    <div class="glass-card p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-high">Top Loss Reasons</h3>
+        </div>
         {% if content.top_loss_reasons %}
         <div class="space-y-3">
             {% for reason, count in content.top_loss_reasons %}
-            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                <span class="text-gray-700">{{ reason }}</span>
-                <span class="bg-red-500 text-white text-sm px-3 py-1 rounded-full">{{ count }}</span>
+            <div class="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/20 rounded-xl group hover:bg-red-500/20 transition-all">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg">❌</span>
+                    <span class="text-high group-hover:text-red-400 transition-colors">{{ reason }}</span>
+                </div>
+                <span class="px-3 py-1 text-sm font-bold rounded-full bg-red-500 text-white">{{ count }}</span>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-gray-500 text-center py-4">No deals lost this month</p>
+        <div class="text-center py-8">
+            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <p class="text-medium">No deals lost this month</p>
+        </div>
         {% endif %}
     </div>
 </div>
 
 {% if content.highlights %}
-<div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Month Highlights</h3>
-    <div class="space-y-3">
+<div class="glass-card p-6 mb-8">
+    <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+            <span class="text-xl">🎉</span>
+        </div>
+        <h3 class="text-lg font-semibold text-high">Month Highlights</h3>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {% for win in content.highlights %}
-        <div class="flex items-start p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg">
-            <span class="text-xl mr-3">&#127881;</span>
-            <div class="flex-1">
-                <div class="font-semibold text-gray-900">{{ win.title }}</div>
-                {% if win.description %}
-                <div class="text-sm text-gray-600 mt-1">{{ win.description }}</div>
-                {% endif %}
-                <div class="flex gap-2 mt-1">
-                    {% if win.xp %}
-                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">+{{ win.xp }} XP</span>
+        <div class="p-4 bg-gradient-to-br from-yellow-500/10 to-orange-500/5 border border-yellow-500/20 rounded-xl hover:border-yellow-500/40 transition-all group">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">🏅</span>
+                <div class="flex-1">
+                    <div class="font-semibold text-high group-hover:text-yellow-400 transition-colors">{{ win.title }}</div>
+                    {% if win.description %}
+                    <div class="text-sm text-medium mt-1">{{ win.description }}</div>
                     {% endif %}
-                    {% if win.tokens %}
-                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">+{{ win.tokens }} tokens</span>
-                    {% endif %}
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        {% if win.xp %}
+                        <span class="pill-aqua text-xs">+{{ win.xp }} XP</span>
+                        {% endif %}
+                        {% if win.tokens %}
+                        <span class="pill-warning text-xs">+{{ win.tokens }} tokens</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -219,19 +407,15 @@
 </div>
 {% endif %}
 
-<div class="flex justify-center gap-4 mb-8">
-    <button disabled class="bg-gray-300 text-gray-500 px-6 py-3 rounded-lg cursor-not-allowed flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-        </svg>
-        Download as PDF (Coming Soon)
-    </button>
-</div>
-
-<div class="text-center">
+<div class="text-center pb-8">
     <form method="POST" action="{{ url_for('monthly_review.delete', year_month=review.year_month) }}" 
-          onsubmit="return confirm('Are you sure you want to delete this review?')">
-        <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete this review</button>
+          onsubmit="return confirm('Are you sure you want to delete this review? This action cannot be undone.')" data-swup-form>
+        <button type="submit" class="text-red-400 hover:text-red-300 text-sm flex items-center gap-2 mx-auto transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Delete this review
+        </button>
     </form>
 </div>
 {% endblock %}
