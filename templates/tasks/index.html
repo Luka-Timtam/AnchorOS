@@ -174,19 +174,17 @@
                     {% endif %}
                 </td>
                 <td>
-                    <form method="POST" action="{{ url_for('tasks.update_status', id=task.id) }}" class="inline">
-                        <select name="status" onchange="this.form.submit()" 
-                            class="select-glass text-sm py-1.5 pl-3 pr-8
-                            {% if task.status == 'done' %}!bg-green-500/20 !border-green-500/30 !text-green-400
-                            {% elif task.status == 'in_progress' %}!bg-yellow-500/20 !border-yellow-500/30 !text-yellow-400
-                            {% else %}!bg-aqua/20 !border-aqua/30 !text-aqua{% endif %}">
-                            {% for status in statuses %}
-                            <option value="{{ status }}" {% if task.status == status %}selected{% endif %}>
-                                {{ status.replace('_', ' ').title() }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </form>
+                    <select onchange="updateTaskStatus({{ task.id }}, this.value, this)" 
+                        class="select-glass text-sm py-1.5 pl-3 pr-8 transition-all duration-300
+                        {% if task.status == 'done' %}!bg-green-500/20 !border-green-500/30 !text-green-400
+                        {% elif task.status == 'in_progress' %}!bg-yellow-500/20 !border-yellow-500/30 !text-yellow-400
+                        {% else %}!bg-aqua/20 !border-aqua/30 !text-aqua{% endif %}">
+                        {% for status in statuses %}
+                        <option value="{{ status }}" {% if task.status == status %}selected{% endif %}>
+                            {{ status.replace('_', ' ').title() }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </td>
                 <td class="text-sm">
                     {% if task.lead %}
@@ -291,6 +289,37 @@ window.toggleCompletedSection = function() {
         section.classList.toggle('hidden');
         chevron.classList.toggle('rotate-180');
     }
+};
+
+window.updateTaskStatus = function(taskId, newStatus, selectEl) {
+    selectEl.style.opacity = '0.5';
+    selectEl.disabled = true;
+    
+    var formData = new FormData();
+    formData.append('status', newStatus);
+    
+    fetch('/tasks/' + taskId + '/status', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(response) {
+        if (response.ok) {
+            if (window.swup) {
+                window.swup.navigate(window.location.pathname);
+            } else {
+                window.location.reload();
+            }
+        } else {
+            selectEl.style.opacity = '1';
+            selectEl.disabled = false;
+            console.error('Failed to update task status');
+        }
+    })
+    .catch(function(err) {
+        selectEl.style.opacity = '1';
+        selectEl.disabled = false;
+        console.error('Error updating task status:', err);
+    });
 };
 </script>
 {% endblock %}
