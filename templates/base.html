@@ -550,6 +550,30 @@
             opacity: 1;
         }
         
+        .drag-handle {
+            touch-action: none;
+            user-select: none;
+        }
+        
+        .sortable-ghost {
+            opacity: 0.4;
+            background: rgba(49, 224, 247, 0.1) !important;
+        }
+        
+        .sortable-chosen {
+            background: rgba(49, 224, 247, 0.15) !important;
+            box-shadow: 0 0 0 2px rgba(49, 224, 247, 0.5) !important;
+        }
+        
+        .sortable-drag {
+            opacity: 1 !important;
+        }
+        
+        .sortable-fallback {
+            opacity: 0.9 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+        
         @media (max-width: 768px) {
             #sidebar {
                 position: fixed;

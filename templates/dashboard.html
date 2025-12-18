@@ -832,23 +832,35 @@ function closeWidgetModal() {
 
 function initSortable() {
     const container = document.getElementById('widgetList');
+    if (!container) return;
+    
     if (widgetSortable) {
         widgetSortable.destroy();
+        widgetSortable = null;
     }
-    widgetSortable = new Sortable(container, {
-        animation: 200,
-        handle: '.drag-handle',
-        ghostClass: 'opacity-50',
-        chosenClass: 'ring-2 ring-aqua/50',
-        dragClass: 'opacity-90',
-        onEnd: function(evt) {
-            const newOrder = [];
-            container.querySelectorAll('[data-widget-id]').forEach(el => {
-                newOrder.push(el.dataset.widgetId);
+    
+    setTimeout(function() {
+        try {
+            widgetSortable = new Sortable(container, {
+                animation: 200,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: true,
+                fallbackClass: 'sortable-fallback',
+                onEnd: function(evt) {
+                    const newOrder = [];
+                    container.querySelectorAll('[data-widget-id]').forEach(el => {
+                        newOrder.push(el.dataset.widgetId);
+                    });
+                    widgetOrder = newOrder;
+                }
             });
-            widgetOrder = newOrder;
+        } catch (e) {
+            console.error('Sortable init error:', e);
         }
-    });
+    }, 50);
 }
 
 function getWidgetIcon(widgetId) {
