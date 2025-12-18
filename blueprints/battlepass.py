@@ -7,9 +7,9 @@ from blueprints.gamification import check_revenue_rewards, get_lifetime_revenue
 battlepass_bp = Blueprint('battlepass', __name__, url_prefix='/battlepass')
 
 ICON_CHOICES = [
-    ('car', '🏎️ Car'),
+    ('racecar', '🏎️ Race Car'),
     ('plane', '✈️ Plane'),
-    ('globe', '🌍 Globe'),
+    ('car', '🚗 Car'),
     ('crown', '👑 Crown'),
     ('rocket', '🚀 Rocket'),
     ('watch', '⌚ Watch'),
@@ -17,10 +17,9 @@ ICON_CHOICES = [
     ('home', '🏠 Home'),
     ('chart', '📈 Chart'),
     ('star', '⭐ Star'),
-    ('spa', '🧖 Spa'),
-    ('shoe', '👟 Shoe'),
-    ('utensils', '🍽️ Dinner'),
-    ('gift', '🎁 Gift'),
+    ('dinner', '🍽️ Dinner'),
+    ('hourglass', '⏳ Hourglass'),
+    ('camera', '📸 Camera'),
 ]
 
 
