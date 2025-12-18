@@ -6,6 +6,23 @@ from blueprints.gamification import check_revenue_rewards, get_lifetime_revenue
 
 battlepass_bp = Blueprint('battlepass', __name__, url_prefix='/battlepass')
 
+ICON_CHOICES = [
+    ('car', '🏎️ Car'),
+    ('plane', '✈️ Plane'),
+    ('globe', '🌍 Globe'),
+    ('crown', '👑 Crown'),
+    ('rocket', '🚀 Rocket'),
+    ('watch', '⌚ Watch'),
+    ('laptop', '💻 Laptop'),
+    ('home', '🏠 Home'),
+    ('chart', '📈 Chart'),
+    ('star', '⭐ Star'),
+    ('spa', '🧖 Spa'),
+    ('shoe', '👟 Shoe'),
+    ('utensils', '🍽️ Dinner'),
+    ('gift', '🎁 Gift'),
+]
+
 
 @battlepass_bp.route('/')
 def index():
@@ -48,11 +65,15 @@ def index():
         else:
             upcoming_milestone.append(item)
     
-    upcoming_revenue = []
-    unlocked_revenue = []
-    claimed_revenue = []
+    all_revenue_rewards = []
     for reward in revenue_rewards:
-        item = {
+        status = 'locked'
+        if reward.claimed_at:
+            status = 'claimed'
+        elif reward.unlocked_at:
+            status = 'unlocked'
+        
+        all_revenue_rewards.append({
             'id': reward.id,
             'type': 'revenue',
             'target': reward.target_revenue,
@@ -60,14 +81,9 @@ def index():
             'reward_icon': reward.reward_icon,
             'unlocked_at': reward.unlocked_at,
             'claimed_at': reward.claimed_at,
+            'status': status,
             'progress': min(100, (lifetime_revenue / reward.target_revenue) * 100) if reward.target_revenue > 0 else 0
-        }
-        if reward.claimed_at:
-            claimed_revenue.append(item)
-        elif reward.unlocked_at:
-            unlocked_revenue.append(item)
-        else:
-            upcoming_revenue.append(item)
+        })
     
     unlocked_level_rewards = [r for r in unlocked_rewards if r.reward_type == 'level']
     claimed_level_rewards = [r for r in unlocked_rewards if r.reward_type == 'level' and r.claimed_at]
@@ -83,9 +99,7 @@ def index():
         upcoming_level=upcoming_level,
         upcoming_milestone=upcoming_milestone,
         unlocked_milestone=unlocked_milestone,
-        upcoming_revenue=upcoming_revenue,
-        unlocked_revenue=unlocked_revenue,
-        claimed_revenue=claimed_revenue,
+        all_revenue_rewards=all_revenue_rewards,
         unlocked_level_rewards=unlocked_level_rewards,
         claimed_level_rewards=claimed_level_rewards,
         unclaimed_level_rewards=unclaimed_level_rewards,
@@ -119,3 +133,95 @@ def claim_revenue_reward(id):
         db.session.commit()
         flash(f'Claimed: {reward.reward_text}! Enjoy your reward!', 'success')
     return redirect(url_for('battlepass.index'))
+
+
+@battlepass_bp.route('/milestones')
+def manage_milestones():
+    revenue_rewards = RevenueReward.query.order_by(RevenueReward.target_revenue).all()
+    return render_template('battlepass/milestones.html',
+        revenue_rewards=revenue_rewards,
+        icon_choices=ICON_CHOICES
+    )
+
+
+@battlepass_bp.route('/milestones/add', methods=['GET', 'POST'])
+def add_milestone():
+    if request.method == 'POST':
+        try:
+            target_revenue = float(request.form.get('target_revenue', 0))
+        except (ValueError, TypeError):
+            flash('Please enter a valid revenue amount.', 'error')
+            return render_template('battlepass/milestone_form.html',
+                action='Add',
+                icon_choices=ICON_CHOICES
+            )
+        reward_text = request.form.get('reward_text', '').strip()
+        reward_icon = request.form.get('reward_icon', 'gift')
+        
+        if not reward_text:
+            flash('Please enter a reward description.', 'error')
+            return render_template('battlepass/milestone_form.html',
+                action='Add',
+                icon_choices=ICON_CHOICES
+            )
+        
+        reward = RevenueReward(
+            target_revenue=target_revenue,
+            reward_text=reward_text,
+            reward_icon=reward_icon,
+            is_active=True
+        )
+        db.session.add(reward)
+        db.session.commit()
+        flash(f'Revenue milestone "${target_revenue:,.0f}" added!', 'success')
+        return redirect(url_for('battlepass.manage_milestones'))
+    
+    return render_template('battlepass/milestone_form.html',
+        action='Add',
+        icon_choices=ICON_CHOICES
+    )
+
+
+@battlepass_bp.route('/milestones/<int:id>/edit', methods=['GET', 'POST'])
+def edit_milestone(id):
+    reward = RevenueReward.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        try:
+            reward.target_revenue = float(request.form.get('target_revenue', 0))
+        except (ValueError, TypeError):
+            flash('Please enter a valid revenue amount.', 'error')
+            return render_template('battlepass/milestone_form.html',
+                action='Edit',
+                reward=reward,
+                icon_choices=ICON_CHOICES
+            )
+        reward.reward_text = request.form.get('reward_text', '').strip()
+        reward.reward_icon = request.form.get('reward_icon', 'gift')
+        
+        if not reward.reward_text:
+            flash('Please enter a reward description.', 'error')
+            return render_template('battlepass/milestone_form.html',
+                action='Edit',
+                reward=reward,
+                icon_choices=ICON_CHOICES
+            )
+        
+        db.session.commit()
+        flash('Revenue milestone updated!', 'success')
+        return redirect(url_for('battlepass.manage_milestones'))
+    
+    return render_template('battlepass/milestone_form.html',
+        action='Edit',
+        reward=reward,
+        icon_choices=ICON_CHOICES
+    )
+
+
+@battlepass_bp.route('/milestones/<int:id>/delete', methods=['POST'])
+def delete_milestone(id):
+    reward = RevenueReward.query.get_or_404(id)
+    db.session.delete(reward)
+    db.session.commit()
+    flash('Revenue milestone deleted.', 'info')
+    return redirect(url_for('battlepass.manage_milestones'))

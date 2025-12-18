@@ -62,6 +62,32 @@
 </div>
 {% endif %}
 
+{% if revenue_notifications %}
+<div class="mb-6 space-y-3">
+    {% for reward in revenue_notifications %}
+    <div class="glass-card p-4 border-l-4 border-green-500 bg-gradient-to-r from-green-500/10 to-transparent">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center mr-4 text-2xl">
+                    {% if reward.reward_icon == 'car' %}🏎️{% elif reward.reward_icon == 'plane' %}✈️{% elif reward.reward_icon == 'globe' %}🌍{% elif reward.reward_icon == 'crown' %}👑{% elif reward.reward_icon == 'rocket' %}🚀{% elif reward.reward_icon == 'watch' %}⌚{% elif reward.reward_icon == 'laptop' %}💻{% elif reward.reward_icon == 'home' %}🏠{% elif reward.reward_icon == 'chart' %}📈{% elif reward.reward_icon == 'star' %}⭐{% elif reward.reward_icon == 'spa' %}🧖{% elif reward.reward_icon == 'shoe' %}👟{% elif reward.reward_icon == 'utensils' %}🍽️{% else %}🎁{% endif %}
+                </div>
+                <div>
+                    <p class="font-semibold text-green-400">Revenue Milestone Unlocked!</p>
+                    <p class="text-high">{{ reward.reward_text }}</p>
+                    <p class="text-sm text-medium">${{ "{:,.0f}".format(reward.target_revenue) }} lifetime revenue reached</p>
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('battlepass.claim_revenue_reward', id=reward.id) }}">
+                <button type="submit" class="btn-primary px-5 py-2 text-sm font-semibold">
+                    Claim Reward
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="mb-8 flex justify-between items-center">
     <h1 class="text-3xl font-bold text-high">Dashboard</h1>
     <button onclick="openWidgetModal()" class="btn-secondary flex items-center gap-2">

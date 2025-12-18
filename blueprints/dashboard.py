@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
-from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight, ActivityLog
+from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight, ActivityLog, RevenueReward
 from datetime import datetime, date, timedelta
 from sqlalchemy import func, and_
 from decimal import Decimal
@@ -183,6 +183,13 @@ def index():
     widget_active = settings.get_dashboard_active()
     widget_names = UserSettings.DEFAULT_WIDGET_NAMES
     
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    revenue_notifications = RevenueReward.query.filter(
+        RevenueReward.unlocked_at.isnot(None),
+        RevenueReward.claimed_at.is_(None),
+        RevenueReward.unlocked_at >= seven_days_ago
+    ).order_by(RevenueReward.target_revenue).all()
+    
     return render_template('dashboard.html',
         settings=settings,
         user_stats=user_stats,
@@ -220,7 +227,8 @@ def index():
         deals_closed_today=deals_closed_today,
         widget_order=widget_order,
         widget_active=widget_active,
-        widget_names=widget_names
+        widget_names=widget_names,
+        revenue_notifications=revenue_notifications
     )
 
 

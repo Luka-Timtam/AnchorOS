@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Revenue Milestones - AnchorOS{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-high">Revenue Milestones</h1>
+            <p class="text-medium mt-1">Add, edit, or remove your revenue milestone rewards</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('battlepass.index') }}" class="btn-secondary flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Battle Pass
+            </a>
+            <a href="{{ url_for('battlepass.add_milestone') }}" class="btn-primary flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Milestone
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if revenue_rewards %}
+<div class="glass-card overflow-hidden">
+    <table class="w-full">
+        <thead>
+            <tr class="border-b border-white/10">
+                <th class="text-left py-4 px-6 text-medium font-medium">Icon</th>
+                <th class="text-left py-4 px-6 text-medium font-medium">Target Revenue</th>
+                <th class="text-left py-4 px-6 text-medium font-medium">Reward</th>
+                <th class="text-left py-4 px-6 text-medium font-medium">Status</th>
+                <th class="text-right py-4 px-6 text-medium font-medium">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reward in revenue_rewards %}
+            <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                <td class="py-4 px-6">
+                    <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-xl">
+                        {% if reward.reward_icon == 'car' %}🏎️
+                        {% elif reward.reward_icon == 'plane' %}✈️
+                        {% elif reward.reward_icon == 'globe' %}🌍
+                        {% elif reward.reward_icon == 'crown' %}👑
+                        {% elif reward.reward_icon == 'rocket' %}🚀
+                        {% elif reward.reward_icon == 'watch' %}⌚
+                        {% elif reward.reward_icon == 'laptop' %}💻
+                        {% elif reward.reward_icon == 'home' %}🏠
+                        {% elif reward.reward_icon == 'chart' %}📈
+                        {% elif reward.reward_icon == 'star' %}⭐
+                        {% elif reward.reward_icon == 'spa' %}🧖
+                        {% elif reward.reward_icon == 'shoe' %}👟
+                        {% elif reward.reward_icon == 'utensils' %}🍽️
+                        {% else %}🎁
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="py-4 px-6">
+                    <span class="text-high font-semibold">${{ "{:,.0f}".format(reward.target_revenue) }}</span>
+                </td>
+                <td class="py-4 px-6">
+                    <span class="text-high">{{ reward.reward_text }}</span>
+                </td>
+                <td class="py-4 px-6">
+                    {% if reward.claimed_at %}
+                    <span class="pill-purple">Claimed</span>
+                    {% elif reward.unlocked_at %}
+                    <span class="pill-success">Unlocked</span>
+                    {% else %}
+                    <span class="pill-gray">Locked</span>
+                    {% endif %}
+                </td>
+                <td class="py-4 px-6">
+                    <div class="flex items-center justify-end gap-2">
+                        <a href="{{ url_for('battlepass.edit_milestone', id=reward.id) }}" 
+                           class="p-2 rounded-lg hover:bg-white/10 text-medium hover:text-aqua transition-colors"
+                           title="Edit">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </a>
+                        <form method="POST" action="{{ url_for('battlepass.delete_milestone', id=reward.id) }}" 
+                              onsubmit="return confirm('Are you sure you want to delete this milestone?');">
+                            <button type="submit" 
+                                    class="p-2 rounded-lg hover:bg-red-500/20 text-medium hover:text-red-400 transition-colors"
+                                    title="Delete">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="glass-card p-12 text-center">
+    <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+    </div>
+    <h3 class="text-xl font-semibold text-high mb-2">No Revenue Milestones Yet</h3>
+    <p class="text-medium mb-6">Create your first revenue milestone to start tracking your journey!</p>
+    <a href="{{ url_for('battlepass.add_milestone') }}" class="btn-primary inline-flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add Your First Milestone
+    </a>
+</div>
+{% endif %}
+{% endblock %}
