@@ -95,26 +95,29 @@
                 
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="flex flex-wrap gap-2">
-                        <span class="pill-aqua">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl bg-aqua/15 text-aqua border border-aqua/20">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                             {{ review.content.total_xp }} XP
                         </span>
-                        <span class="pill-warning">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.736 6.979C9.208 6.193 9.696 6 10 6c.304 0 .792.193 1.264.979a1 1 0 001.715-1.029C12.279 4.784 11.232 4 10 4s-2.279.784-2.979 1.95c-.285.475-.507 1-.67 1.55H6a1 1 0 000 2h.013a9.358 9.358 0 000 1H6a1 1 0 100 2h.351c.163.55.385 1.075.67 1.55C7.721 15.216 8.768 16 10 16s2.279-.784 2.979-1.95a1 1 0 10-1.715-1.029c-.472.786-.96.979-1.264.979-.304 0-.792-.193-1.264-.979a4.265 4.265 0 01-.264-.521H10a1 1 0 100-2H8.017a7.36 7.36 0 010-1H10a1 1 0 100-2H8.472c.08-.185.167-.36.264-.521z"/>
-                            </svg>
+                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl bg-yellow-500/15 text-yellow-400 border border-yellow-500/20">
+                            <span class="mr-1.5">🪙</span>
                             {{ review.content.total_tokens }}
                         </span>
-                        <span class="pill-success">{{ review.content.deals_won }} Won</span>
+                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl bg-green-500/15 text-green-400 border border-green-500/20">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ review.content.deals_won }} Won
+                        </span>
                         {% if review.content.deals_lost > 0 %}
-                        <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-500/20 text-red-400">{{ review.content.deals_lost }} Lost</span>
+                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-xl bg-red-500/15 text-red-400 border border-red-500/20">{{ review.content.deals_lost }} Lost</span>
                         {% endif %}
                     </div>
                     
                     <a href="{{ url_for('monthly_review.view', year_month=review.year_month) }}" 
-                       class="btn-primary text-sm px-4 py-2">
+                       class="btn-primary text-sm px-4 py-2 rounded-xl">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
