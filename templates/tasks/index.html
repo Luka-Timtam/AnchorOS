@@ -298,7 +298,7 @@ window.updateTaskStatus = function(taskId, newStatus, selectEl) {
     var formData = new FormData();
     formData.append('status', newStatus);
     
-    fetch('/tasks/' + taskId + '/status', {
+    fetch('/tasks/' + taskId + '/update-status', {
         method: 'POST',
         body: formData
     })
