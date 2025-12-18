@@ -35,6 +35,7 @@ def create_app():
     from blueprints.focus import focus_bp
     from blueprints.monthly_review import monthly_review_bp
     from blueprints.battlepass import battlepass_bp
+    from blueprints.freelancing import freelancing_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -58,6 +59,7 @@ def create_app():
     app.register_blueprint(focus_bp)
     app.register_blueprint(monthly_review_bp)
     app.register_blueprint(battlepass_bp)
+    app.register_blueprint(freelancing_bp)
     
     @app.before_request
     def require_login():

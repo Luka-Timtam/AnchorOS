@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}Freelancing - AnchorOS{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-high">Freelancing</h1>
+            <p class="text-medium mt-1">Track side income from photography, one-off jobs, and cash work</p>
+        </div>
+        <a href="{{ url_for('freelancing.add') }}" class="btn-primary flex items-center gap-2 w-fit">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Job
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="glass-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-medium mb-1">Total Freelance Income</p>
+                <p class="text-3xl font-bold text-green-400">${{ "{:,.2f}".format(total_income) }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-medium mb-1">Total Jobs</p>
+                <p class="text-3xl font-bold text-aqua">{{ job_count }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-aqua/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-medium mb-1">Average Job Value</p>
+                <p class="text-3xl font-bold text-yellow-400">${{ "{:,.2f}".format(avg_job_value) }}</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if chart_data or category_chart_data %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    {% if chart_data %}
+    <div class="glass-card p-5">
+        <h3 class="text-lg font-semibold text-high mb-4">Monthly Income (Last 6 Months)</h3>
+        <div class="h-64">
+            <canvas id="monthlyIncomeChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if category_chart_data %}
+    <div class="glass-card p-5">
+        <h3 class="text-lg font-semibold text-high mb-4">Income by Category</h3>
+        <div class="h-64">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if income_by_category %}
+<div class="glass-card p-5 mb-8">
+    <h3 class="text-lg font-semibold text-high mb-4">Category Breakdown</h3>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {% for cat, amount in income_by_category.items() %}
+        <div class="glass p-4 rounded-xl text-center">
+            <p class="text-sm text-medium mb-1">{{ category_labels.get(cat, cat.title()) }}</p>
+            <p class="text-xl font-bold text-high">${{ "{:,.0f}".format(amount) }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="glass-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-white/10">
+        <h3 class="text-lg font-semibold text-high">All Freelance Jobs</h3>
+    </div>
+    
+    {% if jobs %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-white/10">
+                    <th class="text-left py-4 px-6 text-medium font-medium">Job</th>
+                    <th class="text-left py-4 px-6 text-medium font-medium">Category</th>
+                    <th class="text-left py-4 px-6 text-medium font-medium">Client</th>
+                    <th class="text-left py-4 px-6 text-medium font-medium">Date</th>
+                    <th class="text-right py-4 px-6 text-medium font-medium">Amount</th>
+                    <th class="text-right py-4 px-6 text-medium font-medium">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td class="py-4 px-6">
+                        <div>
+                            <p class="text-high font-medium">{{ job.title }}</p>
+                            {% if job.description %}
+                            <p class="text-sm text-medium line-clamp-1">{{ job.description }}</p>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <span class="pill-aqua">{{ category_labels.get(job.category, job.category.title()) }}</span>
+                    </td>
+                    <td class="py-4 px-6 text-medium">
+                        {{ job.client_name or '-' }}
+                    </td>
+                    <td class="py-4 px-6 text-medium">
+                        {{ job.date_completed.strftime('%b %d, %Y') if job.date_completed else '-' }}
+                    </td>
+                    <td class="py-4 px-6 text-right">
+                        <span class="text-green-400 font-semibold">${{ "{:,.2f}".format(job.amount) }}</span>
+                    </td>
+                    <td class="py-4 px-6">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{{ url_for('freelancing.edit', id=job.id) }}" 
+                               class="p-2 rounded-lg hover:bg-white/10 text-medium hover:text-aqua transition-colors"
+                               title="Edit">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </a>
+                            <form method="POST" action="{{ url_for('freelancing.delete', id=job.id) }}" 
+                                  onsubmit="return confirm('Delete this job?');">
+                                <button type="submit" 
+                                        class="p-2 rounded-lg hover:bg-red-500/20 text-medium hover:text-red-400 transition-colors"
+                                        title="Delete">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-12 text-center">
+        <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-high mb-2">No freelance jobs yet</h3>
+        <p class="text-medium mb-6">Start tracking your side income by adding your first job.</p>
+        <a href="{{ url_for('freelancing.add') }}" class="btn-primary inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Your First Job
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if chart_data or category_chart_data %}
+<script>
+(function() {
+    {% if chart_data %}
+    const monthlyCtx = document.getElementById('monthlyIncomeChart');
+    if (monthlyCtx) {
+        new Chart(monthlyCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ chart_labels|tojson }},
+                datasets: [{
+                    label: 'Income',
+                    data: {{ chart_data|tojson }},
+                    backgroundColor: 'rgba(49, 224, 247, 0.5)',
+                    borderColor: 'rgba(49, 224, 247, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { 
+                            color: 'rgba(255,255,255,0.6)',
+                            callback: function(value) { return '$' + value.toLocaleString(); }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: 'rgba(255,255,255,0.6)' }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+    
+    {% if category_chart_data %}
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx) {
+        new Chart(categoryCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ category_chart_labels|tojson }},
+                datasets: [{
+                    data: {{ category_chart_data|tojson }},
+                    backgroundColor: [
+                        'rgba(49, 224, 247, 0.8)',
+                        'rgba(74, 222, 128, 0.8)',
+                        'rgba(250, 204, 21, 0.8)',
+                        'rgba(235, 86, 78, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(251, 146, 60, 0.8)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: 'rgba(255,255,255,0.8)', padding: 15 }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+})();
+</script>
+{% endif %}
+{% endblock %}

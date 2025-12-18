@@ -1000,3 +1000,66 @@ class MonthlyReview(db.Model):
     def get_content(self):
         import json
         return json.loads(self.content_json) if self.content_json else {}
+
+
+class FreelanceJob(db.Model):
+    __tablename__ = 'freelance_jobs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50), default='other')
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    date_completed = db.Column(db.Date, default=date.today)
+    client_name = db.Column(db.String(200))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    @staticmethod
+    def category_choices():
+        return [
+            ('photography', 'Photography'),
+            ('consulting', 'Consulting'),
+            ('side_project', 'Side Project'),
+            ('cash_work', 'Cash Work'),
+            ('one_off', 'One-Off Job'),
+            ('other', 'Other')
+        ]
+    
+    @staticmethod
+    def get_total_income():
+        from sqlalchemy import func
+        result = db.session.query(func.sum(FreelanceJob.amount)).scalar()
+        return float(result) if result else 0.0
+    
+    @staticmethod
+    def get_income_by_category():
+        from sqlalchemy import func
+        results = db.session.query(
+            FreelanceJob.category,
+            func.sum(FreelanceJob.amount).label('total')
+        ).group_by(FreelanceJob.category).all()
+        return {cat: float(total) for cat, total in results}
+    
+    @staticmethod
+    def get_monthly_income(months=6):
+        from sqlalchemy import func, extract
+        from datetime import date
+        from dateutil.relativedelta import relativedelta
+        
+        start_date = date.today() - relativedelta(months=months-1)
+        start_date = start_date.replace(day=1)
+        
+        results = db.session.query(
+            extract('year', FreelanceJob.date_completed).label('year'),
+            extract('month', FreelanceJob.date_completed).label('month'),
+            func.sum(FreelanceJob.amount).label('total')
+        ).filter(
+            FreelanceJob.date_completed >= start_date
+        ).group_by(
+            extract('year', FreelanceJob.date_completed),
+            extract('month', FreelanceJob.date_completed)
+        ).order_by('year', 'month').all()
+        
+        return [(int(y), int(m), float(t)) for y, m, t in results]

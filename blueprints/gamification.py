@@ -166,8 +166,10 @@ def get_lifetime_revenue():
     - One-time project fees (amount_charged)
     - Accumulated hosting revenue (months since start × monthly_hosting_fee)
     - Accumulated SaaS revenue (months since start × monthly_saas_fee)
+    - Freelance income from side jobs
     """
     from datetime import date
+    from models import FreelanceJob
     
     total_revenue = 0.0
     clients = Client.query.all()
@@ -185,6 +187,8 @@ def get_lifetime_revenue():
             
             if client.saas_active and client.monthly_saas_fee:
                 total_revenue += float(client.monthly_saas_fee) * months_active
+    
+    total_revenue += FreelanceJob.get_total_income()
     
     return total_revenue
 
