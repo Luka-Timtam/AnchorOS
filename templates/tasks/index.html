@@ -295,8 +295,6 @@ window.updateTaskStatus = function(taskId, newStatus, selectEl) {
     selectEl.style.opacity = '0.5';
     selectEl.disabled = true;
     
-    var oldStatus = selectEl.dataset.oldStatus || Array.from(selectEl.options).find(function(o) { return o.selected; }).value;
-    
     var formData = new FormData();
     formData.append('status', newStatus);
     
@@ -309,29 +307,20 @@ window.updateTaskStatus = function(taskId, newStatus, selectEl) {
     })
     .then(function(response) {
         if (response.ok) {
-            selectEl.style.opacity = '1';
-            selectEl.disabled = false;
-            selectEl.dataset.oldStatus = newStatus;
-            
-            var row = selectEl.closest('tr');
-            if (row) {
-                row.style.transition = 'opacity 0.3s ease';
-                row.style.opacity = '0.7';
-                setTimeout(function() {
-                    row.style.opacity = '1';
-                }, 300);
+            if (window.swup) {
+                window.swup.navigate(window.location.pathname);
+            } else {
+                window.location.reload();
             }
         } else {
             selectEl.style.opacity = '1';
             selectEl.disabled = false;
-            selectEl.value = oldStatus;
             console.error('Failed to update task status');
         }
     })
     .catch(function(err) {
         selectEl.style.opacity = '1';
         selectEl.disabled = false;
-        selectEl.value = oldStatus;
         console.error('Error updating task status:', err);
     });
 };
