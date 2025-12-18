@@ -934,7 +934,12 @@ function saveWidgetSettings() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            window.location.reload();
+            closeWidgetModal();
+            if (window.swup) {
+                window.swup.visit(window.location.pathname);
+            } else {
+                window.location.reload();
+            }
         }
     })
     .catch(err => console.error('Save widget settings error:', err));
@@ -946,7 +951,12 @@ function resetWidgetSettings() {
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    closeWidgetModal();
+                    if (window.swup) {
+                        window.swup.visit(window.location.pathname);
+                    } else {
+                        window.location.reload();
+                    }
                 }
             })
             .catch(err => console.error('Reset widget settings error:', err));
