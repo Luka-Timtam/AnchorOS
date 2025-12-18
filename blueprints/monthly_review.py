@@ -220,13 +220,23 @@ def generate_review_content(year_month):
 @monthly_review_bp.route('/monthly-review')
 def index():
     reviews = MonthlyReview.get_all_reviews()
+    existing_months = {r.year_month for r in reviews}
     
     today = date.today()
     available_months = []
-    for i in range(12):
-        month_date = today.replace(day=1) - timedelta(days=i*30)
+    
+    for i in range(24):
+        year = today.year
+        month = today.month - i
+        
+        while month <= 0:
+            month += 12
+            year -= 1
+        
+        month_date = date(year, month, 1)
         year_month = month_date.strftime('%Y-%m')
-        if year_month not in [r.year_month for r in reviews]:
+        
+        if year_month not in existing_months:
             available_months.append({
                 'value': year_month,
                 'label': month_date.strftime('%B %Y')
