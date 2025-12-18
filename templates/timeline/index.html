@@ -144,7 +144,7 @@
                             {{ activity.description }}
                         </p>
                         <p class="text-xs text-low mt-1">
-                            {{ activity.timestamp.strftime('%I:%M %p') }}
+                            {{ activity.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
                         </p>
                     </div>
                     {% if activity.related_id and activity.related_object_type %}
