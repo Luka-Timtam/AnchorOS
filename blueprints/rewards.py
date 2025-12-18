@@ -60,7 +60,7 @@ def add_reward():
         flash('Please provide a valid name and cost.', 'error')
         return redirect(url_for('rewards.index'))
     
-    reward = RewardItem(
+    reward = RewardItem(  # type: ignore[call-arg]
         name=name,
         cost=cost,
         description=description
