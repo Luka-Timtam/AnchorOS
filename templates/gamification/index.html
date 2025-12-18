@@ -426,52 +426,54 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
-Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+(function() {
+    Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
 
-const xpData = {{ xp_this_week | tojson }};
-const today = new Date();
-const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const currentDay = (today.getDay() + 6) % 7;
+    const xpData = {{ xp_this_week | tojson }};
+    const today = new Date();
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const currentDay = (today.getDay() + 6) % 7;
 
-const labels = [];
-for (let i = 0; i < 7; i++) {
-    labels.push(dayNames[i]);
-}
+    const labels = [];
+    for (let i = 0; i < 7; i++) {
+        labels.push(dayNames[i]);
+    }
 
-const xpCtx = document.getElementById('xpChart');
-if (xpCtx) {
-    new Chart(xpCtx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'XP Earned',
-                data: xpData,
-                backgroundColor: 'rgba(49, 224, 247, 0.6)',
-                borderColor: '#31E0F7',
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
+    const xpCtx = document.getElementById('xpChart');
+    if (xpCtx) {
+        new Chart(xpCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'XP Earned',
+                    data: xpData,
+                    backgroundColor: 'rgba(49, 224, 247, 0.6)',
+                    borderColor: '#31E0F7',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 10 },
-                    grid: { color: 'rgba(255,255,255,0.05)' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
                 },
-                x: {
-                    grid: { display: false }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 10 },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
+})();
 </script>
 {% endblock %}

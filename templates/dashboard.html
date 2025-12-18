@@ -1004,130 +1004,134 @@ function handleWidgetModalClick(e) {
 initWidgetModalListeners();
 
 {% if settings.show_outreach_widget or settings.show_deals_widget or settings.show_project_revenue_widget or settings.show_mrr_widget %}
-Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
-Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+(function() {
+    Chart.defaults.color = 'rgba(255, 253, 247, 0.5)';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
 
-{% if settings.show_outreach_widget %}
-var outreachCtx = document.getElementById('outreachChart');
-if (outreachCtx) {
-    new Chart(outreachCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ week_labels | tojson }},
-            datasets: [{
-                label: 'Outreach',
-                data: {{ outreach_weekly_data | tojson }},
-                backgroundColor: 'rgba(49, 224, 247, 0.6)',
-                borderColor: '#31E0F7',
-                borderWidth: 1,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                x: { grid: { display: false } }
+    {% if settings.show_outreach_widget %}
+    const outreachCtx = document.getElementById('outreachChart');
+    if (outreachCtx) {
+        new Chart(outreachCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ week_labels | tojson }},
+                datasets: [{
+                    label: 'Outreach',
+                    data: {{ outreach_weekly_data | tojson }},
+                    backgroundColor: 'rgba(49, 224, 247, 0.6)',
+                    borderColor: '#31E0F7',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
             }
-        }
-    });
-}
-{% endif %}
+        });
+    }
+    {% endif %}
 
-{% if settings.show_deals_widget %}
-var dealsCtx = document.getElementById('dealsChart');
-if (dealsCtx) {
-    new Chart(dealsCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ week_labels | tojson }},
-            datasets: [{
-                label: 'Deals Closed',
-                data: {{ deals_weekly_data | tojson }},
-                backgroundColor: 'rgba(34, 197, 94, 0.6)',
-                borderColor: '#22c55e',
-                borderWidth: 1,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                x: { grid: { display: false } }
+    {% if settings.show_deals_widget %}
+    const dealsCtx = document.getElementById('dealsChart');
+    if (dealsCtx) {
+        new Chart(dealsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ week_labels | tojson }},
+                datasets: [{
+                    label: 'Deals Closed',
+                    data: {{ deals_weekly_data | tojson }},
+                    backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                    borderColor: '#22c55e',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
             }
-        }
-    });
-}
-{% endif %}
+        });
+    }
+    {% endif %}
 
-{% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
-var revenueCtx = document.getElementById('revenueChart');
-var revenueChart = null;
-var showingMrr = false;
+    {% if settings.show_project_revenue_widget or settings.show_mrr_widget %}
+    const revenueCtx = document.getElementById('revenueChart');
+    let revenueChart = null;
+    let showingMrr = false;
 
-var revenueData = {
-    labels: {{ month_labels | tojson }},
-    revenue: {{ monthly_revenue_data | tojson }},
-    mrr: {{ monthly_mrr_data | tojson }}
-};
+    const revenueData = {
+        labels: {{ month_labels | tojson }},
+        revenue: {{ monthly_revenue_data | tojson }},
+        mrr: {{ monthly_mrr_data | tojson }}
+    };
 
-function createRevenueChart(data, label) {
-    if (revenueChart) revenueChart.destroy();
-    revenueChart = new Chart(revenueCtx, {
-        type: 'line',
-        data: {
-            labels: revenueData.labels,
-            datasets: [{
-                label: label,
-                data: data,
-                borderColor: '#31E0F7',
-                backgroundColor: 'rgba(49, 224, 247, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#31E0F7',
-                pointBorderColor: '#31E0F7',
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                x: { grid: { display: false } }
+    function createRevenueChart(data, label) {
+        if (revenueChart) revenueChart.destroy();
+        revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueData.labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: '#31E0F7',
+                    backgroundColor: 'rgba(49, 224, 247, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#31E0F7',
+                    pointBorderColor: '#31E0F7',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
             }
-        }
-    });
-}
+        });
+    }
 
-if (revenueCtx) {
-    createRevenueChart(revenueData.revenue, 'Revenue');
-    
-    var toggle = document.getElementById('revenueToggle');
-    var toggleKnob = document.getElementById('toggleKnob');
-    var titleEl = document.getElementById('revenueChartTitle');
-    
-    toggle.addEventListener('click', function() {
-        showingMrr = !showingMrr;
-        if (showingMrr) {
-            toggleKnob.classList.add('translate-x-5');
-            toggleKnob.classList.remove('translate-x-0');
-            createRevenueChart(revenueData.mrr, 'MRR');
-            titleEl.textContent = 'MRR Growth (Last 12 Months)';
-        } else {
-            toggleKnob.classList.remove('translate-x-5');
-            toggleKnob.classList.add('translate-x-0');
-            createRevenueChart(revenueData.revenue, 'Revenue');
-            titleEl.textContent = 'Monthly Revenue (Last 12 Months)';
+    if (revenueCtx) {
+        createRevenueChart(revenueData.revenue, 'Revenue');
+        
+        const toggle = document.getElementById('revenueToggle');
+        const toggleKnob = document.getElementById('toggleKnob');
+        const titleEl = document.getElementById('revenueChartTitle');
+        
+        if (toggle) {
+            toggle.addEventListener('click', function() {
+                showingMrr = !showingMrr;
+                if (showingMrr) {
+                    toggleKnob.classList.add('translate-x-5');
+                    toggleKnob.classList.remove('translate-x-0');
+                    createRevenueChart(revenueData.mrr, 'MRR');
+                    titleEl.textContent = 'MRR Growth (Last 12 Months)';
+                } else {
+                    toggleKnob.classList.remove('translate-x-5');
+                    toggleKnob.classList.add('translate-x-0');
+                    createRevenueChart(revenueData.revenue, 'Revenue');
+                    titleEl.textContent = 'Monthly Revenue (Last 12 Months)';
+                }
+            });
         }
-    });
-}
-{% endif %}
+    }
+    {% endif %}
+})();
 {% endif %}
 
 var focusInterval = null;
