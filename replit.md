@@ -18,6 +18,7 @@ The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchem
 *   **Token System & Reward Shop:** In-app currency for purchasing customizable rewards, with a transaction history.
 *   **Daily Missions & Boss Fights:** Gamified challenges to encourage consistent engagement and reward completion.
 *   **Productivity Tools:** Focus Session Timer (Pomodoro-style), Mini Notebook with tagging and pinning, and customizable Goals for daily, weekly, and monthly targets.
+*   **Freelancing:** Dedicated section for tracking side income from photography, one-off jobs, consulting, side projects, and cash work. Includes category-based organization, analytics charts (monthly income and category breakdown), and automatic integration with lifetime revenue calculations.
 *   **Communication Aids:** Outreach Templates for efficient email, DM, and call script management.
 *   **Activity Timeline:** Unified feed of all significant user actions, grouped by day.
 *   **Calendar:** Dashboard widget and full-screen modal displaying tasks, follow-ups, and daily missions.
