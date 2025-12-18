@@ -473,14 +473,53 @@ class UnlockedReward(db.Model):
     level_achieved = db.Column(db.Integer, nullable=False)
     reward_text = db.Column(db.Text, nullable=False)
     unlocked_at = db.Column(db.DateTime, default=datetime.utcnow)
+    claimed_at = db.Column(db.DateTime, nullable=True)
     
-    def __init__(self, reward_type=None, reward_reference_id=None, level_achieved=None, reward_text=None, unlocked_at=None):
+    def __init__(self, reward_type=None, reward_reference_id=None, level_achieved=None, reward_text=None, unlocked_at=None, claimed_at=None):
         self.reward_type = reward_type
         self.reward_reference_id = reward_reference_id
         self.level_achieved = level_achieved
         self.reward_text = reward_text
         if unlocked_at:
             self.unlocked_at = unlocked_at
+        self.claimed_at = claimed_at
+
+
+class RevenueReward(db.Model):
+    __tablename__ = 'revenue_rewards'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    target_revenue = db.Column(db.Float, nullable=False, unique=True)
+    reward_text = db.Column(db.Text, nullable=False)
+    reward_icon = db.Column(db.String(50), default='gift')
+    is_active = db.Column(db.Boolean, default=True)
+    unlocked_at = db.Column(db.DateTime, nullable=True)
+    claimed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @staticmethod
+    def seed_defaults():
+        defaults = [
+            {'target_revenue': 1000, 'reward_text': 'Nice dinner out', 'reward_icon': 'utensils'},
+            {'target_revenue': 2500, 'reward_text': 'New pair of sneakers', 'reward_icon': 'shoe'},
+            {'target_revenue': 5000, 'reward_text': 'Weekend spa day', 'reward_icon': 'spa'},
+            {'target_revenue': 10000, 'reward_text': 'New tech gadget', 'reward_icon': 'laptop'},
+            {'target_revenue': 15000, 'reward_text': 'Designer item', 'reward_icon': 'star'},
+            {'target_revenue': 25000, 'reward_text': 'Weekend getaway trip', 'reward_icon': 'plane'},
+            {'target_revenue': 50000, 'reward_text': 'Luxury watch', 'reward_icon': 'watch'},
+            {'target_revenue': 75000, 'reward_text': 'High-end home upgrade', 'reward_icon': 'home'},
+            {'target_revenue': 100000, 'reward_text': 'Dream vacation package', 'reward_icon': 'globe'},
+            {'target_revenue': 150000, 'reward_text': 'Investment portfolio contribution', 'reward_icon': 'chart'},
+            {'target_revenue': 200000, 'reward_text': 'Luxury experience of choice', 'reward_icon': 'crown'},
+            {'target_revenue': 250000, 'reward_text': 'Major life upgrade fund', 'reward_icon': 'rocket'},
+            {'target_revenue': 300000, 'reward_text': 'McLaren MP4-12C Spider', 'reward_icon': 'car'},
+        ]
+        for item in defaults:
+            existing = RevenueReward.query.filter_by(target_revenue=item['target_revenue']).first()
+            if not existing:
+                reward = RevenueReward(**item)
+                db.session.add(reward)
+        db.session.commit()
 
 
 class UserTokens(db.Model):

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog, WinsLog, BossFight, RewardItem
+from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog, WinsLog, BossFight, RewardItem, RevenueReward, Client
 from datetime import datetime, date, timedelta
 from sqlalchemy import func
 
@@ -157,6 +157,25 @@ def check_milestone_rewards(current_level):
             )
             db.session.add(unlocked)
             flash(f'Milestone reward unlocked: {reward.reward_text}!', 'success')
+    
+    db.session.commit()
+
+
+def get_lifetime_revenue():
+    total = db.session.query(func.sum(Client.amount_charged)).scalar() or 0
+    return float(total)
+
+
+def check_revenue_rewards():
+    RevenueReward.seed_defaults()
+    lifetime_revenue = get_lifetime_revenue()
+    revenue_rewards = RevenueReward.query.filter_by(is_active=True, unlocked_at=None).all()
+    now = datetime.utcnow()
+    
+    for reward in revenue_rewards:
+        if lifetime_revenue >= reward.target_revenue:
+            reward.unlocked_at = now
+            flash(f'Revenue milestone unlocked: {reward.reward_text}!', 'success')
     
     db.session.commit()
 

@@ -63,7 +63,7 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <a href="{{ url_for('goals.index') }}" class="group glass-card p-5 hover:border-aqua/50 transition-all">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-aqua/20 text-aqua flex items-center justify-center group-hover:bg-aqua group-hover:text-graphite transition-colors">
@@ -93,6 +93,24 @@
                 <p class="text-sm text-medium"><span class="font-medium text-yellow-400">{{ token_balance }}</span> tokens | {{ available_rewards }} rewards</p>
             </div>
             <svg class="w-5 h-5 text-medium group-hover:text-yellow-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('battlepass.index') }}" class="group glass-card p-5 hover:border-purple-400/50 transition-all relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10"></div>
+        <div class="relative flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="font-semibold text-high group-hover:text-purple-400 transition-colors">Battle Pass</h3>
+                <p class="text-sm text-medium">Track all your rewards progress</p>
+            </div>
+            <svg class="w-5 h-5 text-medium group-hover:text-purple-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
         </div>

@@ -34,6 +34,7 @@ def create_app():
     from blueprints.calendar import calendar_bp
     from blueprints.focus import focus_bp
     from blueprints.monthly_review import monthly_review_bp
+    from blueprints.battlepass import battlepass_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -56,6 +57,7 @@ def create_app():
     app.register_blueprint(calendar_bp)
     app.register_blueprint(focus_bp)
     app.register_blueprint(monthly_review_bp)
+    app.register_blueprint(battlepass_bp)
     
     @app.before_request
     def require_login():
@@ -66,8 +68,21 @@ def create_app():
     
     with app.app_context():
         db.create_all()
+        run_migrations()
     
     return app
+
+
+def run_migrations():
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    
+    if 'unlocked_rewards' in inspector.get_table_names():
+        columns = [col['name'] for col in inspector.get_columns('unlocked_rewards')]
+        if 'claimed_at' not in columns:
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE unlocked_rewards ADD COLUMN claimed_at DATETIME'))
+                conn.commit()
 
 app = create_app()
 
