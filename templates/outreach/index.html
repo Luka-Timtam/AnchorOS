@@ -129,9 +129,9 @@
         <tbody>
             {% for log in logs %}
             <tr>
-                <td class="text-medium">{{ log.date }}</td>
-                <td class="text-medium capitalize">{{ log.type.replace('_', ' ') }}</td>
-                <td>
+                <td data-label="Date" class="text-medium">{{ log.date }}</td>
+                <td data-label="Type" class="text-medium capitalize">{{ log.type.replace('_', ' ') }}</td>
+                <td data-label="Lead">
                     {% if log.lead %}
                     <a href="{{ url_for('leads.detail', id=log.lead.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
                         {{ log.lead.name }}
@@ -140,7 +140,7 @@
                     <span class="text-low">-</span>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="Outcome">
                     <span class="pill capitalize
                         {% if log.outcome == 'closed_won' %}pill-success
                         {% elif log.outcome == 'closed_lost' %}pill-cinnabar
@@ -149,8 +149,8 @@
                         {{ log.outcome.replace('_', ' ') }}
                     </span>
                 </td>
-                <td class="text-medium max-w-xs truncate">{{ log.notes or '-' }}</td>
-                <td>
+                <td data-label="Notes" class="text-medium max-w-xs truncate">{{ log.notes or '-' }}</td>
+                <td data-label="Actions">
                     <form method="POST" action="{{ url_for('outreach.delete', id=log.id) }}" class="inline" onsubmit="return confirm('Delete this log?')">
                         <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                     </form>

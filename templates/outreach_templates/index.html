@@ -64,7 +64,7 @@
             <tbody>
                 {% for template in email_templates %}
                 <tr>
-                    <td>
+                    <td data-label="Name">
                         <div class="flex items-center gap-2">
                             {% if template.is_favourite %}
                             <span class="text-yellow-400">&#9733;</span>
@@ -72,10 +72,10 @@
                             <span class="font-medium text-high">{{ template.name }}</span>
                         </div>
                     </td>
-                    <td class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
-                    <td class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
-                    <td class="text-right">
-                        <div class="flex justify-end gap-3">
+                    <td data-label="Subcategory" class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
+                    <td data-label="Preview" class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
+                    <td data-label="Actions" class="text-right">
+                        <div class="flex flex-wrap justify-end gap-3">
                             <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
                             <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-medium hover:text-high text-sm transition-colors">Edit</a>
                             <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-400 hover:text-green-300 text-sm transition-colors">Copy</button>
@@ -114,7 +114,7 @@
             <tbody>
                 {% for template in dm_templates %}
                 <tr>
-                    <td>
+                    <td data-label="Name">
                         <div class="flex items-center gap-2">
                             {% if template.is_favourite %}
                             <span class="text-yellow-400">&#9733;</span>
@@ -122,10 +122,10 @@
                             <span class="font-medium text-high">{{ template.name }}</span>
                         </div>
                     </td>
-                    <td class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
-                    <td class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
-                    <td class="text-right">
-                        <div class="flex justify-end gap-3">
+                    <td data-label="Subcategory" class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
+                    <td data-label="Preview" class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
+                    <td data-label="Actions" class="text-right">
+                        <div class="flex flex-wrap justify-end gap-3">
                             <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
                             <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-medium hover:text-high text-sm transition-colors">Edit</a>
                             <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-400 hover:text-green-300 text-sm transition-colors">Copy</button>
@@ -164,7 +164,7 @@
             <tbody>
                 {% for template in call_templates %}
                 <tr>
-                    <td>
+                    <td data-label="Name">
                         <div class="flex items-center gap-2">
                             {% if template.is_favourite %}
                             <span class="text-yellow-400">&#9733;</span>
@@ -172,10 +172,10 @@
                             <span class="font-medium text-high">{{ template.name }}</span>
                         </div>
                     </td>
-                    <td class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
-                    <td class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
-                    <td class="text-right">
-                        <div class="flex justify-end gap-3">
+                    <td data-label="Subcategory" class="text-medium">{{ template.subcategory|replace('_', ' ')|title if template.subcategory else '-' }}</td>
+                    <td data-label="Preview" class="text-low max-w-xs truncate">{{ template.content[:80] }}{% if template.content|length > 80 %}...{% endif %}</td>
+                    <td data-label="Actions" class="text-right">
+                        <div class="flex flex-wrap justify-end gap-3">
                             <a href="{{ url_for('outreach_templates.view', id=template.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
                             <a href="{{ url_for('outreach_templates.edit', id=template.id) }}" class="text-medium hover:text-high text-sm transition-colors">Edit</a>
                             <button onclick="copyToClipboard({{ template.id }}, `{{ template.content|e }}`)" class="text-green-400 hover:text-green-300 text-sm transition-colors">Copy</button>

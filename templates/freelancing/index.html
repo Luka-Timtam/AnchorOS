@@ -118,7 +118,7 @@
             <tbody>
                 {% for job in jobs %}
                 <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td class="py-4 px-6">
+                    <td data-label="Job" class="py-4 px-6">
                         <div>
                             <p class="text-high font-medium">{{ job.title }}</p>
                             {% if job.description %}
@@ -126,19 +126,19 @@
                             {% endif %}
                         </div>
                     </td>
-                    <td class="py-4 px-6">
+                    <td data-label="Category" class="py-4 px-6">
                         <span class="pill-aqua">{{ category_labels.get(job.category, job.category.title()) }}</span>
                     </td>
-                    <td class="py-4 px-6 text-medium">
+                    <td data-label="Client" class="py-4 px-6 text-medium">
                         {{ job.client_name or '-' }}
                     </td>
-                    <td class="py-4 px-6 text-medium">
+                    <td data-label="Date" class="py-4 px-6 text-medium">
                         {{ job.date_completed.strftime('%b %d, %Y') if job.date_completed else '-' }}
                     </td>
-                    <td class="py-4 px-6 text-right">
+                    <td data-label="Amount" class="py-4 px-6 text-right">
                         <span class="text-green-400 font-semibold">${{ "{:,.2f}".format(job.amount) }}</span>
                     </td>
-                    <td class="py-4 px-6">
+                    <td data-label="Actions" class="py-4 px-6">
                         <div class="flex items-center justify-end gap-2">
                             <a href="{{ url_for('freelancing.edit', id=job.id) }}" 
                                class="p-2 rounded-lg hover:bg-white/10 text-medium hover:text-aqua transition-colors"

@@ -85,14 +85,14 @@
         <tbody>
             {% for client in clients %}
             <tr>
-                <td>
+                <td data-label="Name">
                     <a href="{{ url_for('clients.detail', id=client.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                         {{ client.name }}
                     </a>
                 </td>
-                <td class="text-medium">{{ client.business_name or '-' }}</td>
-                <td class="text-medium capitalize">{{ client.project_type.replace('_', ' ') }}</td>
-                <td>
+                <td data-label="Business" class="text-medium">{{ client.business_name or '-' }}</td>
+                <td data-label="Project Type" class="text-medium capitalize">{{ client.project_type.replace('_', ' ') }}</td>
+                <td data-label="Status">
                     <span class="pill 
                         {% if client.status == 'active' %}pill-success
                         {% elif client.status == 'completed' %}pill-aqua
@@ -101,15 +101,17 @@
                         {{ client.status.title() }}
                     </span>
                 </td>
-                <td class="text-green-400 font-medium">
+                <td data-label="MRR" class="text-green-400 font-medium">
                     {% set mrr = (client.monthly_hosting_fee if client.hosting_active else 0) + (client.monthly_saas_fee if client.saas_active else 0) %}
                     ${{ "%.2f"|format(mrr) }}
                 </td>
-                <td class="space-x-3">
-                    <a href="{{ url_for('clients.edit', id=client.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
-                    <form method="POST" action="{{ url_for('clients.delete', id=client.id) }}" class="inline" onsubmit="return confirm('Delete this client?')">
-                        <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
-                    </form>
+                <td data-label="Actions" class="space-x-3">
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ url_for('clients.edit', id=client.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
+                        <form method="POST" action="{{ url_for('clients.delete', id=client.id) }}" class="inline" onsubmit="return confirm('Delete this client?')">
+                            <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% else %}

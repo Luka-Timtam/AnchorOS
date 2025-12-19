@@ -93,13 +93,13 @@
         <tbody>
             {% for lead in leads %}
             <tr>
-                <td>
+                <td data-label="Name">
                     <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                         {{ lead.name }}
                     </a>
                 </td>
-                <td class="text-medium">{{ lead.business_name or '-' }}</td>
-                <td>
+                <td data-label="Business" class="text-medium">{{ lead.business_name or '-' }}</td>
+                <td data-label="Website">
                     {% if lead.has_website %}
                     <div class="space-y-1">
                         {% for issue in lead.website_quality.split(',') %}
@@ -112,14 +112,14 @@
                     <span class="pill pill-cinnabar">No Website</span>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="Demo">
                     {% if lead.demo_site_built %}
                     <span class="pill pill-success">Built</span>
                     {% else %}
                     <span class="pill pill-neutral">Not Yet</span>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="Status">
                     <form method="POST" action="{{ url_for('leads.update_status', id=lead.id) }}" class="inline">
                         <select name="status" onchange="this.form.submit()" 
                             class="select-glass text-sm py-1.5 px-3
@@ -135,15 +135,17 @@
                         </select>
                     </form>
                 </td>
-                <td class="text-medium">{{ lead.next_action_date or '-' }}</td>
-                <td class="space-x-3">
-                    <a href="{{ url_for('leads.edit', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
-                    {% if lead.status != 'closed_won' %}
-                    <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="text-green-400 hover:text-green-300 text-sm transition-colors">Convert</a>
-                    {% endif %}
-                    <form method="POST" action="{{ url_for('leads.archive', id=lead.id) }}" class="inline" onsubmit="return confirm('Archive this lead?')">
-                        <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Archive</button>
-                    </form>
+                <td data-label="Next Action" class="text-medium">{{ lead.next_action_date or '-' }}</td>
+                <td data-label="Actions" class="space-x-3">
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ url_for('leads.edit', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
+                        {% if lead.status != 'closed_won' %}
+                        <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="text-green-400 hover:text-green-300 text-sm transition-colors">Convert</a>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('leads.archive', id=lead.id) }}" class="inline" onsubmit="return confirm('Archive this lead?')">
+                            <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Archive</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% else %}
@@ -179,13 +181,13 @@
                 <tbody>
                     {% for lead in converted_leads %}
                     <tr>
-                        <td>
+                        <td data-label="Name">
                             <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                                 {{ lead.name }}
                             </a>
                         </td>
-                        <td class="text-medium">{{ lead.business_name or '-' }}</td>
-                        <td>
+                        <td data-label="Business" class="text-medium">{{ lead.business_name or '-' }}</td>
+                        <td data-label="Website">
                             {% if lead.has_website %}
                             <div class="space-y-1">
                                 {% for issue in lead.website_quality.split(',') %}
@@ -198,21 +200,23 @@
                             <span class="pill pill-cinnabar">No Website</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="Demo">
                             {% if lead.demo_site_built %}
                             <span class="pill pill-success">Built</span>
                             {% else %}
                             <span class="pill pill-neutral">Not Built</span>
                             {% endif %}
                         </td>
-                        <td class="text-medium">
+                        <td data-label="Converted" class="text-medium">
                             {{ lead.converted_at.strftime('%Y-%m-%d') if lead.converted_at else '-' }}
                         </td>
-                        <td class="space-x-3">
-                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
-                            {% if lead.converted_client %}
-                            <a href="{{ url_for('clients.detail', id=lead.converted_client[0].id) }}" class="text-green-400 hover:text-green-300 text-sm transition-colors">View Client</a>
-                            {% endif %}
+                        <td data-label="Actions" class="space-x-3">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                                {% if lead.converted_client %}
+                                <a href="{{ url_for('clients.detail', id=lead.converted_client[0].id) }}" class="text-green-400 hover:text-green-300 text-sm transition-colors">View Client</a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -246,23 +250,25 @@
                 <tbody>
                     {% for lead in archived_leads %}
                     <tr>
-                        <td>
+                        <td data-label="Name">
                             <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                                 {{ lead.name }}
                             </a>
                         </td>
-                        <td class="text-medium">{{ lead.business_name or '-' }}</td>
-                        <td>
+                        <td data-label="Business" class="text-medium">{{ lead.business_name or '-' }}</td>
+                        <td data-label="Status">
                             <span class="pill pill-neutral">{{ lead.status.replace('_', ' ').title() }}</span>
                         </td>
-                        <td class="text-medium">
+                        <td data-label="Archived" class="text-medium">
                             {{ lead.archived_at.strftime('%Y-%m-%d') if lead.archived_at else '-' }}
                         </td>
-                        <td class="space-x-3">
-                            <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
-                            <form method="POST" action="{{ url_for('leads.unarchive', id=lead.id) }}" class="inline">
-                                <button type="submit" class="text-green-400 hover:text-green-300 text-sm transition-colors">Restore</button>
-                            </form>
+                        <td data-label="Actions" class="space-x-3">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
+                                <form method="POST" action="{{ url_for('leads.unarchive', id=lead.id) }}" class="inline">
+                                    <button type="submit" class="text-green-400 hover:text-green-300 text-sm transition-colors">Restore</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -296,17 +302,17 @@
                 <tbody>
                     {% for lead in closed_lost_leads %}
                     <tr>
-                        <td>
+                        <td data-label="Name">
                             <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 font-medium transition-colors">
                                 {{ lead.name }}
                             </a>
                         </td>
-                        <td class="text-medium">{{ lead.business_name or '-' }}</td>
-                        <td class="text-medium">{{ lead.close_reason or '-' }}</td>
-                        <td class="text-medium">
+                        <td data-label="Business" class="text-medium">{{ lead.business_name or '-' }}</td>
+                        <td data-label="Close Reason" class="text-medium">{{ lead.close_reason or '-' }}</td>
+                        <td data-label="Closed" class="text-medium">
                             {{ lead.closed_at.strftime('%Y-%m-%d') if lead.closed_at else '-' }}
                         </td>
-                        <td>
+                        <td data-label="Actions">
                             <a href="{{ url_for('leads.detail', id=lead.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">View</a>
                         </td>
                     </tr>

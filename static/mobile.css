@@ -1,0 +1,512 @@
+/* 
+ * AnchorOS Mobile Styles
+ * Breakpoint: max-width 768px
+ * This file contains ONLY mobile-specific overrides
+ * Desktop styles remain completely unchanged
+ */
+
+@media (max-width: 768px) {
+    /* ================================
+       LAYOUT & SPACING
+       ================================ */
+    
+    #mainContent {
+        padding-top: 60px;
+    }
+    
+    main.transition-fade {
+        padding: 1rem !important;
+        padding-top: 0.5rem !important;
+    }
+    
+    /* Page headers */
+    .flex.justify-between.items-center.mb-8 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .flex.justify-between.items-center.mb-8 h1 {
+        font-size: 1.75rem;
+    }
+    
+    /* Full width primary buttons in headers */
+    .flex.justify-between.items-center.mb-8 .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* ================================
+       MOBILE HAMBURGER MENU
+       ================================ */
+    
+    #mobileMenuBtn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0.75rem;
+        left: 0.75rem;
+        z-index: 50;
+        width: 44px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+    }
+    
+    #sidebar {
+        position: fixed;
+        left: -300px;
+        width: 280px !important;
+        z-index: 55;
+        height: 100vh;
+        transition: left 0.3s ease;
+    }
+    
+    #sidebar.mobile-open {
+        left: 0;
+    }
+    
+    #sidebar.mobile-open .nav-label {
+        opacity: 1;
+        width: auto;
+    }
+    
+    #sidebar.mobile-open .sidebar-item {
+        justify-content: flex-start;
+        padding: 0.75rem 1rem;
+    }
+    
+    #sidebar.mobile-open .sidebar-item svg {
+        margin: 0;
+    }
+    
+    #sidebar.mobile-open .sidebar-search-btn {
+        justify-content: flex-start;
+        padding: 0.625rem 0.75rem;
+    }
+    
+    #sidebar.mobile-open .sidebar-search-btn .search-text {
+        display: inline;
+    }
+    
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 45;
+        backdrop-filter: blur(4px);
+    }
+    
+    .mobile-overlay.active {
+        display: block;
+    }
+    
+    /* ================================
+       TABLES TO CARDS CONVERSION
+       Only applies to tables with data-label attributes
+       ================================ */
+    
+    /* Hide table headers on mobile for tables with mobile-card class */
+    .mobile-card-table thead {
+        display: none;
+    }
+    
+    .mobile-card-table tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .mobile-card-table tbody tr {
+        display: flex;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        gap: 0.5rem;
+    }
+    
+    .mobile-card-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .mobile-card-table tbody td {
+        display: flex;
+        flex-direction: column;
+        padding: 0.25rem 0;
+        border: none !important;
+        text-align: left;
+    }
+    
+    /* Add labels before cell content using data attributes */
+    .mobile-card-table tbody td[data-label]::before {
+        content: attr(data-label);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgba(255, 253, 247, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Primary cell (name/title) styling */
+    .mobile-card-table tbody td:first-child {
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Actions cell styling */
+    .mobile-card-table tbody td:last-child {
+        padding-top: 0.75rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Mobile action buttons */
+    .mobile-card-table tbody td:last-child .flex,
+    .mobile-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .mobile-card-table tbody td:last-child a,
+    .mobile-card-table tbody td:last-child button {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.875rem;
+    }
+    
+    /* ================================
+       FORMS & INPUTS
+       ================================ */
+    
+    /* Filter forms */
+    .grid.grid-cols-1.md\\:grid-cols-6,
+    .grid.grid-cols-1.md\\:grid-cols-5,
+    .grid.grid-cols-1.md\\:grid-cols-4,
+    .grid.grid-cols-1.md\\:grid-cols-3,
+    .grid.grid-cols-1.md\\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    /* Form inputs - larger tap targets */
+    .input-glass,
+    .select-glass,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="url"],
+    select,
+    textarea {
+        min-height: 48px;
+        font-size: 16px !important;
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Buttons - larger tap targets */
+    .btn-primary,
+    .btn-secondary,
+    button[type="submit"],
+    .glass-card button,
+    a.btn-primary,
+    a.btn-secondary {
+        min-height: 48px;
+        padding: 0.75rem 1.25rem;
+        font-size: 1rem;
+    }
+    
+    /* Full width buttons where appropriate */
+    form .btn-primary,
+    form .btn-secondary,
+    form button[type="submit"] {
+        width: 100%;
+    }
+    
+    /* ================================
+       CARDS & GLASS PANELS
+       ================================ */
+    
+    .glass-card {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    
+    .glass-card.p-5,
+    .glass-card.p-6,
+    .glass-card.p-8 {
+        padding: 1rem !important;
+    }
+    
+    /* Stat grids */
+    .grid.grid-cols-2.md\\:grid-cols-4,
+    .grid.grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem;
+    }
+    
+    /* Single column grids */
+    .grid.grid-cols-3,
+    .grid.grid-cols-1.md\\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .grid.grid-cols-2 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    /* Dashboard widget grids */
+    .grid.grid-cols-1.lg\\:grid-cols-2,
+    .grid.grid-cols-1.lg\\:grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* ================================
+       TYPOGRAPHY
+       ================================ */
+    
+    h1 {
+        font-size: 1.75rem !important;
+    }
+    
+    h2 {
+        font-size: 1.375rem !important;
+    }
+    
+    h3 {
+        font-size: 1.125rem !important;
+    }
+    
+    /* ================================
+       STATUS PILLS & BADGES
+       ================================ */
+    
+    .pill-aqua,
+    .pill-success,
+    .pill-warning,
+    .pill-error,
+    [class*="pill-"] {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    /* ================================
+       MODALS
+       ================================ */
+    
+    #searchModal .glass-card,
+    .modal-content,
+    [id*="Modal"] .glass-card {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+    }
+    
+    #searchModal .glass-card {
+        margin-top: 4rem;
+    }
+    
+    /* ================================
+       DASHBOARD SPECIFIC
+       ================================ */
+    
+    /* Stats cards */
+    .dashboard-stats .glass-card {
+        padding: 0.875rem;
+    }
+    
+    .dashboard-stats .text-3xl,
+    .dashboard-stats .text-2xl {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Calendar widget */
+    .calendar-grid {
+        font-size: 0.75rem;
+    }
+    
+    /* ================================
+       GAMIFICATION
+       ================================ */
+    
+    /* XP bar */
+    .xp-bar-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    /* Achievement badges */
+    .achievement-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    /* ================================
+       ANALYTICS
+       ================================ */
+    
+    /* Charts */
+    .chart-container,
+    canvas {
+        max-width: 100%;
+        height: auto !important;
+        min-height: 200px;
+    }
+    
+    /* ================================
+       DETAIL PAGES
+       ================================ */
+    
+    /* Lead/Client detail grids */
+    .detail-grid,
+    .grid.grid-cols-1.md\\:grid-cols-2.gap-6 {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Info rows */
+    .detail-row,
+    .flex.justify-between.py-3 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    /* ================================
+       NOTES & TIMELINE
+       ================================ */
+    
+    .timeline-item {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        left: 0;
+    }
+    
+    /* Note cards */
+    .note-card {
+        padding: 1rem;
+    }
+    
+    /* ================================
+       BATTLEPASS
+       ================================ */
+    
+    .battlepass-track {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 1rem;
+    }
+    
+    .battlepass-milestone {
+        min-width: 200px;
+        flex-shrink: 0;
+    }
+    
+    /* ================================
+       FREELANCING
+       ================================ */
+    
+    .freelancing-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* ================================
+       SETTINGS
+       ================================ */
+    
+    .settings-section {
+        padding: 1rem;
+    }
+    
+    /* ================================
+       UTILITY CLASSES
+       ================================ */
+    
+    /* Hide on mobile */
+    .mobile-hidden {
+        display: none !important;
+    }
+    
+    /* Show only on mobile */
+    .mobile-only {
+        display: block !important;
+    }
+    
+    /* Full width on mobile */
+    .mobile-full {
+        width: 100% !important;
+    }
+    
+    /* Stack flex items */
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+    
+    /* Prevent horizontal scroll */
+    body,
+    #mainContent,
+    main {
+        overflow-x: hidden;
+    }
+    
+    /* Scrollable horizontal containers */
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* ================================
+       DROPDOWN & COLLAPSIBLE SECTIONS
+       ================================ */
+    
+    .dropdown-header,
+    [onclick*="toggle"] {
+        min-height: 48px;
+        padding: 0.875rem 1rem;
+    }
+    
+    /* ================================
+       LINKS & TAP TARGETS
+       ================================ */
+    
+    a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .sidebar-item a,
+    nav a {
+        min-height: 44px;
+    }
+    
+    /* Inline links exception */
+    p a,
+    span a,
+    .text-aqua {
+        min-height: auto;
+        display: inline;
+    }
+}
+
+/* Desktop styles preserved - no changes above 768px */
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none !important;
+    }
+}

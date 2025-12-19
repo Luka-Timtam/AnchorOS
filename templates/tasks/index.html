@@ -158,13 +158,13 @@
         <tbody>
             {% for task in tasks %}
             <tr>
-                <td>
+                <td data-label="Task">
                     <span class="font-medium text-high">{{ task.title }}</span>
                     {% if task.description %}
                     <p class="text-sm text-low truncate max-w-xs mt-1">{{ task.description }}</p>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="Due Date">
                     {% if task.due_date %}
                     <span class="{% if task.due_date < today and task.status != 'done' %}text-cinnabar font-medium{% else %}text-medium{% endif %}">
                         {{ task.due_date }}
@@ -173,7 +173,7 @@
                     <span class="text-low">-</span>
                     {% endif %}
                 </td>
-                <td>
+                <td data-label="Status">
                     <select onchange="updateTaskStatus({{ task.id }}, this.value, this)" 
                         class="select-glass text-sm py-1.5 pl-3 pr-8 transition-all duration-300
                         {% if task.status == 'done' %}!bg-green-500/20 !border-green-500/30 !text-green-400
@@ -186,7 +186,7 @@
                         {% endfor %}
                     </select>
                 </td>
-                <td class="text-sm">
+                <td data-label="Related To" class="text-sm">
                     {% if task.lead %}
                     <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
                         Lead: {{ task.lead.name }}
@@ -199,11 +199,13 @@
                     <span class="text-low">-</span>
                     {% endif %}
                 </td>
-                <td class="space-x-3">
-                    <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
-                    <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
-                        <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
-                    </form>
+                <td data-label="Actions" class="space-x-3">
+                    <div class="flex flex-wrap gap-2">
+                        <a href="{{ url_for('tasks.edit', id=task.id) }}" class="text-aqua hover:text-aqua/80 text-sm transition-colors">Edit</a>
+                        <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
+                            <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% else %}
@@ -237,11 +239,11 @@
                 <tbody>
                     {% for task in completed_tasks %}
                     <tr>
-                        <td>
+                        <td data-label="Task">
                             <span class="text-medium line-through">{{ task.title }}</span>
                         </td>
-                        <td class="text-medium">{{ task.completed_at.strftime('%Y-%m-%d') if task.completed_at else '-' }}</td>
-                        <td class="text-sm">
+                        <td data-label="Completed" class="text-medium">{{ task.completed_at.strftime('%Y-%m-%d') if task.completed_at else '-' }}</td>
+                        <td data-label="Related To" class="text-sm">
                             {% if task.lead %}
                             <a href="{{ url_for('leads.detail', id=task.lead.id) }}" class="text-aqua hover:text-aqua/80 transition-colors">
                                 Lead: {{ task.lead.name }}
@@ -254,7 +256,7 @@
                             <span class="text-low">-</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="Actions">
                             <form method="POST" action="{{ url_for('tasks.delete', id=task.id) }}" class="inline" onsubmit="return confirm('Delete this task?')">
                                 <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>

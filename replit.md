@@ -76,3 +76,31 @@ Dark glassmorphic design with modern aesthetics:
 - Sidebar stays persistent (not animated)
 - Form submissions bypass transitions to prevent issues
 - Page scripts reinitialize on content replace via `swup.hooks.on('content:replace')`
+
+## Mobile Optimization (December 2025)
+CSS-only responsive design with dedicated `static/mobile.css` file.
+
+**Breakpoints:**
+- Desktop: ≥769px (unchanged, all existing styles preserved)
+- Mobile: ≤768px (mobile-specific overrides only)
+
+**Key Mobile Features:**
+- Hamburger menu for sidebar navigation (slides out as overlay)
+- Tables convert to stacked card layouts using `data-label` attributes
+- Forms stack vertically with larger touch targets (48px min-height)
+- Grid layouts collapse to single column
+- Typography scaled for mobile readability
+- No horizontal scrolling
+
+**Implementation Rules:**
+- All mobile styles in `static/mobile.css` using `@media (max-width: 768px)`
+- Desktop CSS never modified - mobile uses overrides only
+- No JavaScript-based layout switching
+- Tables require `data-label="Column Name"` on each `<td>` for card labels
+- Action buttons wrapped in `<div class="flex flex-wrap gap-2">` for mobile
+
+**Mobile Utility Classes:**
+- `.mobile-hidden` - Hide on mobile only
+- `.mobile-only` - Show on mobile only
+- `.mobile-full` - Full width on mobile
+- `.mobile-stack` - Stack flex items vertically on mobile
