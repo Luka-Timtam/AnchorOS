@@ -23,7 +23,9 @@ The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchem
 *   **Activity Timeline:** Unified feed of all significant user actions, grouped by day.
 *   **Calendar:** Dashboard widget and full-screen modal displaying tasks, follow-ups, and daily missions.
 *   **Global Search:** Command palette for quick searching across all application data.
-*   **Settings:** Includes "Pause Mode" to temporarily halt gamification elements without affecting core tasks.
+*   **Settings:** Includes "Pause Mode" to temporarily halt gamification elements without affecting core tasks. Features "Data & Safety" section for full data export.
+*   **Data Export:** Download all CRM data as a ZIP file containing CSV exports (leads, clients, tasks, notes, outreach logs, revenue entries, activity log, analytics summary).
+*   **Confirmation Dialogs:** All destructive actions (delete buttons) require explicit confirmation via modal dialog to prevent accidental data loss.
 *   **Daily Summary Email:** Automated email containing performance summaries and upcoming tasks.
 
 **Project Structure:**
