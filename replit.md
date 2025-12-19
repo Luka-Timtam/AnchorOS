@@ -96,7 +96,7 @@ CSS-only responsive design with dedicated `static/mobile.css` file.
 - All mobile styles in `static/mobile.css` using `@media (max-width: 768px)`
 - Desktop CSS never modified - mobile uses overrides only
 - No JavaScript-based layout switching
-- Tables require `data-label="Column Name"` on each `<td>` for card labels
+- Tables require `mobile-card-table` class on `<table>` and `data-label="Column Name"` on each `<td>` for card labels
 - Action buttons wrapped in `<div class="flex flex-wrap gap-2">` for mobile
 
 **Mobile Utility Classes:**
