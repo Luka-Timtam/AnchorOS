@@ -68,9 +68,13 @@ def create_app():
         mobile_keywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone']
         return any(keyword in user_agent for keyword in mobile_keywords)
     
+    @app.route('/health')
+    def health_check():
+        return 'OK', 200
+    
     @app.before_request
     def require_login():
-        allowed_routes = ['auth.login', 'static', 'internal.run_daily_summary']
+        allowed_routes = ['auth.login', 'static', 'internal.run_daily_summary', 'health_check']
         if request.endpoint and request.endpoint not in allowed_routes:
             if not session.get('authenticated'):
                 return redirect(url_for('auth.login'))
