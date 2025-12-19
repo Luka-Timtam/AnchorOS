@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from datetime import date, datetime, timedelta
-from models import db, Lead, Client, Task, OutreachLog, Note, FreelanceJob, UserStats, UserSettings
+from models import db, Lead, Client, Task, OutreachLog, Note, FreelanceJob, UserStats, UserSettings, ActivityLog, XPLog
+from blueprints.gamification import add_xp, add_tokens, update_mission_progress, XP_RULES, TOKEN_RULES
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/mobile')
 
@@ -113,6 +114,7 @@ def lead_new():
         )
         db.session.add(lead)
         db.session.commit()
+        ActivityLog.log_activity('lead_created', f'Created lead: {lead.name}', lead.id, 'lead')
         flash('Lead added successfully', 'success')
         return redirect(url_for('mobile.leads'))
     
@@ -181,6 +183,7 @@ def client_new():
         )
         db.session.add(client)
         db.session.commit()
+        ActivityLog.log_activity('client_created', f'Created client: {client.name}', client.id, 'client')
         flash('Client added successfully', 'success')
         return redirect(url_for('mobile.clients'))
     
@@ -213,6 +216,7 @@ def task_new():
         )
         db.session.add(task)
         db.session.commit()
+        ActivityLog.log_activity('task_created', f'Created task: {task.title}', task.id, 'task')
         flash('Task added', 'success')
         return redirect(url_for('mobile.tasks'))
     
@@ -222,9 +226,19 @@ def task_new():
 @mobile_bp.route('/tasks/<int:task_id>/complete', methods=['POST'])
 def task_complete(task_id):
     task = Task.query.get_or_404(task_id)
+    old_status = task.status
     task.status = 'done'
     db.session.commit()
-    flash('Task completed', 'success')
+    
+    if old_status != 'done':
+        add_xp(XP_RULES.get('task_done', 8), 'Task completed')
+        add_tokens(TOKEN_RULES.get('task_done', 1), 'Task completed')
+        update_mission_progress('complete_tasks')
+        ActivityLog.log_activity('task_completed', f'Completed task: {task.title}', task.id, 'task')
+        flash('Task completed! +8 XP, +1 token', 'success')
+    else:
+        flash('Task already completed', 'success')
+    
     return redirect(request.referrer or url_for('mobile.tasks'))
 
 
@@ -265,13 +279,27 @@ def note_new():
             flash('Note content is required', 'error')
             return render_template('mobile/note_form.html', title=title, content=content)
         
+        is_first_today = not Note.has_note_today()
+        
         note = Note(
             title=title if title else 'Quick Note',
             content=content
         )
         db.session.add(note)
         db.session.commit()
-        flash('Note saved', 'success')
+        
+        if is_first_today:
+            user_stats = UserStats.get_stats()
+            user_stats.current_xp += 2
+            xp_log = XPLog(amount=2, reason="First note of the day")
+            db.session.add(xp_log)
+            db.session.commit()
+            ActivityLog.log_activity('note_created', f'Created note: {note.title}', note.id, 'note')
+            flash('Note saved! +2 XP for first note today!', 'success')
+        else:
+            ActivityLog.log_activity('note_created', f'Created note: {note.title}', note.id, 'note')
+            flash('Note saved', 'success')
+        
         return redirect(url_for('mobile.notes'))
     
     return render_template('mobile/note_form.html')
@@ -316,6 +344,7 @@ def freelancing_new():
         )
         db.session.add(entry)
         db.session.commit()
+        ActivityLog.log_activity('income_logged', f'Logged income: {entry.title} - ${entry.amount}', entry.id, 'freelance')
         flash('Income logged', 'success')
         return redirect(url_for('mobile.freelancing'))
     
