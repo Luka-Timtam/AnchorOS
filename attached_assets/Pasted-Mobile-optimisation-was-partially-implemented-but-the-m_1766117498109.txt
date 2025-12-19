@@ -1,0 +1,79 @@
+Mobile optimisation was partially implemented but the mobile experience is currently broken and inconsistent. I need a focused cleanup pass to make the app usable and stable on mobile, without touching or altering the desktop experience in any way.
+
+Global constraints
+
+Desktop layout and behaviour must remain completely unchanged
+
+Mobile fixes should only apply in mobile view
+
+Mobile does not need to be perfect or pretty, but it must be usable
+
+Prioritise usability, tap access, and layout stability over animations or effects
+
+Issues to fix
+
+Dashboard layout
+
+Dashboard cards are misaligned and visually cramped on mobile
+
+Spacing, sizing, and stacking need to be cleaned up so cards read clearly in a vertical flow
+
+The calendar widget on the dashboard looks broken and poorly sized on mobile and needs to be simplified or resized so it fits naturally in the layout
+
+Navigation behaviour on mobile
+
+All hover-based or reactive hover effects must be disabled on mobile
+
+Sidebar expansion, hover animations, and hover-dependent attributes should not run on mobile at all
+
+Mobile navigation must rely only on tap-based interactions
+
+Mobile nav button (critical)
+
+The mobile navbar / menu button is sometimes unclickable
+
+It becomes especially inaccessible after scrolling on certain pages
+
+This must be fixed so the button is always tappable, visible, and responsive regardless of scroll position or page
+
+Ensure no overlays, z-index issues, or layout elements block it
+
+Side navbar scrolling
+
+On mobile, the side navbar content overflows the screen
+
+Logout and Settings are positioned off-screen and require awkward scrolling
+
+The side navbar must be vertically scrollable on mobile so all options are accessible
+
+Navigation content should never be cut off
+
+Graphs on dashboard
+
+Graphs are not optimised for mobile screen width
+
+They overflow, feel cramped, or are hard to read
+
+Adjust sizing, margins, or layout so graphs are readable and contained on mobile
+
+Gamification / rewards settings
+
+Some elements (buttons, controls, inputs) extend off-screen on mobile
+
+All interactive elements must stay within the viewport width
+
+Ensure buttons are tappable and not clipped
+
+Final intent
+
+The goal is not to redesign the mobile UI, but to:
+
+Remove broken interactions
+
+Ensure everything fits on screen
+
+Make all core actions usable from a phone
+
+Prevent hover logic, overlays, or layout bugs from blocking interaction
+
+Focus on stability, accessibility, and basic usability on mobile while preserving the existing desktop experience exactly as it is.
