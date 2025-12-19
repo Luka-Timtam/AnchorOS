@@ -49,6 +49,13 @@ def index():
         Client.created_at >= first_of_month
     ).count()
     
+    mrr = db.session.query(
+        db.func.coalesce(db.func.sum(Client.monthly_hosting_fee), 0) + 
+        db.func.coalesce(db.func.sum(Client.monthly_saas_fee), 0)
+    ).filter(
+        Client.status == 'active'
+    ).scalar() or 0
+    
     return render_template('mobile/index.html',
         today_tasks=today_tasks,
         total_leads=total_leads,
@@ -60,7 +67,8 @@ def index():
         streak=stats.current_outreach_streak_days,
         month_income=month_income,
         avg_monthly=avg_monthly,
-        clients_this_month=clients_this_month
+        clients_this_month=clients_this_month,
+        mrr=mrr
     )
 
 
