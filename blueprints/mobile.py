@@ -46,7 +46,7 @@ def index():
     avg_monthly = float(total_6mo) / 6
     
     clients_this_month = Client.query.filter(
-        Client.converted_date >= first_of_month
+        Client.created_at >= first_of_month
     ).count()
     
     return render_template('mobile/index.html',
