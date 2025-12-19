@@ -1,152 +1,214 @@
 {% extends "base.html" %}
 
-{% block title %}{{ lead.name }} - Personal CRM{% endblock %}
+{% block title %}{{ lead.name }} - AnchorOS{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
+<div class="mb-6">
+    <a href="{{ url_for('leads.index') }}" class="text-medium hover:text-aqua flex items-center gap-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Leads
+    </a>
+</div>
+
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
     <div>
-        <h1 class="text-3xl font-bold text-gray-900">{{ lead.name }}</h1>
+        <h1 class="text-3xl font-bold text-high">{{ lead.name }}</h1>
         {% if lead.business_name %}
-        <p class="text-gray-600">{{ lead.business_name }}</p>
+        <p class="text-medium text-lg mt-1">{{ lead.business_name }}</p>
         {% endif %}
     </div>
-    <div class="space-x-2">
-        <a href="{{ url_for('leads.edit', id=lead.id) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Edit</a>
-        {% if lead.status != 'closed_won' %}
-        <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Convert to Client</a>
+    <div class="flex gap-3">
+        <a href="{{ url_for('leads.edit', id=lead.id) }}" class="btn-primary flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Edit
+        </a>
+        {% if lead.status != 'closed_won' and lead.status != 'closed_lost' %}
+        <a href="{{ url_for('leads.convert_to_client', id=lead.id) }}" class="btn-secondary flex items-center gap-2 bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Convert to Client
+        </a>
         {% endif %}
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2">
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Lead Information</h2>
-            <div class="grid grid-cols-2 gap-4">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="glass-card p-6 rounded-2xl">
+            <h2 class="text-lg font-semibold text-high mb-5 flex items-center gap-2">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Lead Information
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div>
-                    <p class="text-sm text-gray-500">Status</p>
-                    <p class="font-medium capitalize 
-                        {% if lead.status == 'closed_won' %}text-green-600
-                        {% elif lead.status == 'closed_lost' %}text-red-600
-                        {% else %}text-gray-900{% endif %}">
-                        {{ lead.status.replace('_', ' ') }}
-                    </p>
+                    <p class="text-sm text-medium mb-1">Status</p>
+                    <span class="pill {% if lead.status == 'closed_won' %}pill-success{% elif lead.status == 'closed_lost' %}bg-red-500/20 text-red-400 border-red-500/30{% elif lead.status == 'new' %}pill-aqua{% else %}pill-warning{% endif %}">
+                        {{ lead.status.replace('_', ' ').title() }}
+                    </span>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Email</p>
-                    <p class="font-medium">{{ lead.email or '-' }}</p>
+                    <p class="text-sm text-medium mb-1">Email</p>
+                    <p class="font-medium text-high">{{ lead.email or '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Phone</p>
-                    <p class="font-medium">{{ lead.phone or '-' }}</p>
+                    <p class="text-sm text-medium mb-1">Phone</p>
+                    <p class="font-medium text-high">{{ lead.phone or '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Niche</p>
-                    <p class="font-medium">{{ lead.niche or '-' }}</p>
+                    <p class="text-sm text-medium mb-1">Niche</p>
+                    <p class="font-medium text-high">{{ lead.niche or '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Source</p>
-                    <p class="font-medium">{{ lead.source or '-' }}</p>
+                    <p class="text-sm text-medium mb-1">Source</p>
+                    <p class="font-medium text-high">{{ lead.source or '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Next Action Date</p>
-                    <p class="font-medium">{{ lead.next_action_date or '-' }}</p>
+                    <p class="text-sm text-medium mb-1">Next Action Date</p>
+                    <p class="font-medium text-high">{{ lead.next_action_date.strftime('%b %d, %Y') if lead.next_action_date else '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Last Contacted</p>
-                    <p class="font-medium">{{ lead.last_contacted_at.strftime('%Y-%m-%d %H:%M') if lead.last_contacted_at else '-' }}</p>
+                    <p class="text-sm text-medium mb-1">Last Contacted</p>
+                    <p class="font-medium text-high">{{ lead.last_contacted_at.strftime('%b %d, %Y at %I:%M %p') if lead.last_contacted_at else '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Created</p>
-                    <p class="font-medium">{{ lead.created_at.strftime('%Y-%m-%d') }}</p>
+                    <p class="text-sm text-medium mb-1">Created</p>
+                    <p class="font-medium text-high">{{ lead.created_at.strftime('%b %d, %Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-medium mb-1">Updated</p>
+                    <p class="font-medium text-high">{{ lead.updated_at.strftime('%b %d, %Y') }}</p>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Website Status</h2>
-            <div class="grid grid-cols-2 gap-4">
+        <div class="glass-card p-6 rounded-2xl">
+            <h2 class="text-lg font-semibold text-high mb-5 flex items-center gap-2">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                </svg>
+                Website Status
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div>
-                    <p class="text-sm text-gray-500">Has Website</p>
-                    <p class="font-medium">
-                        {% if lead.has_website %}
-                        <div class="space-y-1">
-                            {% for issue in lead.website_quality.split(',') %}
-                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 inline-block mr-2">
-                                {{ issue.strip().replace('_', ' ').title() }}
-                            </span>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">No Website</span>
-                        {% endif %}
-                    </p>
+                    <p class="text-sm text-medium mb-2">Has Website</p>
+                    {% if lead.has_website %}
+                    <span class="pill pill-success">Yes</span>
+                    {% else %}
+                    <span class="pill bg-red-500/20 text-red-400 border-red-500/30">No Website</span>
+                    {% endif %}
                 </div>
                 <div>
-                    <p class="text-sm text-gray-500">Demo Site Built</p>
-                    <p class="font-medium">
-                        {% if lead.demo_site_built %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Yes</span>
-                        {% else %}
-                        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">Not Yet</span>
-                        {% endif %}
-                    </p>
+                    <p class="text-sm text-medium mb-2">Demo Site Built</p>
+                    {% if lead.demo_site_built %}
+                    <span class="pill pill-success">Yes</span>
+                    {% else %}
+                    <span class="pill pill-neutral">Not Yet</span>
+                    {% endif %}
+                </div>
+                {% if lead.converted_at %}
+                <div>
+                    <p class="text-sm text-medium mb-2">Converted</p>
+                    <span class="pill pill-success">{{ lead.converted_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if lead.has_website and lead.website_quality %}
+            <div class="mt-5 pt-5 border-t border-white/10">
+                <p class="text-sm text-medium mb-3">Website Issues</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for issue in lead.website_quality.split(',') %}
+                    <span class="pill pill-warning">{{ issue.strip().replace('_', ' ').title() }}</span>
+                    {% endfor %}
                 </div>
             </div>
-            {% if lead.converted_at %}
-            <div class="mt-4 pt-4 border-t border-gray-200">
-                <p class="text-sm text-gray-500">Converted to Client</p>
-                <p class="font-medium text-green-600">{{ lead.converted_at.strftime('%Y-%m-%d') }}</p>
+            {% endif %}
+            
+            {% if lead.close_reason %}
+            <div class="mt-5 pt-5 border-t border-white/10">
+                <p class="text-sm text-medium mb-2">Close Reason</p>
+                <p class="text-high">{{ lead.close_reason }}</p>
+            </div>
+            {% endif %}
+            
+            {% if lead.closed_at %}
+            <div class="mt-4">
+                <p class="text-sm text-medium mb-1">Closed Date</p>
+                <p class="font-medium text-high">{{ lead.closed_at.strftime('%b %d, %Y') }}</p>
             </div>
             {% endif %}
         </div>
         
         {% if lead.notes %}
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Notes</h2>
-            <p class="text-gray-700 whitespace-pre-wrap">{{ lead.notes }}</p>
+        <div class="glass-card p-6 rounded-2xl">
+            <h2 class="text-lg font-semibold text-high mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Notes
+            </h2>
+            <p class="text-high whitespace-pre-wrap leading-relaxed">{{ lead.notes }}</p>
         </div>
         {% endif %}
         
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Outreach History</h2>
+        <div class="glass-card p-6 rounded-2xl">
+            <h2 class="text-lg font-semibold text-high mb-5 flex items-center gap-2">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                Outreach History
+            </h2>
             {% if outreach_logs %}
             <div class="space-y-4">
                 {% for log in outreach_logs %}
-                <div class="border-l-4 border-indigo-500 pl-4 py-2">
-                    <div class="flex justify-between">
-                        <span class="font-medium capitalize">{{ log.type }}</span>
-                        <span class="text-gray-500">{{ log.date }}</span>
+                <div class="border-l-2 border-aqua pl-4 py-2 bg-white/5 rounded-r-xl">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                        <span class="font-medium text-high capitalize">{{ log.type }}</span>
+                        <span class="text-sm text-medium">{{ log.date }}</span>
                     </div>
-                    <p class="text-sm text-gray-600 capitalize">Outcome: {{ log.outcome.replace('_', ' ') }}</p>
+                    <span class="pill {% if log.outcome == 'closed_won' %}pill-success{% elif log.outcome == 'closed_lost' %}bg-red-500/20 text-red-400 border-red-500/30{% elif log.outcome == 'booked_call' %}pill-aqua{% else %}pill-neutral{% endif %}">
+                        {{ log.outcome.replace('_', ' ').title() }}
+                    </span>
                     {% if log.notes %}
-                    <p class="text-gray-700 mt-1">{{ log.notes }}</p>
+                    <p class="text-medium mt-2">{{ log.notes }}</p>
                     {% endif %}
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <p class="text-gray-500">No outreach logged yet</p>
+            <p class="text-medium">No outreach logged yet</p>
             {% endif %}
         </div>
     </div>
     
     <div>
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Log Outreach</h2>
+        <div class="glass-card p-6 rounded-2xl sticky top-8">
+            <h2 class="text-lg font-semibold text-high mb-5 flex items-center gap-2">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Log Outreach
+            </h2>
             <form method="POST" action="{{ url_for('outreach.create') }}">
                 <input type="hidden" name="lead_id" value="{{ lead.id }}">
                 <input type="hidden" name="redirect_url" value="{{ url_for('leads.detail', id=lead.id) }}">
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <label class="block text-sm font-medium text-medium mb-2">Date</label>
                     <input type="date" name="date" value="{{ today if today else '' }}"
-                        class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        class="w-full input-glass rounded-xl">
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select name="type" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Type</label>
+                    <select name="type" class="w-full select-glass rounded-xl">
                         <option value="email">Email</option>
                         <option value="call">Call</option>
                         <option value="dm">DM</option>
@@ -156,8 +218,8 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
-                    <select name="outcome" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                    <label class="block text-sm font-medium text-medium mb-2">Outcome</label>
+                    <select name="outcome" class="w-full select-glass rounded-xl">
                         <option value="contacted">Contacted</option>
                         <option value="booked_call">Booked Call</option>
                         <option value="no_response">No Response</option>
@@ -167,12 +229,12 @@
                     </select>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                    <textarea name="notes" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-medium mb-2">Notes</label>
+                    <textarea name="notes" rows="3" class="w-full input-glass rounded-xl" placeholder="Add notes about this outreach..."></textarea>
                 </div>
                 
-                <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                <button type="submit" class="w-full btn-primary rounded-xl">
                     Log Outreach
                 </button>
             </form>
