@@ -21,8 +21,8 @@
             <span class="text-xs text-low">{{ note.updated_at.strftime('%d %b') }}</span>
         </div>
         <p class="text-sm text-medium line-clamp-2">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
-        {% if note.note_type != 'general' %}
-        <span class="pill text-xs bg-white/10 text-medium mt-2 inline-block">{{ note.note_type.title() }}</span>
+        {% if note.tags %}
+        <span class="pill text-xs bg-white/10 text-medium mt-2 inline-block">{{ note.tags.split(',')[0] }}</span>
         {% endif %}
     </a>
     {% endfor %}
