@@ -329,8 +329,11 @@
 </head>
 <body class="min-h-screen text-porcelain">
     <div class="page-header">
-        <div class="flex items-center justify-between">
-            <h1 class="text-lg font-bold text-high">{% block page_title %}AnchorOS{% endblock %}</h1>
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <img src="{{ url_for('static', filename='images/anchor_logo_mobile.png') }}" alt="AnchorOS" class="w-6 h-6">
+                <h1 class="text-lg font-bold text-high">{% block page_title %}AnchorOS{% endblock %}</h1>
+            </div>
             {% block header_actions %}{% endblock %}
         </div>
     </div>
