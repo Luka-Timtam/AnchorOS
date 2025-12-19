@@ -56,6 +56,8 @@ def index():
         Client.status == 'active'
     ).scalar() or 0
     
+    total_this_month = float(month_income) + float(mrr)
+    
     return render_template('mobile/index.html',
         today_tasks=today_tasks,
         total_leads=total_leads,
@@ -65,10 +67,10 @@ def index():
         follow_ups=follow_ups,
         stats=stats,
         streak=stats.current_outreach_streak_days,
-        month_income=month_income,
+        total_this_month=total_this_month,
+        mrr=mrr,
         avg_monthly=avg_monthly,
-        clients_this_month=clients_this_month,
-        mrr=mrr
+        clients_this_month=clients_this_month
     )
 
 

@@ -36,12 +36,12 @@
     <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Monthly Stats</h2>
     <div class="grid grid-cols-2 gap-3 mb-3">
         <div class="stat-card">
-            <div class="stat-value text-lg">${{ "%.0f"|format(mrr) }}</div>
-            <div class="stat-label">MRR</div>
+            <div class="stat-value text-lg">${{ "%.0f"|format(total_this_month) }}</div>
+            <div class="stat-label">Total This Month</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value text-lg">${{ "%.0f"|format(month_income) }}</div>
-            <div class="stat-label">This Month</div>
+            <div class="stat-value text-lg">${{ "%.0f"|format(mrr) }}</div>
+            <div class="stat-label">MRR</div>
         </div>
     </div>
     <div class="grid grid-cols-2 gap-3">
