@@ -1001,9 +1001,13 @@
                     if (timeDisplay) {
                         timeDisplay.textContent = formatTimerTime(seconds);
                     }
+                    console.log('[Focus] Timer active:', seconds, 'seconds');
                 } else {
                     indicator.classList.add('hidden');
+                    console.log('[Focus] Timer inactive or zero seconds');
                 }
+            } else {
+                console.log('[Focus] ERROR: Indicator element not found!');
             }
             
             // Also update dashboard timer if it exists
@@ -1195,6 +1199,12 @@
         
         swup.hooks.on('content:replace', initPageScripts);
         swup.hooks.on('content:replace', updateActiveNav);
+        swup.hooks.on('content:replace', function() {
+            // Sync focus status after page navigation
+            if (window.syncFocusStatus) {
+                window.syncFocusStatus();
+            }
+        });
     })();
     </script>
 </body>
