@@ -1,0 +1,158 @@
+I want to implement a mobile companion mode, not a responsive version of the desktop app.
+
+Before building anything new, remove or disable any existing mobile-specific or responsive code that was added during previous attempts to make the full app mobile compatible. This includes:
+
+Mobile CSS overrides
+
+Hover disabling hacks
+
+Responsive layout changes
+
+Mobile nav experiments
+The goal is to reset mobile behaviour back to a clean baseline before introducing the companion mode.
+
+Core principle
+
+Desktop behaviour, layout, styling, and interactions must remain completely unchanged
+
+Mobile is a separate, stripped-down experience, not a resized desktop
+
+Treat mobile as its own interface with its own navigation and layout
+
+When to activate mobile companion mode
+
+On mobile screen sizes, load the mobile companion interface instead of the desktop UI
+
+Do not attempt to adapt or reflow desktop components for mobile
+
+Mobile companion goals
+
+The mobile companion should be designed for quick, practical use while out and about, not deep configuration.
+
+It should prioritise speed, clarity, and tap-friendly interactions.
+
+Features that MUST be available in mobile companion mode
+
+1. Leads & Clients
+
+View a simplified list of leads and clients
+
+Open a lead/client to see:
+
+name
+
+status
+
+next action
+
+notes (basic)
+
+Ability to:
+
+add a new lead
+
+add a new client
+
+log outreach on an existing lead/client
+
+2. Outreach & Logging
+
+Quickly log outreach actions
+
+Minimal input, tap-first interactions
+
+No hover or complex UI patterns
+
+3. Tasks
+
+View today’s tasks
+
+Mark tasks as complete
+
+Add simple tasks if needed
+
+4. Calendar
+
+Access the calendar widget
+
+View upcoming items
+
+Clean, mobile-sized presentation
+
+5. Notes
+
+View notes attached to leads or general notes
+
+Add quick notes
+
+6. Basic Stats
+
+High-level stats only (counts, totals)
+
+No graphs or complex analytics
+
+7. Freelancing Page
+
+Access the freelancing page
+
+Log freelance income
+
+View basic freelance totals
+
+Navigation (important)
+
+Use a completely new, mobile-only navigation
+
+Navigation must be:
+
+horizontal
+
+touch-friendly
+
+always accessible
+
+Do not reuse the desktop side navigation
+
+No hover-based interactions
+
+Navigation should clearly link to:
+
+Home / Today
+
+Leads
+
+Tasks
+
+Calendar
+
+Freelancing
+
+Notes
+
+Explicit exclusions from mobile companion
+
+Full dashboards
+
+Graph-heavy analytics
+
+Deep settings or configuration pages
+
+Gamification configuration
+
+Desktop-style tables
+
+Final intent
+
+The mobile companion does not need feature parity or visual parity with desktop.
+It only needs to be:
+
+stable
+
+usable
+
+fast
+
+focused on logging and checking progress
+
+Desktop is the primary workspace.
+Mobile is a companion tool.
