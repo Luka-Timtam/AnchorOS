@@ -535,8 +535,8 @@
 {% endif %}
 {% endfor %}
 
-<div id="calendarModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-5xl max-h-[90vh] overflow-hidden">
+<div id="calendarModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden">
+    <div class="glass-card w-full max-w-5xl max-h-[90vh] overflow-hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mx-4" style="width: calc(100% - 2rem);">
             <div class="flex items-center justify-between p-4 border-b border-white/10">
                 <div class="flex items-center gap-4">
                     <button onclick="changeCalendarMonth(-1)" class="p-2 hover:bg-white/10 rounded-lg text-medium hover:text-high transition-colors">
@@ -574,8 +574,8 @@
         </div>
 </div>
 
-<div id="dayDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md max-h-[80vh] overflow-hidden">
+<div id="dayDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] hidden">
+    <div class="glass-card w-full max-w-md max-h-[80vh] overflow-hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mx-4" style="width: calc(100% - 2rem);">
         <div class="flex items-center justify-between p-4 border-b border-white/10">
             <h3 id="dayDetailTitle" class="text-lg font-bold text-high"></h3>
             <button onclick="closeDayDetailModal()" class="p-1 hover:bg-white/10 rounded-lg text-medium hover:text-high">
