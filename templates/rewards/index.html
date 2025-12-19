@@ -47,6 +47,10 @@
                     Need {{ reward.cost - token_balance }} more
                 </button>
                 {% endif %}
+                <button onclick="openEditModal({{ reward.id }}, '{{ reward.name }}', {{ reward.cost }}, '{{ reward.description or '' }}')"
+                        class="btn-secondary py-2 px-3 text-sm">
+                    Edit
+                </button>
                 <form action="{{ url_for('rewards.toggle_reward', id=reward.id) }}" method="POST">
                     <button type="submit" class="btn-secondary py-2 px-3 text-sm">
                         {% if reward.is_active %}Hide{% else %}Show{% endif %}
@@ -116,4 +120,53 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Reward Modal -->
+<div id="editRewardModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+    <div class="glass-card p-8 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold text-high mb-6">Edit Reward</h2>
+        <form id="editRewardForm" action="" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-medium mb-2">Reward Name</label>
+                <input type="text" id="editName" name="name" required class="w-full input-glass">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-medium mb-2">Cost (tokens)</label>
+                <input type="number" id="editCost" name="cost" min="1" required class="w-full input-glass">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-medium mb-2">Description (optional)</label>
+                <input type="text" id="editDescription" name="description" class="w-full input-glass">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 btn-primary">Save Changes</button>
+                <button type="button" onclick="closeEditModal()" class="flex-1 btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openEditModal(id, name, cost, description) {
+    document.getElementById('editName').value = name;
+    document.getElementById('editCost').value = cost;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editRewardForm').action = '{{ url_for("rewards.edit_reward", id="ID") }}'.replace('ID', id);
+    document.getElementById('editRewardModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+    document.getElementById('editRewardModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('editRewardModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+</script>
 {% endblock %}

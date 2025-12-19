@@ -83,6 +83,27 @@ def toggle_reward(id):
     return redirect(url_for('rewards.index'))
 
 
+@rewards_bp.route('/<int:id>/edit', methods=['POST'])
+def edit_reward(id):
+    reward = RewardItem.query.get_or_404(id)
+    
+    name = request.form.get('name', '').strip()
+    cost = request.form.get('cost', type=int)
+    description = request.form.get('description', '').strip()
+    
+    if not name or not cost or cost <= 0:
+        flash('Please provide a valid name and cost.', 'error')
+        return redirect(url_for('rewards.index'))
+    
+    reward.name = name
+    reward.cost = cost
+    reward.description = description
+    db.session.commit()
+    
+    flash(f'Reward "{name}" updated!', 'success')
+    return redirect(url_for('rewards.index'))
+
+
 @rewards_bp.route('/<int:id>/delete', methods=['POST'])
 def delete_reward(id):
     reward = RewardItem.query.get_or_404(id)
