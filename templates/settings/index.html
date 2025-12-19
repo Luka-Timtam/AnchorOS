@@ -6,14 +6,20 @@
 <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold text-high mb-8">Settings</h1>
     
-    <div class="glass-card p-6 mb-6">
-        <h2 class="text-xl font-semibold text-high mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    <div class="glass-card overflow-hidden mb-6">
+        <button onclick="togglePauseMode()" class="w-full p-6 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+            <h2 class="text-xl font-semibold text-high flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Pause Mode
+            </h2>
+            <svg id="pauseChevron" class="w-5 h-5 text-medium transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
-            Pause Mode
-        </h2>
+        </button>
         
+        <div id="pauseContent" class="hidden border-t border-white/10 p-6">
         {% if settings.pause_active %}
         <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-5 mb-4">
             <div class="flex items-center gap-2 mb-4">
@@ -86,6 +92,7 @@
                 <li>- Manual actions still award XP/tokens</li>
             </ul>
         </div>
+        </div>
     </div>
     
     <div class="glass-card p-6 mb-6">
@@ -118,4 +125,15 @@
         <p class="text-low text-sm">Coming soon...</p>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePauseMode() {
+    const content = document.getElementById('pauseContent');
+    const chevron = document.getElementById('pauseChevron');
+    content.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
+</script>
 {% endblock %}
