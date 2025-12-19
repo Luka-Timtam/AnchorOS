@@ -115,7 +115,7 @@
         <p class="text-low text-sm">Coming soon...</p>
     </div>
     
-    <div class="glass-card p-6">
+    <div class="glass-card p-6 mb-6">
         <h2 class="text-xl font-semibold text-high mb-4 flex items-center gap-2">
             <svg class="w-5 h-5 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -123,6 +123,216 @@
             Notifications
         </h2>
         <p class="text-low text-sm">Coming soon...</p>
+    </div>
+    
+    <div class="glass-card overflow-hidden mb-6">
+        <button onclick="toggleManual()" class="w-full p-6 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+            <h2 class="text-xl font-semibold text-high flex items-center gap-2">
+                <svg class="w-5 h-5 text-aqua" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                Manual & Rewards Guide
+            </h2>
+            <svg id="manualChevron" class="w-5 h-5 text-medium transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        
+        <div id="manualContent" class="hidden border-t border-white/10">
+            
+            <div class="border-b border-white/10">
+                <button onclick="toggleManualSection('xpSection')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+                    <span class="font-semibold text-high flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        XP System
+                    </span>
+                    <svg class="w-4 h-4 text-medium transform transition-transform duration-200 manual-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="xpSection" class="hidden px-6 pb-4">
+                    <div class="bg-white/5 rounded-xl p-4 mb-4">
+                        <h4 class="text-sm font-medium text-high mb-3">XP Rewards by Action</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">Log outreach</td><td class="py-2 text-purple-400 text-right font-medium">+5 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Contact a lead</td><td class="py-2 text-purple-400 text-right font-medium">+4 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Book a call</td><td class="py-2 text-purple-400 text-right font-medium">+8 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Send a proposal</td><td class="py-2 text-purple-400 text-right font-medium">+12 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Close a deal (won)</td><td class="py-2 text-purple-400 text-right font-medium">+30 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Complete a task</td><td class="py-2 text-purple-400 text-right font-medium">+8 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Focus session complete</td><td class="py-2 text-purple-400 text-right font-medium">+5 XP</td></tr>
+                                <tr><td class="py-2 text-medium">First note of the day</td><td class="py-2 text-purple-400 text-right font-medium">+2 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Pin a note</td><td class="py-2 text-purple-400 text-right font-medium">+1 XP</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 mb-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Goal Bonuses</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">Daily outreach goal hit</td><td class="py-2 text-purple-400 text-right font-medium">+10 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Weekly outreach goal hit</td><td class="py-2 text-purple-400 text-right font-medium">+25 XP</td></tr>
+                                <tr><td class="py-2 text-medium">Monthly revenue goal hit</td><td class="py-2 text-purple-400 text-right font-medium">+50 XP</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Streak Bonuses</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">10-day outreach streak</td><td class="py-2 text-purple-400 text-right font-medium">+20 XP</td></tr>
+                                <tr><td class="py-2 text-medium">30-day outreach streak</td><td class="py-2 text-purple-400 text-right font-medium">+50 XP</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-b border-white/10">
+                <button onclick="toggleManualSection('tokenSection')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+                    <span class="font-semibold text-high flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Token System
+                    </span>
+                    <svg class="w-4 h-4 text-medium transform transition-transform duration-200 manual-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="tokenSection" class="hidden px-6 pb-4">
+                    <div class="bg-white/5 rounded-xl p-4 mb-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Token Rewards by Action</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">Log outreach</td><td class="py-2 text-amber-400 text-right font-medium">+1 token</td></tr>
+                                <tr><td class="py-2 text-medium">Contact a lead</td><td class="py-2 text-amber-400 text-right font-medium">+1 token</td></tr>
+                                <tr><td class="py-2 text-medium">Send a proposal</td><td class="py-2 text-amber-400 text-right font-medium">+2 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Complete a task</td><td class="py-2 text-amber-400 text-right font-medium">+1 token</td></tr>
+                                <tr><td class="py-2 text-medium">Focus session complete</td><td class="py-2 text-amber-400 text-right font-medium">+3 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Revive a cold lead</td><td class="py-2 text-amber-400 text-right font-medium">+5 tokens</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 mb-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Goal Bonuses</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">Daily outreach goal hit</td><td class="py-2 text-amber-400 text-right font-medium">+3 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Weekly outreach goal hit</td><td class="py-2 text-amber-400 text-right font-medium">+7 tokens</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Streak Bonuses</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">3-day streak</td><td class="py-2 text-amber-400 text-right font-medium">+5 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">7-day streak</td><td class="py-2 text-amber-400 text-right font-medium">+10 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">14-day streak</td><td class="py-2 text-amber-400 text-right font-medium">+20 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">30-day streak</td><td class="py-2 text-amber-400 text-right font-medium">+30 tokens</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-b border-white/10">
+                <button onclick="toggleManualSection('levelSection')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+                    <span class="font-semibold text-high flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Level Thresholds
+                    </span>
+                    <svg class="w-4 h-4 text-medium transform transition-transform duration-200 manual-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="levelSection" class="hidden px-6 pb-4">
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-sm font-medium text-high mb-3">XP Required Per Level</h4>
+                        <div class="grid grid-cols-3 md:grid-cols-5 gap-2 text-sm">
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 1</span><br><span class="text-medium">0 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 2</span><br><span class="text-medium">150 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 3</span><br><span class="text-medium">400 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 4</span><br><span class="text-medium">800 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 5</span><br><span class="text-medium">1,400 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 6</span><br><span class="text-medium">2,200 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 7</span><br><span class="text-medium">3,200 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 8</span><br><span class="text-medium">4,500 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 9</span><br><span class="text-medium">6,500 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 10</span><br><span class="text-medium">9,000 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 11</span><br><span class="text-medium">12,000 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 12</span><br><span class="text-medium">16,000 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 13</span><br><span class="text-medium">20,000 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 14</span><br><span class="text-medium">25,000 XP</span></div>
+                            <div class="bg-white/5 rounded-lg p-2 text-center"><span class="text-green-400 font-medium">Lvl 15</span><br><span class="text-medium">30,000 XP</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-b border-white/10">
+                <button onclick="toggleManualSection('missionSection')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+                    <span class="font-semibold text-high flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        Daily Missions
+                    </span>
+                    <svg class="w-4 h-4 text-medium transform transition-transform duration-200 manual-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="missionSection" class="hidden px-6 pb-4">
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Mission Types & Rewards</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">Send 3-5 outreaches</td><td class="py-2 text-blue-400 text-right font-medium">4-6 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Contact 1-2 leads</td><td class="py-2 text-blue-400 text-right font-medium">3-4 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Complete 1-3 tasks</td><td class="py-2 text-blue-400 text-right font-medium">4-6 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Message 1-2 old leads</td><td class="py-2 text-blue-400 text-right font-medium">6-8 tokens</td></tr>
+                            </tbody>
+                        </table>
+                        <p class="text-xs text-low mt-3">Missions are randomly generated each day with varying targets and rewards.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <button onclick="toggleManualSection('bossSection')" class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors">
+                    <span class="font-semibold text-high flex items-center gap-2">
+                        <svg class="w-4 h-4 text-cinnabar" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                        </svg>
+                        Boss Fights
+                    </span>
+                    <svg class="w-4 h-4 text-medium transform transition-transform duration-200 manual-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="bossSection" class="hidden px-6 pb-4">
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-sm font-medium text-high mb-3">Monthly Boss Types & Rewards</h4>
+                        <table class="w-full text-sm">
+                            <tbody class="divide-y divide-white/10">
+                                <tr><td class="py-2 text-medium">Close 1-3 deals</td><td class="py-2 text-cinnabar text-right font-medium">50-120 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Send 30-50 outreaches</td><td class="py-2 text-cinnabar text-right font-medium">60-120 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Revive 3-7 cold leads</td><td class="py-2 text-cinnabar text-right font-medium">70-150 tokens</td></tr>
+                                <tr><td class="py-2 text-medium">Send 5-10 proposals</td><td class="py-2 text-cinnabar text-right font-medium">60-120 tokens</td></tr>
+                            </tbody>
+                        </table>
+                        <p class="text-xs text-low mt-3">A new boss is generated at the start of each month with random targets and rewards.</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -134,6 +344,23 @@ function togglePauseMode() {
     const chevron = document.getElementById('pauseChevron');
     content.classList.toggle('hidden');
     chevron.classList.toggle('rotate-180');
+}
+
+function toggleManual() {
+    const content = document.getElementById('manualContent');
+    const chevron = document.getElementById('manualChevron');
+    content.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+}
+
+function toggleManualSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    section.classList.toggle('hidden');
+    const button = section.previousElementSibling;
+    const chevron = button.querySelector('.manual-chevron');
+    if (chevron) {
+        chevron.classList.toggle('rotate-180');
+    }
 }
 </script>
 {% endblock %}
