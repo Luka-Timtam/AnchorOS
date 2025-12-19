@@ -1166,10 +1166,12 @@ function startFocusSession() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // Use global timer system
-            window.globalFocusEndTime = new Date(data.end_time);
+            // Use global timer system with duration to avoid timezone issues
+            const durationSeconds = data.duration * 60;
+            window.globalFocusEndTime = new Date(Date.now() + durationSeconds * 1000);
             window.startGlobalFocusTimer();
             showFocusActive();
+            console.log('[Focus] Session started, ends in', durationSeconds, 'seconds');
         } else if (data.error) {
             alert(data.error);
         }

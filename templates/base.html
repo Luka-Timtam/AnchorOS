@@ -1062,10 +1062,13 @@
                             alert(`Focus session complete! You earned ${data.tokens_earned} tokens and ${data.xp_earned} XP!`);
                             window.location.reload();
                         }
-                    } else if (data.active && data.end_time) {
-                        // Session still active (edge case), restart timer
-                        window.globalFocusEndTime = new Date(data.end_time);
+                    } else if (data.active && data.remaining_seconds > 5) {
+                        // Session still has significant time remaining, use server's remaining time
+                        window.globalFocusEndTime = new Date(Date.now() + data.remaining_seconds * 1000);
                         startGlobalFocusTimer();
+                    } else if (data.active) {
+                        // Session active but very little time left - wait for server to complete it
+                        setTimeout(completeGlobalFocusSession, 2000);
                     }
                 })
                 .catch(() => {});
@@ -1088,8 +1091,10 @@
             fetch('/focus/status')
                 .then(r => r.json())
                 .then(data => {
-                    if (data.active && data.end_time) {
-                        window.globalFocusEndTime = new Date(data.end_time);
+                    console.log('[Focus] Status response:', data);
+                    if (data.active && data.remaining_seconds > 0) {
+                        // Use remaining_seconds from server to avoid timezone issues
+                        window.globalFocusEndTime = new Date(Date.now() + data.remaining_seconds * 1000);
                         startGlobalFocusTimer();
                         
                         // Show active state on dashboard if present
