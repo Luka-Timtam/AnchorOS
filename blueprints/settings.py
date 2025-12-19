@@ -74,14 +74,17 @@ def export_all_data():
         leads_buffer = io.StringIO()
         leads_writer = csv.writer(leads_buffer)
         leads_writer.writerow(['ID', 'Name', 'Business Name', 'Niche', 'Email', 'Phone', 'Source', 'Status', 
-                               'Notes', 'Next Action', 'Next Action Date', 'Created At', 'Updated At', 'Archived At'])
+                               'Notes', 'Next Action Date', 'Last Contacted', 'Close Reason', 'Created At', 'Updated At', 'Closed At', 'Archived At'])
         for lead in Lead.query.all():
             leads_writer.writerow([
                 lead.id, lead.name, lead.business_name, lead.niche, lead.email, lead.phone,
-                lead.source, lead.status, lead.notes, lead.next_action, 
+                lead.source, lead.status, lead.notes,
                 lead.next_action_date.isoformat() if lead.next_action_date else '',
+                lead.last_contacted_at.isoformat() if lead.last_contacted_at else '',
+                lead.close_reason or '',
                 lead.created_at.isoformat() if lead.created_at else '',
                 lead.updated_at.isoformat() if lead.updated_at else '',
+                lead.closed_at.isoformat() if lead.closed_at else '',
                 lead.archived_at.isoformat() if lead.archived_at else ''
             ])
         zip_file.writestr('leads.csv', leads_buffer.getvalue())
@@ -169,21 +172,29 @@ def export_all_data():
         analytics_buffer = io.StringIO()
         analytics_writer = csv.writer(analytics_buffer)
         analytics_writer.writerow(['Metric', 'Value'])
-        analytics_writer.writerow(['Total XP', stats.total_xp])
-        analytics_writer.writerow(['Current Level', stats.current_level])
-        analytics_writer.writerow(['Total Tokens', stats.total_tokens])
-        analytics_writer.writerow(['Tokens Spent', stats.tokens_spent])
-        analytics_writer.writerow(['Available Tokens', stats.available_tokens])
-        analytics_writer.writerow(['Total Outreach', stats.total_outreach_count])
-        analytics_writer.writerow(['Current Outreach Streak', stats.current_outreach_streak_days])
-        analytics_writer.writerow(['Best Outreach Streak', stats.best_outreach_streak_days])
-        analytics_writer.writerow(['Total Leads Added', stats.total_leads_added])
-        analytics_writer.writerow(['Total Deals Closed', stats.total_deals_closed])
-        analytics_writer.writerow(['Total Revenue', float(stats.total_revenue) if stats.total_revenue else 0])
-        analytics_writer.writerow(['Tasks Completed', stats.total_tasks_completed])
-        analytics_writer.writerow(['Focus Sessions', stats.total_focus_sessions])
-        analytics_writer.writerow(['Focus Minutes', stats.total_focus_minutes])
-        analytics_writer.writerow(['Consistency Score', stats.consistency_score])
+        analytics_writer.writerow(['Current XP', stats.current_xp if stats.current_xp else 0])
+        analytics_writer.writerow(['Current Level', stats.current_level if stats.current_level else 1])
+        analytics_writer.writerow(['Current Outreach Streak', stats.current_outreach_streak_days if stats.current_outreach_streak_days else 0])
+        analytics_writer.writerow(['Best Outreach Streak', stats.longest_outreach_streak_days if stats.longest_outreach_streak_days else 0])
+        analytics_writer.writerow(['Last Outreach Date', stats.last_outreach_date.isoformat() if stats.last_outreach_date else ''])
+        analytics_writer.writerow(['Consistency Score', stats.last_consistency_score if stats.last_consistency_score else 0])
+        
+        # Calculate totals from related records
+        total_leads = Lead.query.count()
+        total_clients = Client.query.count()
+        total_tasks = Task.query.count()
+        total_notes = Note.query.count()
+        total_outreach = OutreachLog.query.count()
+        total_revenue = float(FreelanceJob.get_total_income())
+        closed_won_count = Lead.query.filter_by(status='closed_won').count()
+        
+        analytics_writer.writerow(['Total Leads', total_leads])
+        analytics_writer.writerow(['Total Clients', total_clients])
+        analytics_writer.writerow(['Total Tasks', total_tasks])
+        analytics_writer.writerow(['Total Notes', total_notes])
+        analytics_writer.writerow(['Total Outreach Logs', total_outreach])
+        analytics_writer.writerow(['Total Revenue', total_revenue])
+        analytics_writer.writerow(['Deals Won', closed_won_count])
         analytics_writer.writerow(['Export Date', date.today().isoformat()])
         zip_file.writestr('analytics_summary.csv', analytics_buffer.getvalue())
     
