@@ -47,7 +47,7 @@
                     Need {{ reward.cost - token_balance }} more
                 </button>
                 {% endif %}
-                <button onclick="openEditModal({{ reward.id }}, '{{ reward.name }}', {{ reward.cost }}, '{{ reward.description or '' }}')"
+                <button onclick="openEditModal({{ reward.id }}, {{ reward.name|tojson }}, {{ reward.cost }}, {{ (reward.description or '')|tojson }})"
                         class="btn-secondary py-2 px-3 text-sm">
                     Edit
                 </button>
@@ -154,7 +154,7 @@ function openEditModal(id, name, cost, description) {
     document.getElementById('editName').value = name;
     document.getElementById('editCost').value = cost;
     document.getElementById('editDescription').value = description;
-    document.getElementById('editRewardForm').action = '{{ url_for("rewards.edit_reward", id="ID") }}'.replace('ID', id);
+    document.getElementById('editRewardForm').action = '/rewards/' + id + '/edit';
     document.getElementById('editRewardModal').classList.remove('hidden');
 }
 
