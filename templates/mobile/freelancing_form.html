@@ -1,0 +1,51 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Log Income - AnchorOS{% endblock %}
+{% block page_title %}Log Income{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <div>
+        <label class="block text-sm text-medium mb-2">Title *</label>
+        <input type="text" name="title" required class="input-glass" placeholder="What was this for?">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Amount *</label>
+        <input type="number" name="amount" step="0.01" min="0" required class="input-glass" placeholder="0.00">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Client Name</label>
+        <input type="text" name="client_name" class="input-glass" placeholder="Who paid you?">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Category</label>
+        <select name="category" class="select-glass">
+            {% for cat_value, cat_label in categories %}
+            <option value="{{ cat_value }}">{{ cat_label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Date</label>
+        <input type="date" name="date" class="input-glass">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Description</label>
+        <textarea name="description" rows="3" class="input-glass" placeholder="More details..."></textarea>
+    </div>
+    
+    <button type="submit" class="btn-primary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Save Income
+    </button>
+    
+    <a href="{{ url_for('mobile.freelancing') }}" class="btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Add Note - AnchorOS{% endblock %}
+{% block page_title %}Quick Note{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <div>
+        <label class="block text-sm text-medium mb-2">Title</label>
+        <input type="text" name="title" class="input-glass" placeholder="Note title (optional)">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Content</label>
+        <textarea name="content" rows="8" class="input-glass" placeholder="Write your note..." autofocus></textarea>
+    </div>
+    
+    <button type="submit" class="btn-primary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Save Note
+    </button>
+    
+    <a href="{{ url_for('mobile.notes') }}" class="btn-secondary">Cancel</a>
+</form>
+{% endblock %}

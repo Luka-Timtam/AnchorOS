@@ -1,0 +1,89 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Home - AnchorOS{% endblock %}
+{% block page_title %}Today{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('mobile.quick_outreach') }}" class="quick-action text-sm">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+    </svg>
+    Log Outreach
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 gap-3 mb-6">
+    <div class="stat-card">
+        <div class="stat-value">{{ today_outreach }}</div>
+        <div class="stat-label">Outreach Today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ streak }}</div>
+        <div class="stat-label">Day Streak</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_leads }}</div>
+        <div class="stat-label">Active Leads</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ pending_tasks }}</div>
+        <div class="stat-label">Open Tasks</div>
+    </div>
+</div>
+
+{% if follow_ups %}
+<div class="mb-6">
+    <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Follow-ups Due</h2>
+    {% for lead in follow_ups %}
+    <a href="{{ url_for('mobile.lead_detail', lead_id=lead.id) }}" class="list-item">
+        <div class="w-10 h-10 rounded-full bg-cinnabar/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-cinnabar font-bold text-sm">{{ lead.name[:1] }}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="text-high font-medium truncate">{{ lead.name }}</div>
+            <div class="text-low text-sm">{{ lead.business_name or 'No business' }}</div>
+        </div>
+        <svg class="w-5 h-5 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if today_tasks %}
+<div class="mb-6">
+    <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Today's Tasks</h2>
+    {% for task in today_tasks %}
+    <div class="list-item">
+        <form action="{{ url_for('mobile.task_complete', task_id=task.id) }}" method="POST" class="flex-shrink-0">
+            <button type="submit" class="w-6 h-6 rounded-full border-2 border-aqua/50 flex items-center justify-center">
+            </button>
+        </form>
+        <div class="flex-1 min-w-0">
+            <div class="text-high font-medium truncate">{{ task.title }}</div>
+            {% if task.description %}
+            <div class="text-low text-sm truncate">{{ task.description }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-cols-2 gap-3">
+    <a href="{{ url_for('mobile.lead_new') }}" class="btn-secondary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add Lead
+    </a>
+    <a href="{{ url_for('mobile.task_new') }}" class="btn-secondary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add Task
+    </a>
+</div>
+{% endblock %}

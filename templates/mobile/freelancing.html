@@ -1,0 +1,51 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Freelancing - AnchorOS{% endblock %}
+{% block page_title %}Freelancing{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('mobile.freelancing_new') }}" class="quick-action text-sm">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+    </svg>
+    Log
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 gap-3 mb-6">
+    <div class="stat-card">
+        <div class="stat-value text-green-400">${{ "%.0f"|format(month_total) }}</div>
+        <div class="stat-label">This Month</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value text-aqua">${{ "%.0f"|format(all_time_total) }}</div>
+        <div class="stat-label">All Time</div>
+    </div>
+</div>
+
+{% if entries %}
+<h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Recent Income</h2>
+{% for entry in entries %}
+<div class="mobile-card">
+    <div class="flex items-center justify-between mb-2">
+        <div class="font-medium text-high">{{ entry.title }}</div>
+        <div class="text-green-400 font-bold">${{ "%.2f"|format(entry.amount) }}</div>
+    </div>
+    <div class="flex items-center justify-between text-sm">
+        <span class="text-medium">{{ entry.client_name or 'No client' }}</span>
+        <span class="text-low">{{ entry.date_completed.strftime('%d %b') }}</span>
+    </div>
+    {% if entry.category %}
+    <span class="pill text-xs bg-white/10 text-medium mt-2 inline-block">{{ entry.category.replace('_', ' ').title() }}</span>
+    {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<div class="text-center py-12">
+    <div class="text-4xl mb-3">💰</div>
+    <div class="text-medium">No income logged this month</div>
+    <a href="{{ url_for('mobile.freelancing_new') }}" class="btn-primary mt-4 inline-flex">Log Income</a>
+</div>
+{% endif %}
+{% endblock %}

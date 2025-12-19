@@ -1,0 +1,71 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Calendar - AnchorOS{% endblock %}
+{% block page_title %}Calendar{% endblock %}
+
+{% block content %}
+<div class="glass-card p-4 mb-4">
+    <div class="text-center">
+        <div class="text-3xl font-bold text-aqua">{{ today.strftime('%d') }}</div>
+        <div class="text-medium">{{ today.strftime('%B %Y') }}</div>
+        <div class="text-sm text-low">{{ today.strftime('%A') }}</div>
+    </div>
+</div>
+
+{% if upcoming_tasks %}
+<div class="mb-6">
+    <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Upcoming Tasks</h2>
+    {% for task in upcoming_tasks %}
+    <div class="mobile-card">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <div class="text-high font-medium">{{ task.title }}</div>
+                <div class="text-xs text-low mt-1">
+                    {{ task.due_date.strftime('%a, %d %b') }}
+                </div>
+            </div>
+            <form action="{{ url_for('mobile.task_complete', task_id=task.id) }}" method="POST">
+                <button type="submit" class="w-8 h-8 rounded-full border border-aqua/30 flex items-center justify-center text-aqua active:bg-aqua/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if follow_ups %}
+<div class="mb-6">
+    <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Follow-ups</h2>
+    {% for lead in follow_ups %}
+    <a href="{{ url_for('mobile.lead_detail', lead_id=lead.id) }}" class="mobile-card block">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-aqua/20 flex items-center justify-center flex-shrink-0">
+                <span class="text-aqua font-bold text-xs">{{ lead.name[:1] }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="text-high font-medium truncate">{{ lead.name }}</div>
+                <div class="text-xs text-low">
+                    {{ lead.next_action_date.strftime('%a, %d %b') }}
+                </div>
+            </div>
+            <svg class="w-4 h-4 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if not upcoming_tasks and not follow_ups %}
+<div class="text-center py-12">
+    <div class="text-4xl mb-3">📅</div>
+    <div class="text-medium">Nothing scheduled</div>
+    <p class="text-low text-sm mt-2">Add tasks or follow-ups to see them here</p>
+</div>
+{% endif %}
+{% endblock %}

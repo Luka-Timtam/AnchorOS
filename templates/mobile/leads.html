@@ -1,0 +1,53 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Leads - AnchorOS{% endblock %}
+{% block page_title %}Leads{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('mobile.lead_new') }}" class="quick-action text-sm">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+    </svg>
+    Add
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+    <a href="{{ url_for('mobile.leads') }}" class="pill {% if not status_filter %}pill-aqua{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">All</a>
+    <a href="{{ url_for('mobile.leads', status='new') }}" class="pill {% if status_filter == 'new' %}pill-aqua{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">New</a>
+    <a href="{{ url_for('mobile.leads', status='contacted') }}" class="pill {% if status_filter == 'contacted' %}pill-aqua{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">Contacted</a>
+    <a href="{{ url_for('mobile.leads', status='follow_up') }}" class="pill {% if status_filter == 'follow_up' %}pill-aqua{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">Follow Up</a>
+    <a href="{{ url_for('mobile.clients') }}" class="pill bg-white/5 text-medium whitespace-nowrap">Clients</a>
+</div>
+
+{% if leads %}
+    {% for lead in leads %}
+    <a href="{{ url_for('mobile.lead_detail', lead_id=lead.id) }}" class="list-item">
+        <div class="w-10 h-10 rounded-full bg-aqua/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-aqua font-bold text-sm">{{ lead.name[:1] }}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="text-high font-medium truncate">{{ lead.name }}</div>
+            <div class="text-low text-sm">{{ lead.business_name or lead.niche or 'No details' }}</div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+            <span class="pill text-xs 
+                {% if lead.status == 'new' %}pill-aqua
+                {% elif lead.status == 'contacted' %}pill-success
+                {% elif lead.status == 'follow_up' %}pill-warning
+                {% elif lead.status == 'call_booked' %}pill-success
+                {% else %}bg-white/10 text-medium{% endif %}">
+                {{ lead.status.replace('_', ' ').title() }}
+            </span>
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+<div class="text-center py-12">
+    <div class="text-4xl mb-3">📋</div>
+    <div class="text-medium">No leads found</div>
+    <a href="{{ url_for('mobile.lead_new') }}" class="btn-primary mt-4 inline-flex">Add Your First Lead</a>
+</div>
+{% endif %}
+{% endblock %}

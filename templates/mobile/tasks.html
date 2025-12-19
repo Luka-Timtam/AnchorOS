@@ -1,0 +1,56 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Tasks - AnchorOS{% endblock %}
+{% block page_title %}Tasks{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('mobile.task_new') }}" class="quick-action text-sm">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+    </svg>
+    Add
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+    <a href="{{ url_for('mobile.tasks', filter='today') }}" class="pill {% if filter_type == 'today' %}pill-aqua{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">Today</a>
+    <a href="{{ url_for('mobile.tasks', filter='overdue') }}" class="pill {% if filter_type == 'overdue' %}pill-cinnabar{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">Overdue</a>
+    <a href="{{ url_for('mobile.tasks', filter='all') }}" class="pill {% if filter_type == 'all' %}pill-aqua{% else %}bg-white/5 text-medium{% endif %} whitespace-nowrap">All Open</a>
+</div>
+
+{% if tasks %}
+    {% for task in tasks %}
+    <div class="list-item">
+        <form action="{{ url_for('mobile.task_complete', task_id=task.id) }}" method="POST" class="flex-shrink-0">
+            <button type="submit" class="w-7 h-7 rounded-full border-2 border-aqua/50 flex items-center justify-center hover:bg-aqua/20 active:bg-aqua/30">
+            </button>
+        </form>
+        <div class="flex-1 min-w-0">
+            <div class="text-high font-medium">{{ task.title }}</div>
+            {% if task.description %}
+            <div class="text-low text-sm truncate">{{ task.description }}</div>
+            {% endif %}
+            {% if task.due_date %}
+            <div class="text-xs mt-1 {% if task.due_date < today %}text-cinnabar{% else %}text-low{% endif %}">
+                Due: {{ task.due_date.strftime('%d %b') }}
+            </div>
+            {% endif %}
+        </div>
+        {% if task.related_lead_id %}
+        <span class="pill text-xs bg-white/10 text-medium">Lead</span>
+        {% elif task.related_client_id %}
+        <span class="pill text-xs pill-success">Client</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+<div class="text-center py-12">
+    <div class="text-4xl mb-3">✅</div>
+    <div class="text-medium">
+        {% if filter_type == 'today' %}No tasks for today{% elif filter_type == 'overdue' %}No overdue tasks{% else %}No open tasks{% endif %}
+    </div>
+    <a href="{{ url_for('mobile.task_new') }}" class="btn-primary mt-4 inline-flex">Add a Task</a>
+</div>
+{% endif %}
+{% endblock %}

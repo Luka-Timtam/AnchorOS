@@ -1,0 +1,32 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Add Task - AnchorOS{% endblock %}
+{% block page_title %}Add Task{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <div>
+        <label class="block text-sm text-medium mb-2">Title *</label>
+        <input type="text" name="title" required class="input-glass" placeholder="What needs to be done?">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Description</label>
+        <textarea name="description" rows="3" class="input-glass" placeholder="More details..."></textarea>
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Due Date</label>
+        <input type="date" name="due_date" class="input-glass" value="{{ today.strftime('%Y-%m-%d') if today else '' }}">
+    </div>
+    
+    <button type="submit" class="btn-primary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Save Task
+    </button>
+    
+    <a href="{{ url_for('mobile.tasks') }}" class="btn-secondary">Cancel</a>
+</form>
+{% endblock %}

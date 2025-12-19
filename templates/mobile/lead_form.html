@@ -1,0 +1,52 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Add Lead - AnchorOS{% endblock %}
+{% block page_title %}Add Lead{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <div>
+        <label class="block text-sm text-medium mb-2">Name *</label>
+        <input type="text" name="name" required class="input-glass" placeholder="Contact name">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Business Name</label>
+        <input type="text" name="business_name" class="input-glass" placeholder="Business or company">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Niche</label>
+        <input type="text" name="niche" class="input-glass" placeholder="Industry or niche">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Email</label>
+        <input type="email" name="email" class="input-glass" placeholder="email@example.com">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Phone</label>
+        <input type="tel" name="phone" class="input-glass" placeholder="Phone number">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Source</label>
+        <input type="text" name="source" class="input-glass" placeholder="Where did you find them?">
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Notes</label>
+        <textarea name="notes" rows="3" class="input-glass" placeholder="Any notes..."></textarea>
+    </div>
+    
+    <button type="submit" class="btn-primary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Save Lead
+    </button>
+    
+    <a href="{{ url_for('mobile.leads') }}" class="btn-secondary">Cancel</a>
+</form>
+{% endblock %}

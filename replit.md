@@ -77,30 +77,39 @@ Dark glassmorphic design with modern aesthetics:
 - Form submissions bypass transitions to prevent issues
 - Page scripts reinitialize on content replace via `swup.hooks.on('content:replace')`
 
-## Mobile Optimization (December 2025)
-CSS-only responsive design with dedicated `static/mobile.css` file.
+## Mobile Companion Mode (December 2025)
+Separate mobile companion interface at `/mobile/` with its own routing, templates, and navigation.
 
-**Breakpoints:**
-- Desktop: ≥769px (unchanged, all existing styles preserved)
-- Mobile: ≤768px (mobile-specific overrides only)
+**Core Principle:**
+- Desktop remains completely unchanged
+- Mobile is a stripped-down companion tool, not a responsive version
+- Auto-redirects mobile devices (detected via User-Agent) to `/mobile/`
+- Desktop users can access mobile view at `/mobile/` for testing
 
-**Key Mobile Features:**
-- Hamburger menu for sidebar navigation (slides out as overlay)
-- Tables convert to stacked card layouts using `data-label` attributes
-- Forms stack vertically with larger touch targets (48px min-height)
-- Grid layouts collapse to single column
-- Typography scaled for mobile readability
-- No horizontal scrolling
+**Mobile Companion Features:**
+- Leads & Clients: View list, see details, add new, log outreach
+- Tasks: View today/overdue/all, mark complete, add tasks
+- Calendar: View upcoming tasks and follow-ups
+- Notes: View, add quick notes
+- Freelancing: View income totals, log new income
+- Quick Outreach: Fast outreach logging from home screen
+- Basic Stats: Outreach today, streak, lead count, pending tasks
 
-**Implementation Rules:**
-- All mobile styles in `static/mobile.css` using `@media (max-width: 768px)`
-- Desktop CSS never modified - mobile uses overrides only
-- No JavaScript-based layout switching
-- Tables require `mobile-card-table` class on `<table>` and `data-label="Column Name"` on each `<td>` for card labels
-- Action buttons wrapped in `<div class="flex flex-wrap gap-2">` for mobile
+**Navigation:**
+- Fixed bottom navigation bar with 6 tabs: Home, Leads, Tasks, Calendar, Income, Notes
+- Touch-friendly (48px minimum tap targets)
+- No hover interactions, tap-first design
 
-**Mobile Utility Classes:**
-- `.mobile-hidden` - Hide on mobile only
-- `.mobile-only` - Show on mobile only
-- `.mobile-full` - Full width on mobile
-- `.mobile-stack` - Stack flex items vertically on mobile
+**Excluded from Mobile:**
+- Full dashboards and analytics graphs
+- Deep settings/configuration pages
+- Gamification configuration
+- Desktop-style tables
+- Complex multi-step workflows
+
+**Technical Implementation:**
+- Blueprint: `blueprints/mobile.py` with `/mobile/` prefix
+- Templates: `templates/mobile/` directory with `base.html` and page templates
+- Mobile detection in `app.py` before_request handler
+- Session flag `force_desktop` can override auto-redirect
+- URL parameter `?desktop=1` bypasses mobile redirect

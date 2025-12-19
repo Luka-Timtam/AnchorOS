@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}AnchorOS{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        aqua: '#31E0F7',
+                        porcelain: '#FFFDF7',
+                        graphite: '#2E2F37',
+                        cinnabar: '#EB564E',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #2E2F37 0%, #1a1b20 50%, #2E2F37 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-bottom: 80px;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #31E0F7 0%, #1bc4dc 100%);
+            color: #2E2F37;
+            font-weight: 600;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            touch-action: manipulation;
+        }
+        
+        .btn-primary:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #FFFDF7;
+            font-weight: 500;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            touch-action: manipulation;
+        }
+        
+        .btn-secondary:active {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .input-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #FFFDF7;
+            padding: 0.875rem 1rem;
+            min-height: 48px;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        .input-glass::placeholder {
+            color: rgba(255, 253, 247, 0.4);
+        }
+        
+        .input-glass:focus {
+            outline: none;
+            border-color: #31E0F7;
+            box-shadow: 0 0 0 3px rgba(49, 224, 247, 0.15);
+        }
+        
+        .select-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #FFFDF7;
+            padding: 0.875rem 2.5rem 0.875rem 1rem;
+            min-height: 48px;
+            font-size: 16px;
+            width: 100%;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FFFDF7' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+        
+        .select-glass option {
+            background: #2E2F37;
+            color: #FFFDF7;
+        }
+        
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .pill-aqua {
+            background: rgba(49, 224, 247, 0.15);
+            color: #31E0F7;
+            border: 1px solid rgba(49, 224, 247, 0.3);
+        }
+        
+        .pill-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .pill-warning {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+        
+        .pill-cinnabar {
+            background: rgba(235, 86, 78, 0.15);
+            color: #EB564E;
+            border: 1px solid rgba(235, 86, 78, 0.3);
+        }
+        
+        .text-high { color: #FFFDF7; }
+        .text-medium { color: rgba(255, 253, 247, 0.7); }
+        .text-low { color: rgba(255, 253, 247, 0.5); }
+        
+        .mobile-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .mobile-card:active {
+            background: rgba(255, 255, 255, 0.10);
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(46, 47, 55, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.5rem 0;
+            padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0));
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0.75rem;
+            color: rgba(255, 253, 247, 0.5);
+            text-decoration: none;
+            font-size: 0.625rem;
+            font-weight: 500;
+            min-width: 56px;
+            touch-action: manipulation;
+        }
+        
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-item.active {
+            color: #31E0F7;
+        }
+        
+        .nav-item:active {
+            opacity: 0.7;
+        }
+        
+        .page-header {
+            padding: 1rem;
+            padding-top: calc(1rem + env(safe-area-inset-top, 0));
+            background: rgba(46, 47, 55, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .page-content {
+            padding: 1rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 14px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #31E0F7;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 253, 247, 0.6);
+            margin-top: 0.25rem;
+        }
+        
+        .quick-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(49, 224, 247, 0.12);
+            border: 1px solid rgba(49, 224, 247, 0.25);
+            border-radius: 12px;
+            color: #31E0F7;
+            font-weight: 500;
+            font-size: 0.875rem;
+            touch-action: manipulation;
+        }
+        
+        .quick-action:active {
+            background: rgba(49, 224, 247, 0.2);
+        }
+        
+        .flash-success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .flash-error {
+            background: rgba(235, 86, 78, 0.15);
+            border: 1px solid rgba(235, 86, 78, 0.3);
+            color: #EB564E;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .list-item:active {
+            background: rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-porcelain">
+    <div class="page-header">
+        <div class="flex items-center justify-between">
+            <h1 class="text-lg font-bold text-high">{% block page_title %}AnchorOS{% endblock %}</h1>
+            {% block header_actions %}{% endblock %}
+        </div>
+    </div>
+    
+    <main class="page-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <nav class="bottom-nav">
+        <a href="{{ url_for('mobile.index') }}" class="nav-item {% if request.endpoint == 'mobile.index' %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('mobile.leads') }}" class="nav-item {% if 'leads' in request.endpoint or 'clients' in request.endpoint %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span>Leads</span>
+        </a>
+        <a href="{{ url_for('mobile.tasks') }}" class="nav-item {% if 'tasks' in request.endpoint %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+            </svg>
+            <span>Tasks</span>
+        </a>
+        <a href="{{ url_for('mobile.calendar') }}" class="nav-item {% if 'calendar' in request.endpoint %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>Calendar</span>
+        </a>
+        <a href="{{ url_for('mobile.freelancing') }}" class="nav-item {% if 'freelancing' in request.endpoint %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Income</span>
+        </a>
+        <a href="{{ url_for('mobile.notes') }}" class="nav-item {% if 'notes' in request.endpoint %}active{% endif %}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            <span>Notes</span>
+        </a>
+    </nav>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

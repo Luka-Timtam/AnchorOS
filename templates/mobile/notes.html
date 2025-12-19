@@ -1,0 +1,36 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Notes - AnchorOS{% endblock %}
+{% block page_title %}Notes{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('mobile.note_new') }}" class="quick-action text-sm">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+    </svg>
+    Add
+</a>
+{% endblock %}
+
+{% block content %}
+{% if notes %}
+    {% for note in notes %}
+    <a href="{{ url_for('mobile.note_detail', note_id=note.id) }}" class="mobile-card block">
+        <div class="flex items-start justify-between mb-2">
+            <h3 class="text-high font-medium flex-1">{{ note.title or 'Untitled' }}</h3>
+            <span class="text-xs text-low">{{ note.updated_at.strftime('%d %b') }}</span>
+        </div>
+        <p class="text-sm text-medium line-clamp-2">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
+        {% if note.note_type != 'general' %}
+        <span class="pill text-xs bg-white/10 text-medium mt-2 inline-block">{{ note.note_type.title() }}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+{% else %}
+<div class="text-center py-12">
+    <div class="text-4xl mb-3">📝</div>
+    <div class="text-medium">No notes yet</div>
+    <a href="{{ url_for('mobile.note_new') }}" class="btn-primary mt-4 inline-flex">Add Your First Note</a>
+</div>
+{% endif %}
+{% endblock %}

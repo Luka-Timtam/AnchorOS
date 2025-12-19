@@ -1,0 +1,43 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Clients - AnchorOS{% endblock %}
+{% block page_title %}Clients{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('mobile.client_new') }}" class="quick-action text-sm">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+    </svg>
+    Add
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+    <a href="{{ url_for('mobile.leads') }}" class="pill bg-white/5 text-medium whitespace-nowrap">Leads</a>
+    <a href="{{ url_for('mobile.clients') }}" class="pill pill-aqua whitespace-nowrap">Clients</a>
+</div>
+
+{% if clients %}
+    {% for client in clients %}
+    <a href="{{ url_for('mobile.client_detail', client_id=client.id) }}" class="list-item">
+        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-green-400 font-bold text-sm">{{ client.name[:1] }}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="text-high font-medium truncate">{{ client.name }}</div>
+            <div class="text-low text-sm">{{ client.business_name or client.project_type.title() }}</div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+            <span class="pill text-xs pill-success">Active</span>
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+<div class="text-center py-12">
+    <div class="text-4xl mb-3">🤝</div>
+    <div class="text-medium">No active clients</div>
+    <a href="{{ url_for('mobile.client_new') }}" class="btn-primary mt-4 inline-flex">Add Your First Client</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "mobile/base.html" %}
+
+{% block title %}Log Outreach - AnchorOS{% endblock %}
+{% block page_title %}Log Outreach{% endblock %}
+
+{% block content %}
+<div class="glass-card p-4 mb-4">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-aqua/20 flex items-center justify-center">
+            <span class="text-aqua font-bold text-sm">{{ lead.name[:1] }}</span>
+        </div>
+        <div>
+            <div class="text-high font-medium">{{ lead.name }}</div>
+            <div class="text-low text-sm">{{ lead.business_name or 'Lead' }}</div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" class="space-y-4">
+    <div>
+        <label class="block text-sm text-medium mb-2">Type</label>
+        <div class="grid grid-cols-3 gap-2">
+            {% for choice in type_choices %}
+            <label class="cursor-pointer">
+                <input type="radio" name="type" value="{{ choice }}" class="hidden peer" {% if choice == 'email' %}checked{% endif %}>
+                <div class="peer-checked:border-aqua peer-checked:bg-aqua/10 border border-white/20 rounded-xl p-3 text-center text-sm">
+                    {% if choice == 'email' %}📧{% elif choice == 'call' %}📞{% elif choice == 'dm' %}💬{% elif choice == 'in_person' %}🤝{% else %}📝{% endif %}
+                    <div class="mt-1 text-xs">{{ choice.replace('_', ' ').title() }}</div>
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Outcome</label>
+        <select name="outcome" class="select-glass">
+            {% for choice in outcome_choices %}
+            <option value="{{ choice }}">{{ choice.replace('_', ' ').title() }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div>
+        <label class="block text-sm text-medium mb-2">Notes</label>
+        <textarea name="notes" rows="3" class="input-glass" placeholder="What happened?"></textarea>
+    </div>
+    
+    <button type="submit" class="btn-primary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Log Outreach
+    </button>
+    
+    <a href="{{ url_for('mobile.lead_detail', lead_id=lead.id) }}" class="btn-secondary">Cancel</a>
+</form>
+{% endblock %}

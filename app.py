@@ -36,6 +36,7 @@ def create_app():
     from blueprints.monthly_review import monthly_review_bp
     from blueprints.battlepass import battlepass_bp
     from blueprints.freelancing import freelancing_bp
+    from blueprints.mobile import mobile_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -60,6 +61,12 @@ def create_app():
     app.register_blueprint(monthly_review_bp)
     app.register_blueprint(battlepass_bp)
     app.register_blueprint(freelancing_bp)
+    app.register_blueprint(mobile_bp)
+    
+    def is_mobile_device():
+        user_agent = request.headers.get('User-Agent', '').lower()
+        mobile_keywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone']
+        return any(keyword in user_agent for keyword in mobile_keywords)
     
     @app.before_request
     def require_login():
@@ -67,6 +74,32 @@ def create_app():
         if request.endpoint and request.endpoint not in allowed_routes:
             if not session.get('authenticated'):
                 return redirect(url_for('auth.login'))
+    
+    @app.before_request
+    def mobile_redirect():
+        if not session.get('authenticated'):
+            return
+        
+        if request.args.get('desktop') == '1':
+            session['force_desktop'] = True
+        
+        if request.args.get('mobile') == '1':
+            session.pop('force_desktop', None)
+            if not request.endpoint or not request.endpoint.startswith('mobile.'):
+                return redirect(url_for('mobile.index'))
+        
+        if session.get('force_desktop'):
+            return
+        
+        if request.endpoint and request.endpoint.startswith('mobile.'):
+            return
+        
+        if request.endpoint in ['auth.login', 'auth.logout', 'static', 'internal.run_daily_summary', 
+                               'focus.status', 'calendar.mini', 'search.search']:
+            return
+        
+        if is_mobile_device() and request.endpoint == 'dashboard.index':
+            return redirect(url_for('mobile.index'))
     
     with app.app_context():
         db.create_all()
