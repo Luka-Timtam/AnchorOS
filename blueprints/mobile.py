@@ -311,6 +311,41 @@ def note_detail(note_id):
     return render_template('mobile/note_detail.html', note=note)
 
 
+@mobile_bp.route('/notes/<int:note_id>/edit', methods=['GET', 'POST'])
+def note_edit(note_id):
+    note = Note.query.get_or_404(note_id)
+    
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        
+        if not content:
+            flash('Note content is required', 'error')
+            return render_template('mobile/note_edit_form.html', note=note, title=title, content=content)
+        
+        note.title = title if title else 'Quick Note'
+        note.content = content
+        db.session.commit()
+        
+        ActivityLog.log_activity('note_updated', f'Updated note: {note.title}', note.id, 'note')
+        flash('Note updated', 'success')
+        return redirect(url_for('mobile.note_detail', note_id=note.id))
+    
+    return render_template('mobile/note_edit_form.html', note=note)
+
+
+@mobile_bp.route('/notes/<int:note_id>/delete', methods=['POST'])
+def note_delete(note_id):
+    note = Note.query.get_or_404(note_id)
+    title = note.title
+    db.session.delete(note)
+    db.session.commit()
+    
+    ActivityLog.log_activity('note_deleted', f'Deleted note: {title}', note_id, 'note')
+    flash('Note deleted', 'success')
+    return redirect(url_for('mobile.notes'))
+
+
 @mobile_bp.route('/freelancing')
 def freelancing():
     today = date.today()
