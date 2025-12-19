@@ -82,7 +82,7 @@
                             <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-400 hover:text-yellow-300 text-sm transition-colors" id="fav-btn-{{ template.id }}">
                                 {% if template.is_favourite %}Unfav{% else %}Fav{% endif %}
                             </button>
-                            <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" onsubmit="return confirm('Delete this template?')">
+                            <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" data-confirm data-confirm-title="Delete Template" data-confirm-message="Are you sure you want to delete this template? This action cannot be undone." data-confirm-action="Delete Template">
                                 <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>
                         </div>
@@ -132,7 +132,7 @@
                             <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-400 hover:text-yellow-300 text-sm transition-colors" id="fav-btn-{{ template.id }}">
                                 {% if template.is_favourite %}Unfav{% else %}Fav{% endif %}
                             </button>
-                            <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" onsubmit="return confirm('Delete this template?')">
+                            <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" data-confirm data-confirm-title="Delete Template" data-confirm-message="Are you sure you want to delete this template? This action cannot be undone." data-confirm-action="Delete Template">
                                 <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>
                         </div>
@@ -182,7 +182,7 @@
                             <button onclick="toggleFavourite({{ template.id }})" class="text-yellow-400 hover:text-yellow-300 text-sm transition-colors" id="fav-btn-{{ template.id }}">
                                 {% if template.is_favourite %}Unfav{% else %}Fav{% endif %}
                             </button>
-                            <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" onsubmit="return confirm('Delete this template?')">
+                            <form method="POST" action="{{ url_for('outreach_templates.delete', id=template.id) }}" class="inline" data-confirm data-confirm-title="Delete Template" data-confirm-message="Are you sure you want to delete this template? This action cannot be undone." data-confirm-action="Delete Template">
                                 <button type="submit" class="text-cinnabar hover:text-cinnabar/80 text-sm transition-colors">Delete</button>
                             </form>
                         </div>

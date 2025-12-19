@@ -1,6 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserSettings, ActivityLog
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
+from models import db, UserSettings, ActivityLog, Lead, Client, Task, Note, FreelanceJob, OutreachLog, UserStats
 from datetime import date, timedelta
+import csv
+import io
+import zipfile
 
 settings_bp = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -58,3 +61,140 @@ def pause_end():
     
     flash('Pause mode ended.', 'success')
     return redirect(url_for('settings.index'))
+
+
+@settings_bp.route('/export', methods=['POST'])
+def export_all_data():
+    """Export all core data as a ZIP file containing CSV files."""
+    
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        
+        leads_buffer = io.StringIO()
+        leads_writer = csv.writer(leads_buffer)
+        leads_writer.writerow(['ID', 'Name', 'Business Name', 'Niche', 'Email', 'Phone', 'Source', 'Status', 
+                               'Notes', 'Next Action', 'Next Action Date', 'Created At', 'Updated At', 'Archived At'])
+        for lead in Lead.query.all():
+            leads_writer.writerow([
+                lead.id, lead.name, lead.business_name, lead.niche, lead.email, lead.phone,
+                lead.source, lead.status, lead.notes, lead.next_action, 
+                lead.next_action_date.isoformat() if lead.next_action_date else '',
+                lead.created_at.isoformat() if lead.created_at else '',
+                lead.updated_at.isoformat() if lead.updated_at else '',
+                lead.archived_at.isoformat() if lead.archived_at else ''
+            ])
+        zip_file.writestr('leads.csv', leads_buffer.getvalue())
+        
+        clients_buffer = io.StringIO()
+        clients_writer = csv.writer(clients_buffer)
+        clients_writer.writerow(['ID', 'Name', 'Business Name', 'Contact Email', 'Phone', 'Project Type', 
+                                 'Start Date', 'Amount Charged', 'Status', 'Hosting Active', 'Monthly Hosting Fee',
+                                 'SaaS Active', 'Monthly SaaS Fee', 'Notes', 'Created At', 'Updated At', 'Related Lead ID'])
+        for client in Client.query.all():
+            clients_writer.writerow([
+                client.id, client.name, client.business_name, client.contact_email, client.phone,
+                client.project_type, client.start_date.isoformat() if client.start_date else '',
+                float(client.amount_charged) if client.amount_charged else 0, client.status,
+                client.hosting_active, float(client.monthly_hosting_fee) if client.monthly_hosting_fee else 0,
+                client.saas_active, float(client.monthly_saas_fee) if client.monthly_saas_fee else 0,
+                client.notes, client.created_at.isoformat() if client.created_at else '',
+                client.updated_at.isoformat() if client.updated_at else '', client.related_lead_id
+            ])
+        zip_file.writestr('clients.csv', clients_buffer.getvalue())
+        
+        tasks_buffer = io.StringIO()
+        tasks_writer = csv.writer(tasks_buffer)
+        tasks_writer.writerow(['ID', 'Title', 'Description', 'Status', 'Priority', 'Due Date', 
+                               'Lead ID', 'Client ID', 'Created At', 'Updated At', 'Completed At'])
+        for task in Task.query.all():
+            tasks_writer.writerow([
+                task.id, task.title, task.description, task.status, task.priority,
+                task.due_date.isoformat() if task.due_date else '',
+                task.lead_id, task.client_id,
+                task.created_at.isoformat() if task.created_at else '',
+                task.updated_at.isoformat() if task.updated_at else '',
+                task.completed_at.isoformat() if task.completed_at else ''
+            ])
+        zip_file.writestr('tasks.csv', tasks_buffer.getvalue())
+        
+        notes_buffer = io.StringIO()
+        notes_writer = csv.writer(notes_buffer)
+        notes_writer.writerow(['ID', 'Title', 'Content', 'Tags', 'Pinned', 'Created At', 'Updated At'])
+        for note in Note.query.all():
+            notes_writer.writerow([
+                note.id, note.title, note.content, note.tags, note.pinned,
+                note.created_at.isoformat() if note.created_at else '',
+                note.updated_at.isoformat() if note.updated_at else ''
+            ])
+        zip_file.writestr('notes.csv', notes_buffer.getvalue())
+        
+        outreach_buffer = io.StringIO()
+        outreach_writer = csv.writer(outreach_buffer)
+        outreach_writer.writerow(['ID', 'Lead ID', 'Type', 'Outcome', 'Notes', 'Date', 'Created At'])
+        for log in OutreachLog.query.all():
+            outreach_writer.writerow([
+                log.id, log.lead_id, log.type, log.outcome, log.notes,
+                log.date.isoformat() if log.date else '',
+                log.created_at.isoformat() if log.created_at else ''
+            ])
+        zip_file.writestr('outreach_logs.csv', outreach_buffer.getvalue())
+        
+        revenue_buffer = io.StringIO()
+        revenue_writer = csv.writer(revenue_buffer)
+        revenue_writer.writerow(['ID', 'Title', 'Description', 'Category', 'Amount', 'Date Completed', 
+                                 'Client Name', 'Notes', 'Created At', 'Updated At'])
+        for job in FreelanceJob.query.all():
+            revenue_writer.writerow([
+                job.id, job.title, job.description, job.category, float(job.amount) if job.amount else 0,
+                job.date_completed.isoformat() if job.date_completed else '',
+                job.client_name, job.notes,
+                job.created_at.isoformat() if job.created_at else '',
+                job.updated_at.isoformat() if job.updated_at else ''
+            ])
+        zip_file.writestr('revenue_entries.csv', revenue_buffer.getvalue())
+        
+        activity_buffer = io.StringIO()
+        activity_writer = csv.writer(activity_buffer)
+        activity_writer.writerow(['ID', 'Action', 'Details', 'Lead ID', 'Client ID', 'Timestamp'])
+        for activity in ActivityLog.query.all():
+            activity_writer.writerow([
+                activity.id, activity.action, activity.details,
+                activity.lead_id, activity.client_id,
+                activity.timestamp.isoformat() if activity.timestamp else ''
+            ])
+        zip_file.writestr('activity_log.csv', activity_buffer.getvalue())
+        
+        stats = UserStats.get_stats()
+        analytics_buffer = io.StringIO()
+        analytics_writer = csv.writer(analytics_buffer)
+        analytics_writer.writerow(['Metric', 'Value'])
+        analytics_writer.writerow(['Total XP', stats.total_xp])
+        analytics_writer.writerow(['Current Level', stats.current_level])
+        analytics_writer.writerow(['Total Tokens', stats.total_tokens])
+        analytics_writer.writerow(['Tokens Spent', stats.tokens_spent])
+        analytics_writer.writerow(['Available Tokens', stats.available_tokens])
+        analytics_writer.writerow(['Total Outreach', stats.total_outreach_count])
+        analytics_writer.writerow(['Current Outreach Streak', stats.current_outreach_streak_days])
+        analytics_writer.writerow(['Best Outreach Streak', stats.best_outreach_streak_days])
+        analytics_writer.writerow(['Total Leads Added', stats.total_leads_added])
+        analytics_writer.writerow(['Total Deals Closed', stats.total_deals_closed])
+        analytics_writer.writerow(['Total Revenue', float(stats.total_revenue) if stats.total_revenue else 0])
+        analytics_writer.writerow(['Tasks Completed', stats.total_tasks_completed])
+        analytics_writer.writerow(['Focus Sessions', stats.total_focus_sessions])
+        analytics_writer.writerow(['Focus Minutes', stats.total_focus_minutes])
+        analytics_writer.writerow(['Consistency Score', stats.consistency_score])
+        analytics_writer.writerow(['Export Date', date.today().isoformat()])
+        zip_file.writestr('analytics_summary.csv', analytics_buffer.getvalue())
+    
+    zip_buffer.seek(0)
+    
+    ActivityLog.log_activity('data_exported', 'Full data export downloaded')
+    
+    return Response(
+        zip_buffer.getvalue(),
+        mimetype='application/zip',
+        headers={
+            'Content-Disposition': f'attachment; filename=anchoros_export_{date.today().isoformat()}.zip'
+        }
+    )

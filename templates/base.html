@@ -1086,6 +1086,82 @@
     })();
     </script>
     
+    <div id="confirmModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);">
+        <div class="glass-card p-6 max-w-md w-full" style="background: rgba(46, 47, 55, 0.98);">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-cinnabar/20 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-cinnabar" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 id="confirmTitle" class="text-lg font-semibold text-high">Confirm Action</h3>
+                    <p id="confirmMessage" class="text-medium text-sm mt-1">Are you sure you want to proceed?</p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button id="confirmCancel" class="btn-secondary flex-1" onclick="closeConfirmModal()">Cancel</button>
+                <button id="confirmAction" class="flex-1 py-3 px-4 rounded-xl font-semibold text-white bg-cinnabar hover:bg-cinnabar/80 transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <script data-swup-ignore-script>
+    window.confirmAction = function(options) {
+        const modal = document.getElementById('confirmModal');
+        const title = document.getElementById('confirmTitle');
+        const message = document.getElementById('confirmMessage');
+        const actionBtn = document.getElementById('confirmAction');
+        
+        title.textContent = options.title || 'Confirm Action';
+        message.textContent = options.message || 'Are you sure you want to proceed? This action cannot be undone.';
+        actionBtn.textContent = options.actionText || 'Confirm';
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        actionBtn.onclick = function() {
+            closeConfirmModal();
+            if (options.onConfirm) {
+                options.onConfirm();
+            }
+        };
+    };
+    
+    window.closeConfirmModal = function() {
+        const modal = document.getElementById('confirmModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    };
+    
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('confirmModal');
+        if (e.target === modal) {
+            closeConfirmModal();
+        }
+    });
+    
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form.hasAttribute('data-confirm')) {
+            e.preventDefault();
+            const title = form.getAttribute('data-confirm-title') || 'Confirm Delete';
+            const message = form.getAttribute('data-confirm-message') || 'Are you sure you want to delete this? This action cannot be undone.';
+            const actionText = form.getAttribute('data-confirm-action') || 'Delete';
+            
+            confirmAction({
+                title: title,
+                message: message,
+                actionText: actionText,
+                onConfirm: function() {
+                    form.removeAttribute('data-confirm');
+                    form.submit();
+                }
+            });
+        }
+    });
+    </script>
+    
     <script data-swup-ignore-script>
     (function() {
         const swup = new Swup({
