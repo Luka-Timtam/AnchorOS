@@ -159,11 +159,11 @@ def export_all_data():
         
         activity_buffer = io.StringIO()
         activity_writer = csv.writer(activity_buffer)
-        activity_writer.writerow(['ID', 'Action', 'Details', 'Lead ID', 'Client ID', 'Timestamp'])
+        activity_writer.writerow(['ID', 'Action Type', 'Description', 'Related ID', 'Related Object Type', 'Timestamp'])
         for activity in ActivityLog.query.all():
             activity_writer.writerow([
-                activity.id, activity.action, activity.details,
-                activity.lead_id, activity.client_id,
+                activity.id, activity.action_type, activity.description,
+                activity.related_id or '', activity.related_object_type or '',
                 activity.timestamp.isoformat() if activity.timestamp else ''
             ])
         zip_file.writestr('activity_log.csv', activity_buffer.getvalue())
