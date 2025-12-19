@@ -258,10 +258,16 @@ def notes():
 @mobile_bp.route('/notes/new', methods=['GET', 'POST'])
 def note_new():
     if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        
+        if not content:
+            flash('Note content is required', 'error')
+            return render_template('mobile/note_form.html', title=title, content=content)
+        
         note = Note(
-            title=request.form.get('title', 'Quick Note'),
-            content=request.form.get('content', ''),
-            note_type='general'
+            title=title if title else 'Quick Note',
+            content=content
         )
         db.session.add(note)
         db.session.commit()
