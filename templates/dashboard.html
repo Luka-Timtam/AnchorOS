@@ -1152,22 +1152,26 @@ initWidgetModalListeners();
 })();
 {% endif %}
 
-var focusInterval = null;
-var focusEndTime = null;
+// Focus session functions - use global timer from base.html
 
 function startFocusSession() {
     const duration = document.getElementById('focusDuration').value;
+    const formData = new FormData();
+    formData.append('duration', duration);
+    
     fetch('/focus/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ duration_minutes: parseInt(duration) })
+        body: formData
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            focusEndTime = new Date(data.end_time);
+            // Use global timer system
+            window.globalFocusEndTime = new Date(data.end_time);
+            window.startGlobalFocusTimer();
             showFocusActive();
-            startFocusTimer();
+        } else if (data.error) {
+            alert(data.error);
         }
     })
     .catch(err => console.error('Start focus error:', err));
@@ -1178,7 +1182,10 @@ function cancelFocusSession() {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                stopFocusTimer();
+                // Sync with global timer
+                if (window.syncFocusStatus) {
+                    window.syncFocusStatus();
+                }
                 showFocusInactive();
             }
         })
@@ -1186,73 +1193,31 @@ function cancelFocusSession() {
 }
 
 function showFocusActive() {
-    document.getElementById('focusStartControls').classList.add('hidden');
-    document.getElementById('focusActiveControls').classList.remove('hidden');
-    document.getElementById('focusActiveControls').classList.add('flex');
-    document.getElementById('focusSubtitle').textContent = 'Stay focused to earn bonus tokens!';
+    const startControls = document.getElementById('focusStartControls');
+    const activeControls = document.getElementById('focusActiveControls');
+    const subtitle = document.getElementById('focusSubtitle');
+    
+    if (startControls) startControls.classList.add('hidden');
+    if (activeControls) {
+        activeControls.classList.remove('hidden');
+        activeControls.classList.add('flex');
+    }
+    if (subtitle) subtitle.textContent = 'Stay focused to earn bonus tokens!';
 }
 
 function showFocusInactive() {
-    document.getElementById('focusStartControls').classList.remove('hidden');
-    document.getElementById('focusActiveControls').classList.add('hidden');
-    document.getElementById('focusActiveControls').classList.remove('flex');
-    document.getElementById('focusSubtitle').textContent = 'Stay focused and earn rewards';
-}
-
-function startFocusTimer() {
-    updateFocusTimer();
-    focusInterval = setInterval(updateFocusTimer, 1000);
-}
-
-function stopFocusTimer() {
-    if (focusInterval) {
-        clearInterval(focusInterval);
-        focusInterval = null;
+    const startControls = document.getElementById('focusStartControls');
+    const activeControls = document.getElementById('focusActiveControls');
+    const subtitle = document.getElementById('focusSubtitle');
+    
+    if (startControls) startControls.classList.remove('hidden');
+    if (activeControls) {
+        activeControls.classList.add('hidden');
+        activeControls.classList.remove('flex');
     }
+    if (subtitle) subtitle.textContent = 'Stay focused and earn rewards';
 }
 
-function updateFocusTimer() {
-    if (!focusEndTime) return;
-    
-    const now = new Date();
-    const diff = Math.max(0, Math.floor((focusEndTime - now) / 1000));
-    
-    if (diff <= 0) {
-        stopFocusTimer();
-        checkFocusComplete();
-        return;
-    }
-    
-    const mins = Math.floor(diff / 60);
-    const secs = diff % 60;
-    document.getElementById('focusTimer').textContent = 
-        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function checkFocusComplete() {
-    fetch('/focus/status')
-        .then(r => r.json())
-        .then(data => {
-            if (!data.active) {
-                showFocusInactive();
-                if (data.just_completed) {
-                    alert(`Focus session complete! You earned ${data.tokens_earned} tokens!`);
-                    window.location.reload();
-                }
-            }
-        })
-        .catch(err => console.error('Check focus error:', err));
-}
-
-fetch('/focus/status')
-    .then(r => r.json())
-    .then(data => {
-        if (data.active) {
-            focusEndTime = new Date(data.end_time);
-            showFocusActive();
-            startFocusTimer();
-        }
-    })
-    .catch(err => console.error('Initial focus check error:', err));
+// Initial state is handled by global timer in base.html
 </script>
 {% endblock %}

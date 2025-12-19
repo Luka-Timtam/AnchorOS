@@ -624,6 +624,21 @@
             </a>
         </div>
         
+        <!-- Focus Session Indicator (shows when active) -->
+        <div id="sidebarFocusIndicator" class="px-4 mb-3 hidden">
+            <div class="bg-aqua/15 border border-aqua/30 rounded-xl p-2 flex items-center gap-2 cursor-pointer hover:bg-aqua/20 transition-colors" onclick="window.location.href='{{ url_for('dashboard.index') }}'">
+                <div class="w-8 h-8 rounded-lg bg-aqua/20 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-aqua animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="nav-label flex-1 min-w-0">
+                    <div class="text-xs text-aqua font-medium">Focus Active</div>
+                    <div id="sidebarFocusTime" class="text-sm font-bold text-high font-mono">00:00</div>
+                </div>
+            </div>
+        </div>
+        
         <div class="px-4 mb-4">
             <button type="button" id="openSearchBtn" class="search-pill sidebar-search-btn text-medium hover:text-high hover:bg-white/5">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -964,55 +979,157 @@
     
     <script>
     (function() {
-        let globalFocusInterval = null;
+        // Global focus timer state
+        window.globalFocusEndTime = null;
+        window.globalFocusInterval = null;
+        window.globalFocusSyncInterval = null;
         
         function formatTimerTime(seconds) {
+            if (seconds <= 0) return '00:00';
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
         
-        function updateGlobalNavbarTimer(active, seconds) {
-            const navTimer = document.getElementById('sidebarFocusTimer');
-            const navTimerText = document.getElementById('sidebarFocusTimerText');
-            if (navTimer && navTimerText) {
-                if (active) {
-                    navTimer.classList.remove('hidden');
-                    navTimer.classList.add('flex');
-                    navTimerText.textContent = formatTimerTime(seconds);
+        function updateSidebarIndicator(active, seconds) {
+            const indicator = document.getElementById('sidebarFocusIndicator');
+            const timeDisplay = document.getElementById('sidebarFocusTime');
+            
+            if (indicator) {
+                if (active && seconds > 0) {
+                    indicator.classList.remove('hidden');
+                    if (timeDisplay) {
+                        timeDisplay.textContent = formatTimerTime(seconds);
+                    }
                 } else {
-                    navTimer.classList.add('hidden');
-                    navTimer.classList.remove('flex');
+                    indicator.classList.add('hidden');
                 }
+            }
+            
+            // Also update dashboard timer if it exists
+            const dashboardTimer = document.getElementById('focusTimer');
+            if (dashboardTimer && active && seconds > 0) {
+                dashboardTimer.textContent = formatTimerTime(seconds);
             }
         }
         
-        function checkGlobalFocus() {
+        function tickGlobalFocus() {
+            if (!window.globalFocusEndTime) {
+                updateSidebarIndicator(false, 0);
+                return;
+            }
+            
+            const now = new Date();
+            const diff = Math.max(0, Math.floor((window.globalFocusEndTime - now) / 1000));
+            
+            if (diff <= 0) {
+                // Timer completed - call /focus/check to finalize session
+                window.globalFocusEndTime = null;
+                stopGlobalFocusTimer();
+                completeGlobalFocusSession();
+                return;
+            }
+            
+            updateSidebarIndicator(true, diff);
+        }
+        
+        function completeGlobalFocusSession() {
+            fetch('/focus/check')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.active) {
+                        updateSidebarIndicator(false, 0);
+                        
+                        // Show inactive state on dashboard if present
+                        const startControls = document.getElementById('focusStartControls');
+                        const activeControls = document.getElementById('focusActiveControls');
+                        const subtitle = document.getElementById('focusSubtitle');
+                        if (startControls && activeControls) {
+                            startControls.classList.remove('hidden');
+                            activeControls.classList.add('hidden');
+                            activeControls.classList.remove('flex');
+                        }
+                        if (subtitle) {
+                            subtitle.textContent = 'Stay focused and earn rewards';
+                        }
+                        
+                        // Show completion notification
+                        if (data.completed && data.tokens_earned) {
+                            alert(`Focus session complete! You earned ${data.tokens_earned} tokens and ${data.xp_earned} XP!`);
+                            window.location.reload();
+                        }
+                    } else if (data.active && data.end_time) {
+                        // Session still active (edge case), restart timer
+                        window.globalFocusEndTime = new Date(data.end_time);
+                        startGlobalFocusTimer();
+                    }
+                })
+                .catch(() => {});
+        }
+        
+        function startGlobalFocusTimer() {
+            if (window.globalFocusInterval) return;
+            tickGlobalFocus();
+            window.globalFocusInterval = setInterval(tickGlobalFocus, 1000);
+        }
+        
+        function stopGlobalFocusTimer() {
+            if (window.globalFocusInterval) {
+                clearInterval(window.globalFocusInterval);
+                window.globalFocusInterval = null;
+            }
+        }
+        
+        function syncFocusStatus() {
             fetch('/focus/status')
                 .then(r => r.json())
                 .then(data => {
-                    if (data.active) {
-                        updateGlobalNavbarTimer(true, data.remaining_seconds);
+                    if (data.active && data.end_time) {
+                        window.globalFocusEndTime = new Date(data.end_time);
+                        startGlobalFocusTimer();
+                        
+                        // Show active state on dashboard if present
+                        const startControls = document.getElementById('focusStartControls');
+                        const activeControls = document.getElementById('focusActiveControls');
+                        if (startControls && activeControls) {
+                            startControls.classList.add('hidden');
+                            activeControls.classList.remove('hidden');
+                            activeControls.classList.add('flex');
+                        }
                     } else {
-                        updateGlobalNavbarTimer(false, 0);
-                        if (globalFocusInterval) {
-                            clearInterval(globalFocusInterval);
-                            globalFocusInterval = null;
+                        window.globalFocusEndTime = null;
+                        stopGlobalFocusTimer();
+                        updateSidebarIndicator(false, 0);
+                        
+                        // Show inactive state on dashboard if present
+                        const startControls = document.getElementById('focusStartControls');
+                        const activeControls = document.getElementById('focusActiveControls');
+                        if (startControls && activeControls) {
+                            startControls.classList.remove('hidden');
+                            activeControls.classList.add('hidden');
+                            activeControls.classList.remove('flex');
+                        }
+                        
+                        // Handle completion notification
+                        if (data.completed && data.tokens_earned) {
+                            alert(`Focus session complete! You earned ${data.tokens_earned} tokens and ${data.xp_earned} XP!`);
                         }
                     }
                 })
                 .catch(() => {});
         }
         
-        function initGlobalFocusCheck() {
-            checkGlobalFocus();
-            
-            if (!globalFocusInterval) {
-                globalFocusInterval = setInterval(checkGlobalFocus, 5000);
-            }
-        }
+        // Expose functions globally for dashboard to use
+        window.syncFocusStatus = syncFocusStatus;
+        window.startGlobalFocusTimer = startGlobalFocusTimer;
         
-        initGlobalFocusCheck();
+        // Initial sync
+        syncFocusStatus();
+        
+        // Periodic sync to handle edge cases (every 30 seconds)
+        if (!window.globalFocusSyncInterval) {
+            window.globalFocusSyncInterval = setInterval(syncFocusStatus, 30000);
+        }
     })();
     </script>
     
