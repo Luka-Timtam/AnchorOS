@@ -34,6 +34,21 @@ def index():
         Lead.status.notin_(['closed_won', 'closed_lost'])
     ).order_by(Lead.next_action_date).limit(3).all()
     
+    first_of_month = today.replace(day=1)
+    month_income = db.session.query(db.func.coalesce(db.func.sum(FreelanceJob.amount), 0)).filter(
+        FreelanceJob.date_completed >= first_of_month
+    ).scalar() or 0
+    
+    six_months_ago = today - timedelta(days=180)
+    total_6mo = db.session.query(db.func.coalesce(db.func.sum(FreelanceJob.amount), 0)).filter(
+        FreelanceJob.date_completed >= six_months_ago
+    ).scalar() or 0
+    avg_monthly = float(total_6mo) / 6
+    
+    clients_this_month = Client.query.filter(
+        Client.converted_date >= first_of_month
+    ).count()
+    
     return render_template('mobile/index.html',
         today_tasks=today_tasks,
         total_leads=total_leads,
@@ -42,7 +57,10 @@ def index():
         pending_tasks=pending_tasks,
         follow_ups=follow_ups,
         stats=stats,
-        streak=stats.current_outreach_streak_days
+        streak=stats.current_outreach_streak_days,
+        month_income=month_income,
+        avg_monthly=avg_monthly,
+        clients_this_month=clients_this_month
     )
 
 

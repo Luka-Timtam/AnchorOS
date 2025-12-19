@@ -32,6 +32,24 @@
     </div>
 </div>
 
+<div class="mb-6">
+    <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Monthly Stats</h2>
+    <div class="grid grid-cols-3 gap-3">
+        <div class="stat-card">
+            <div class="stat-value text-lg">${{ "%.0f"|format(month_income) }}</div>
+            <div class="stat-label">This Month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-lg">${{ "%.0f"|format(avg_monthly) }}</div>
+            <div class="stat-label">Avg/Month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value text-lg">{{ clients_this_month }}</div>
+            <div class="stat-label">New Clients</div>
+        </div>
+    </div>
+</div>
+
 {% if follow_ups %}
 <div class="mb-6">
     <h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Follow-ups Due</h2>
