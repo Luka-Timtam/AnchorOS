@@ -626,14 +626,14 @@
         
         <!-- Focus Session Indicator (shows when active) -->
         <div id="sidebarFocusIndicator" class="px-4 mb-3 hidden">
-            <div class="bg-aqua/15 border border-aqua/30 rounded-xl p-2 flex items-center gap-2 cursor-pointer hover:bg-aqua/20 transition-colors" onclick="window.location.href='{{ url_for('dashboard.index') }}'">
-                <div class="w-8 h-8 rounded-lg bg-aqua/20 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4 text-aqua animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-cinnabar/15 border border-cinnabar/30 rounded-xl p-2 flex items-center gap-2 cursor-pointer hover:bg-cinnabar/20 transition-colors" onclick="window.location.href='{{ url_for('dashboard.index') }}'">
+                <div class="w-8 h-8 rounded-lg bg-cinnabar/20 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-cinnabar animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
                 <div class="nav-label flex-1 min-w-0">
-                    <div class="text-xs text-aqua font-medium">Focus Active</div>
+                    <div class="text-xs text-cinnabar font-medium">Focus Active</div>
                     <div id="sidebarFocusTime" class="text-sm font-bold text-high font-mono">00:00</div>
                 </div>
             </div>
@@ -693,7 +693,7 @@
         </nav>
         
         <div class="px-4 pb-3 border-t border-white/10 pt-3 mt-auto">
-            <a href="{{ url_for('dashboard.index') }}" id="sidebarFocusTimer" class="hidden mb-2 px-3 py-2 rounded-xl bg-gradient-to-r from-aqua to-cyan-400 text-graphite font-semibold items-center gap-2 transition-all text-sm">
+            <a href="{{ url_for('dashboard.index') }}" id="sidebarFocusTimer" class="hidden mb-2 px-3 py-2 rounded-xl bg-gradient-to-r from-cinnabar to-orange-500 text-porcelain font-semibold items-center gap-2 transition-all text-sm">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
