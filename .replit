@@ -1,10 +1,11 @@
 modules = ["python-3.11", "postgresql-16"]
 [agent]
 expertMode = true
+integrations = ["github:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["freetype", "lcms2", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "sqlite", "tcl", "tk", "zlib", "imagemagick"]
+packages = ["freetype", "imagemagick", "lcms2", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "sqlite", "tcl", "tk", "zlib"]
 
 [workflows]
 runButton = "Project"
