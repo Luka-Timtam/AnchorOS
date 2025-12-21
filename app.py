@@ -7,8 +7,20 @@ def create_app():
     app = Flask(__name__)
     
     app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'dev-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+    
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+    
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     app.permanent_session_lifetime = timedelta(days=30)
     
     db.init_app(app)
@@ -106,8 +118,10 @@ def create_app():
             return redirect(url_for('mobile.index'))
     
     with app.app_context():
-        db.create_all()
-        run_migrations()
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            db.create_all()
+            run_migrations()
     
     return app
 
@@ -116,11 +130,17 @@ def run_migrations():
     from sqlalchemy import inspect, text
     inspector = inspect(db.engine)
     
+    database_url = os.environ.get('DATABASE_URL', '')
+    is_postgres = 'postgresql' in database_url or 'postgres' in database_url
+    
     if 'unlocked_rewards' in inspector.get_table_names():
         columns = [col['name'] for col in inspector.get_columns('unlocked_rewards')]
         if 'claimed_at' not in columns:
             with db.engine.connect() as conn:
-                conn.execute(text('ALTER TABLE unlocked_rewards ADD COLUMN claimed_at DATETIME'))
+                if is_postgres:
+                    conn.execute(text('ALTER TABLE unlocked_rewards ADD COLUMN claimed_at TIMESTAMP'))
+                else:
+                    conn.execute(text('ALTER TABLE unlocked_rewards ADD COLUMN claimed_at DATETIME'))
                 conn.commit()
 
 app = create_app()
