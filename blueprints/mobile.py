@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from datetime import date, datetime, timedelta
-from models import db, Lead, Client, Task, OutreachLog, Note, FreelanceJob, UserStats, UserSettings, ActivityLog, XPLog
+from db_supabase import (
+    Lead, Client, Task, OutreachLog, Note, FreelancingIncome, 
+    UserStats, UserSettings, ActivityLog, get_supabase
+)
 from blueprints.gamification import add_xp, add_tokens, update_mission_progress, XP_RULES, TOKEN_RULES
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/mobile')
@@ -15,49 +18,51 @@ def is_mobile_device():
 @mobile_bp.route('/')
 def index():
     today = date.today()
+    today_str = today.isoformat()
     stats = UserStats.get_stats()
     settings = UserSettings.get_settings()
     
-    today_tasks = Task.query.filter(
-        Task.due_date == today,
-        Task.status != 'done'
-    ).order_by(Task.created_at.desc()).limit(5).all()
+    client = get_supabase()
     
-    total_leads = Lead.query.filter(Lead.status.notin_(['closed_won', 'closed_lost'])).count()
-    total_clients = Client.query.filter(Client.status == 'active').count()
+    tasks_result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('created_at', desc=True).limit(5).execute()
+    today_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    today_outreach = OutreachLog.query.filter(OutreachLog.date == today).count()
+    leads_result = client.table('leads').select('*').not_.in_('status', ['closed_won', 'closed_lost']).execute()
+    total_leads = len(leads_result.data)
     
-    pending_tasks = Task.query.filter(Task.status != 'done').count()
+    clients_result = client.table('clients').select('*').eq('status', 'active').execute()
+    total_clients = len(clients_result.data)
     
-    follow_ups = Lead.query.filter(
-        Lead.next_action_date <= today,
-        Lead.status.notin_(['closed_won', 'closed_lost'])
-    ).order_by(Lead.next_action_date).limit(3).all()
+    outreach_result = client.table('outreach_logs').select('*').eq('date', today_str).execute()
+    today_outreach = len(outreach_result.data)
     
-    first_of_month = today.replace(day=1)
-    month_income = db.session.query(db.func.coalesce(db.func.sum(FreelanceJob.amount), 0)).filter(
-        FreelanceJob.date_completed >= first_of_month
-    ).scalar() or 0
+    pending_result = client.table('tasks').select('*').neq('status', 'done').execute()
+    pending_tasks = len(pending_result.data)
     
-    six_months_ago = today - timedelta(days=180)
-    total_6mo = db.session.query(db.func.coalesce(db.func.sum(FreelanceJob.amount), 0)).filter(
-        FreelanceJob.date_completed >= six_months_ago
-    ).scalar() or 0
-    avg_monthly = float(total_6mo) / 6
+    followups_result = client.table('leads').select('*').lte('next_action_date', today_str).not_.in_('status', ['closed_won', 'closed_lost']).order('next_action_date').limit(3).execute()
+    follow_ups = [Lead._parse_row(row) for row in followups_result.data]
     
-    clients_this_month = Client.query.filter(
-        Client.created_at >= first_of_month
-    ).count()
+    first_of_month = today.replace(day=1).isoformat()
+    freelance_result = client.table('freelancing_income').select('*').gte('date_completed', first_of_month).execute()
+    month_income = sum(float(row.get('amount', 0) or 0) for row in freelance_result.data)
     
-    mrr = db.session.query(
-        db.func.coalesce(db.func.sum(Client.monthly_hosting_fee), 0) + 
-        db.func.coalesce(db.func.sum(Client.monthly_saas_fee), 0)
-    ).filter(
-        Client.status == 'active'
-    ).scalar() or 0
+    six_months_ago = (today - timedelta(days=180)).isoformat()
+    freelance_6mo = client.table('freelancing_income').select('*').gte('date_completed', six_months_ago).execute()
+    total_6mo = sum(float(row.get('amount', 0) or 0) for row in freelance_6mo.data)
+    avg_monthly = float(total_6mo) / 6 if total_6mo else 0
+    
+    clients_month = client.table('clients').select('*').gte('created_at', first_of_month).execute()
+    clients_this_month = len(clients_month.data)
+    
+    active_clients = client.table('clients').select('*').eq('status', 'active').execute()
+    mrr = sum(
+        float(row.get('monthly_hosting_fee', 0) or 0) + float(row.get('monthly_saas_fee', 0) or 0)
+        for row in active_clients.data
+    )
     
     total_this_month = float(month_income) + float(mrr)
+    
+    streak = getattr(stats, 'current_outreach_streak_days', 0) if stats else 0
     
     return render_template('mobile/index.html',
         today_tasks=today_tasks,
@@ -67,7 +72,7 @@ def index():
         pending_tasks=pending_tasks,
         follow_ups=follow_ups,
         stats=stats,
-        streak=stats.current_outreach_streak_days,
+        streak=streak,
         total_this_month=total_this_month,
         mrr=mrr,
         avg_monthly=avg_monthly,
@@ -78,43 +83,62 @@ def index():
 @mobile_bp.route('/leads')
 def leads():
     status_filter = request.args.get('status', '')
-    query = Lead.query.filter(Lead.status.notin_(['closed_won', 'closed_lost']))
+    client = get_supabase()
+    
+    query = client.table('leads').select('*').not_.in_('status', ['closed_won', 'closed_lost'])
     
     if status_filter:
-        query = query.filter(Lead.status == status_filter)
+        query = query.eq('status', status_filter)
     
-    leads = query.order_by(Lead.updated_at.desc()).limit(50).all()
+    result = query.order('updated_at', desc=True).limit(50).execute()
+    leads_list = [Lead._parse_row(row) for row in result.data]
+    
+    status_choices = [
+        ('new', 'New'),
+        ('contacted', 'Contacted'),
+        ('follow_up', 'Follow Up'),
+        ('call_booked', 'Call Booked'),
+        ('proposal_sent', 'Proposal Sent'),
+        ('negotiation', 'Negotiation')
+    ]
     
     return render_template('mobile/leads.html', 
-        leads=leads,
+        leads=leads_list,
         status_filter=status_filter,
-        status_choices=Lead.status_choices()
+        status_choices=status_choices
     )
 
 
 @mobile_bp.route('/leads/<int:lead_id>')
 def lead_detail(lead_id):
-    lead = Lead.query.get_or_404(lead_id)
-    recent_outreach = OutreachLog.query.filter_by(lead_id=lead_id).order_by(OutreachLog.date.desc()).limit(5).all()
+    lead = Lead.get_by_id(lead_id)
+    if not lead:
+        flash('Lead not found', 'error')
+        return redirect(url_for('mobile.leads'))
+    
+    client = get_supabase()
+    outreach_result = client.table('outreach_logs').select('*').eq('lead_id', lead_id).order('date', desc=True).limit(5).execute()
+    recent_outreach = [OutreachLog._parse_row(row) for row in outreach_result.data]
+    
     return render_template('mobile/lead_detail.html', lead=lead, recent_outreach=recent_outreach)
 
 
 @mobile_bp.route('/leads/new', methods=['GET', 'POST'])
 def lead_new():
     if request.method == 'POST':
-        lead = Lead(
-            name=request.form.get('name'),
-            business_name=request.form.get('business_name', ''),
-            niche=request.form.get('niche', ''),
-            email=request.form.get('email', ''),
-            phone=request.form.get('phone', ''),
-            source=request.form.get('source', ''),
-            status='new',
-            notes=request.form.get('notes', '')
-        )
-        db.session.add(lead)
-        db.session.commit()
-        ActivityLog.log_activity('lead_created', f'Created lead: {lead.name}', lead.id, 'lead')
+        lead = Lead.insert({
+            'name': request.form.get('name'),
+            'business_name': request.form.get('business_name', ''),
+            'niche': request.form.get('niche', ''),
+            'email': request.form.get('email', ''),
+            'phone': request.form.get('phone', ''),
+            'source': request.form.get('source', ''),
+            'status': 'new',
+            'notes': request.form.get('notes', ''),
+            'created_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        })
+        ActivityLog.log_activity('lead_created', f'Created lead: {request.form.get("name")}', lead.id if lead else None, 'lead')
         flash('Lead added successfully', 'success')
         return redirect(url_for('mobile.leads'))
     
@@ -123,26 +147,31 @@ def lead_new():
 
 @mobile_bp.route('/leads/<int:lead_id>/outreach', methods=['GET', 'POST'])
 def lead_outreach(lead_id):
-    lead = Lead.query.get_or_404(lead_id)
+    lead = Lead.get_by_id(lead_id)
+    if not lead:
+        flash('Lead not found', 'error')
+        return redirect(url_for('mobile.leads'))
     
     if request.method == 'POST':
-        outreach = OutreachLog(
-            lead_id=lead_id,
-            type=request.form.get('type', 'email'),
-            outcome=request.form.get('outcome', 'contacted'),
-            notes=request.form.get('notes', ''),
-            date=date.today()
-        )
-        lead.last_contacted_at = datetime.utcnow()
-        lead.updated_at = datetime.utcnow()
+        OutreachLog.insert({
+            'lead_id': lead_id,
+            'type': request.form.get('type', 'email'),
+            'outcome': request.form.get('outcome', 'contacted'),
+            'notes': request.form.get('notes', ''),
+            'date': date.today().isoformat()
+        })
+        
+        update_data = {
+            'last_contacted_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        }
         
         if request.form.get('outcome') == 'booked_call':
-            lead.status = 'call_booked'
+            update_data['status'] = 'call_booked'
         elif request.form.get('outcome') == 'follow_up_set':
-            lead.status = 'follow_up'
+            update_data['status'] = 'follow_up'
         
-        db.session.add(outreach)
-        db.session.commit()
+        Lead.update_by_id(lead_id, update_data)
         
         from blueprints.gamification import award_outreach_xp
         award_outreach_xp()
@@ -150,57 +179,70 @@ def lead_outreach(lead_id):
         flash('Outreach logged', 'success')
         return redirect(url_for('mobile.lead_detail', lead_id=lead_id))
     
+    type_choices = [('email', 'Email'), ('dm', 'DM'), ('call', 'Call'), ('in_person', 'In Person')]
+    outcome_choices = [('contacted', 'Contacted'), ('no_response', 'No Response'), ('booked_call', 'Booked Call'), ('follow_up_set', 'Follow Up Set')]
+    
     return render_template('mobile/outreach_form.html', 
         lead=lead,
-        type_choices=OutreachLog.type_choices(),
-        outcome_choices=OutreachLog.outcome_choices()
+        type_choices=type_choices,
+        outcome_choices=outcome_choices
     )
 
 
 @mobile_bp.route('/clients')
 def clients():
-    clients = Client.query.filter(Client.status == 'active').order_by(Client.updated_at.desc()).limit(50).all()
-    return render_template('mobile/clients.html', clients=clients)
+    client = get_supabase()
+    result = client.table('clients').select('*').eq('status', 'active').order('updated_at', desc=True).limit(50).execute()
+    clients_list = [Client._parse_row(row) for row in result.data]
+    return render_template('mobile/clients.html', clients=clients_list)
 
 
 @mobile_bp.route('/clients/<int:client_id>')
 def client_detail(client_id):
-    client = Client.query.get_or_404(client_id)
-    return render_template('mobile/client_detail.html', client=client)
+    client_obj = Client.get_by_id(client_id)
+    if not client_obj:
+        flash('Client not found', 'error')
+        return redirect(url_for('mobile.clients'))
+    return render_template('mobile/client_detail.html', client=client_obj)
 
 
 @mobile_bp.route('/clients/new', methods=['GET', 'POST'])
 def client_new():
     if request.method == 'POST':
-        client = Client(
-            name=request.form.get('name'),
-            business_name=request.form.get('business_name', ''),
-            contact_email=request.form.get('contact_email', ''),
-            phone=request.form.get('phone', ''),
-            project_type=request.form.get('project_type', 'website'),
-            status='active',
-            notes=request.form.get('notes', '')
-        )
-        db.session.add(client)
-        db.session.commit()
-        ActivityLog.log_activity('client_created', f'Created client: {client.name}', client.id, 'client')
+        client_obj = Client.insert({
+            'name': request.form.get('name'),
+            'business_name': request.form.get('business_name', ''),
+            'contact_email': request.form.get('contact_email', ''),
+            'phone': request.form.get('phone', ''),
+            'project_type': request.form.get('project_type', 'website'),
+            'status': 'active',
+            'notes': request.form.get('notes', ''),
+            'created_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        })
+        ActivityLog.log_activity('client_created', f'Created client: {request.form.get("name")}', client_obj.id if client_obj else None, 'client')
         flash('Client added successfully', 'success')
         return redirect(url_for('mobile.clients'))
     
-    return render_template('mobile/client_form.html', project_types=Client.project_type_choices())
+    project_types = [('website', 'Website'), ('webapp', 'Web App'), ('mobile', 'Mobile App'), ('other', 'Other')]
+    return render_template('mobile/client_form.html', project_types=project_types)
 
 
 @mobile_bp.route('/tasks')
 def tasks():
     today = date.today()
+    today_str = today.isoformat()
     filter_type = request.args.get('filter', 'today')
+    client = get_supabase()
     
     if filter_type == 'today':
-        task_list = Task.query.filter(Task.due_date == today, Task.status != 'done').order_by(Task.created_at.desc()).all()
+        result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('created_at', desc=True).execute()
     elif filter_type == 'overdue':
-        task_list = Task.query.filter(Task.due_date < today, Task.status != 'done').order_by(Task.due_date).all()
+        result = client.table('tasks').select('*').lt('due_date', today_str).neq('status', 'done').order('due_date').execute()
     else:
-        task_list = Task.query.filter(Task.status != 'done').order_by(Task.due_date).limit(50).all()
+        result = client.table('tasks').select('*').neq('status', 'done').order('due_date').limit(50).execute()
+    
+    task_list = [Task._parse_row(row) for row in result.data]
     
     return render_template('mobile/tasks.html', tasks=task_list, filter_type=filter_type, today=today)
 
@@ -208,15 +250,20 @@ def tasks():
 @mobile_bp.route('/tasks/new', methods=['GET', 'POST'])
 def task_new():
     if request.method == 'POST':
-        task = Task(
-            title=request.form.get('title'),
-            description=request.form.get('description', ''),
-            due_date=datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date() if request.form.get('due_date') else date.today(),
-            status='open'
-        )
-        db.session.add(task)
-        db.session.commit()
-        ActivityLog.log_activity('task_created', f'Created task: {task.title}', task.id, 'task')
+        due_date = request.form.get('due_date')
+        if due_date:
+            due_date = datetime.strptime(due_date, '%Y-%m-%d').date().isoformat()
+        else:
+            due_date = date.today().isoformat()
+        
+        task = Task.insert({
+            'title': request.form.get('title'),
+            'description': request.form.get('description', ''),
+            'due_date': due_date,
+            'status': 'open',
+            'created_at': datetime.utcnow().isoformat()
+        })
+        ActivityLog.log_activity('task_created', f'Created task: {request.form.get("title")}', task.id if task else None, 'task')
         flash('Task added', 'success')
         return redirect(url_for('mobile.tasks'))
     
@@ -225,16 +272,19 @@ def task_new():
 
 @mobile_bp.route('/tasks/<int:task_id>/complete', methods=['POST'])
 def task_complete(task_id):
-    task = Task.query.get_or_404(task_id)
-    old_status = task.status
-    task.status = 'done'
-    db.session.commit()
+    task = Task.get_by_id(task_id)
+    if not task:
+        flash('Task not found', 'error')
+        return redirect(url_for('mobile.tasks'))
+    
+    old_status = getattr(task, 'status', '')
+    Task.update_by_id(task_id, {'status': 'done'})
     
     if old_status != 'done':
         add_xp(XP_RULES.get('task_done', 8), 'Task completed')
         add_tokens(TOKEN_RULES.get('task_done', 1), 'Task completed')
         update_mission_progress('complete_tasks')
-        ActivityLog.log_activity('task_completed', f'Completed task: {task.title}', task.id, 'task')
+        ActivityLog.log_activity('task_completed', f'Completed task: {getattr(task, "title", "")}', task_id, 'task')
         flash('Task completed! +8 XP, +1 token', 'success')
     else:
         flash('Task already completed', 'success')
@@ -245,16 +295,14 @@ def task_complete(task_id):
 @mobile_bp.route('/calendar')
 def calendar():
     today = date.today()
+    today_str = today.isoformat()
+    client = get_supabase()
     
-    upcoming_tasks = Task.query.filter(
-        Task.due_date >= today,
-        Task.status != 'done'
-    ).order_by(Task.due_date).limit(10).all()
+    tasks_result = client.table('tasks').select('*').gte('due_date', today_str).neq('status', 'done').order('due_date').limit(10).execute()
+    upcoming_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    follow_ups = Lead.query.filter(
-        Lead.next_action_date >= today,
-        Lead.status.notin_(['closed_won', 'closed_lost'])
-    ).order_by(Lead.next_action_date).limit(10).all()
+    leads_result = client.table('leads').select('*').gte('next_action_date', today_str).not_.in_('status', ['closed_won', 'closed_lost']).order('next_action_date').limit(10).execute()
+    follow_ups = [Lead._parse_row(row) for row in leads_result.data]
     
     return render_template('mobile/calendar.html',
         today=today,
@@ -265,8 +313,10 @@ def calendar():
 
 @mobile_bp.route('/notes')
 def notes():
-    notes = Note.query.order_by(Note.updated_at.desc()).limit(30).all()
-    return render_template('mobile/notes.html', notes=notes)
+    client = get_supabase()
+    result = client.table('notes').select('*').order('updated_at', desc=True).limit(30).execute()
+    notes_list = [Note._parse_row(row) for row in result.data]
+    return render_template('mobile/notes.html', notes=notes_list)
 
 
 @mobile_bp.route('/notes/new', methods=['GET', 'POST'])
@@ -279,26 +329,15 @@ def note_new():
             flash('Note content is required', 'error')
             return render_template('mobile/note_form.html', title=title, content=content)
         
-        is_first_today = not Note.has_note_today()
+        note = Note.insert({
+            'title': title if title else 'Quick Note',
+            'content': content,
+            'created_at': datetime.utcnow().isoformat(),
+            'updated_at': datetime.utcnow().isoformat()
+        })
         
-        note = Note(
-            title=title if title else 'Quick Note',
-            content=content
-        )
-        db.session.add(note)
-        db.session.commit()
-        
-        if is_first_today:
-            user_stats = UserStats.get_stats()
-            user_stats.current_xp += 2
-            xp_log = XPLog(amount=2, reason="First note of the day")
-            db.session.add(xp_log)
-            db.session.commit()
-            ActivityLog.log_activity('note_created', f'Created note: {note.title}', note.id, 'note')
-            flash('Note saved! +2 XP for first note today!', 'success')
-        else:
-            ActivityLog.log_activity('note_created', f'Created note: {note.title}', note.id, 'note')
-            flash('Note saved', 'success')
+        ActivityLog.log_activity('note_created', f'Created note: {title if title else "Quick Note"}', note.id if note else None, 'note')
+        flash('Note saved', 'success')
         
         return redirect(url_for('mobile.notes'))
     
@@ -307,13 +346,19 @@ def note_new():
 
 @mobile_bp.route('/notes/<int:note_id>')
 def note_detail(note_id):
-    note = Note.query.get_or_404(note_id)
+    note = Note.get_by_id(note_id)
+    if not note:
+        flash('Note not found', 'error')
+        return redirect(url_for('mobile.notes'))
     return render_template('mobile/note_detail.html', note=note)
 
 
 @mobile_bp.route('/notes/<int:note_id>/edit', methods=['GET', 'POST'])
 def note_edit(note_id):
-    note = Note.query.get_or_404(note_id)
+    note = Note.get_by_id(note_id)
+    if not note:
+        flash('Note not found', 'error')
+        return redirect(url_for('mobile.notes'))
     
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
@@ -323,23 +368,28 @@ def note_edit(note_id):
             flash('Note content is required', 'error')
             return render_template('mobile/note_edit_form.html', note=note, title=title, content=content)
         
-        note.title = title if title else 'Quick Note'
-        note.content = content
-        db.session.commit()
+        Note.update_by_id(note_id, {
+            'title': title if title else 'Quick Note',
+            'content': content,
+            'updated_at': datetime.utcnow().isoformat()
+        })
         
-        ActivityLog.log_activity('note_updated', f'Updated note: {note.title}', note.id, 'note')
+        ActivityLog.log_activity('note_updated', f'Updated note: {title if title else "Quick Note"}', note_id, 'note')
         flash('Note updated', 'success')
-        return redirect(url_for('mobile.note_detail', note_id=note.id))
+        return redirect(url_for('mobile.note_detail', note_id=note_id))
     
     return render_template('mobile/note_edit_form.html', note=note)
 
 
 @mobile_bp.route('/notes/<int:note_id>/delete', methods=['POST'])
 def note_delete(note_id):
-    note = Note.query.get_or_404(note_id)
-    title = note.title
-    db.session.delete(note)
-    db.session.commit()
+    note = Note.get_by_id(note_id)
+    if not note:
+        flash('Note not found', 'error')
+        return redirect(url_for('mobile.notes'))
+    
+    title = getattr(note, 'title', 'Note')
+    Note.delete_by_id(note_id)
     
     ActivityLog.log_activity('note_deleted', f'Deleted note: {title}', note_id, 'note')
     flash('Note deleted', 'success')
@@ -349,15 +399,16 @@ def note_delete(note_id):
 @mobile_bp.route('/freelancing')
 def freelancing():
     today = date.today()
-    current_month_start = today.replace(day=1)
+    current_month_start = today.replace(day=1).isoformat()
+    client = get_supabase()
     
-    entries = FreelanceJob.query.filter(
-        FreelanceJob.date_completed >= current_month_start
-    ).order_by(FreelanceJob.date_completed.desc()).all()
+    result = client.table('freelancing_income').select('*').gte('date_completed', current_month_start).order('date_completed', desc=True).execute()
+    entries = [FreelancingIncome._parse_row(row) for row in result.data]
     
-    month_total = sum(float(e.amount) for e in entries)
+    month_total = sum(float(getattr(e, 'amount', 0) or 0) for e in entries)
     
-    all_time_total = db.session.query(db.func.sum(FreelanceJob.amount)).scalar() or 0
+    all_result = client.table('freelancing_income').select('*').execute()
+    all_time_total = sum(float(row.get('amount', 0) or 0) for row in all_result.data)
     
     return render_template('mobile/freelancing.html',
         entries=entries,
@@ -369,43 +420,48 @@ def freelancing():
 @mobile_bp.route('/freelancing/new', methods=['GET', 'POST'])
 def freelancing_new():
     if request.method == 'POST':
-        entry = FreelanceJob(
-            title=request.form.get('title', 'Freelance Work'),
-            description=request.form.get('description', ''),
-            amount=float(request.form.get('amount', 0)),
-            client_name=request.form.get('client_name', ''),
-            category=request.form.get('category', 'other'),
-            date_completed=datetime.strptime(request.form.get('date'), '%Y-%m-%d').date() if request.form.get('date') else date.today()
-        )
-        db.session.add(entry)
-        db.session.commit()
-        ActivityLog.log_activity('income_logged', f'Logged income: {entry.title} - ${entry.amount}', entry.id, 'freelance')
+        date_completed = request.form.get('date')
+        if date_completed:
+            date_completed = datetime.strptime(date_completed, '%Y-%m-%d').date().isoformat()
+        else:
+            date_completed = date.today().isoformat()
+        
+        entry = FreelancingIncome.insert({
+            'title': request.form.get('title', 'Freelance Work'),
+            'description': request.form.get('description', ''),
+            'amount': float(request.form.get('amount', 0)),
+            'client_name': request.form.get('client_name', ''),
+            'category': request.form.get('category', 'other'),
+            'date_completed': date_completed
+        })
+        ActivityLog.log_activity('income_logged', f'Logged income: {request.form.get("title")} - ${request.form.get("amount")}', entry.id if entry else None, 'freelance')
         flash('Income logged', 'success')
         return redirect(url_for('mobile.freelancing'))
     
-    return render_template('mobile/freelancing_form.html', categories=FreelanceJob.category_choices())
+    categories = [('photography', 'Photography'), ('consulting', 'Consulting'), ('side_project', 'Side Project'), ('cash_work', 'Cash Work'), ('other', 'Other')]
+    return render_template('mobile/freelancing_form.html', categories=categories)
 
 
 @mobile_bp.route('/outreach/quick', methods=['GET', 'POST'])
 def quick_outreach():
+    client = get_supabase()
+    
     if request.method == 'POST':
         lead_id = request.form.get('lead_id')
-        outreach = OutreachLog(
-            lead_id=int(lead_id) if lead_id else None,
-            type=request.form.get('type', 'email'),
-            outcome=request.form.get('outcome', 'contacted'),
-            notes=request.form.get('notes', ''),
-            date=date.today()
-        )
+        
+        OutreachLog.insert({
+            'lead_id': int(lead_id) if lead_id else None,
+            'type': request.form.get('type', 'email'),
+            'outcome': request.form.get('outcome', 'contacted'),
+            'notes': request.form.get('notes', ''),
+            'date': date.today().isoformat()
+        })
         
         if lead_id:
-            lead = Lead.query.get(int(lead_id))
-            if lead:
-                lead.last_contacted_at = datetime.utcnow()
-                lead.updated_at = datetime.utcnow()
-        
-        db.session.add(outreach)
-        db.session.commit()
+            Lead.update_by_id(int(lead_id), {
+                'last_contacted_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            })
         
         from blueprints.gamification import award_outreach_xp
         award_outreach_xp()
@@ -413,12 +469,14 @@ def quick_outreach():
         flash('Outreach logged', 'success')
         return redirect(url_for('mobile.index'))
     
-    leads = Lead.query.filter(
-        Lead.status.notin_(['closed_won', 'closed_lost'])
-    ).order_by(Lead.updated_at.desc()).limit(20).all()
+    result = client.table('leads').select('*').not_.in_('status', ['closed_won', 'closed_lost']).order('updated_at', desc=True).limit(20).execute()
+    leads_list = [Lead._parse_row(row) for row in result.data]
+    
+    type_choices = [('email', 'Email'), ('dm', 'DM'), ('call', 'Call'), ('in_person', 'In Person')]
+    outcome_choices = [('contacted', 'Contacted'), ('no_response', 'No Response'), ('booked_call', 'Booked Call'), ('follow_up_set', 'Follow Up Set')]
     
     return render_template('mobile/quick_outreach.html',
-        leads=leads,
-        type_choices=OutreachLog.type_choices(),
-        outcome_choices=OutreachLog.outcome_choices()
+        leads=leads_list,
+        type_choices=type_choices,
+        outcome_choices=outcome_choices
     )
