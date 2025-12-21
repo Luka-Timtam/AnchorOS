@@ -1,21 +1,68 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, FreelanceJob
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from db_supabase import FreelancingIncome, get_supabase
 from datetime import date
-from sqlalchemy import func
 import calendar
 
 freelancing_bp = Blueprint('freelancing', __name__, url_prefix='/freelancing')
 
 
+def category_choices():
+    return [
+        ('photography', 'Photography'),
+        ('one_off_job', 'One-Off Job'),
+        ('consulting', 'Consulting'),
+        ('side_project', 'Side Project'),
+        ('cash_work', 'Cash Work'),
+        ('other', 'Other')
+    ]
+
+
+def get_total_income():
+    jobs = FreelancingIncome.query_all()
+    return sum(float(getattr(j, 'amount', 0) or 0) for j in jobs)
+
+
+def get_income_by_category():
+    jobs = FreelancingIncome.query_all()
+    income_by_cat = {}
+    for job in jobs:
+        cat = getattr(job, 'category', 'other')
+        amount = float(getattr(job, 'amount', 0) or 0)
+        income_by_cat[cat] = income_by_cat.get(cat, 0) + amount
+    return income_by_cat
+
+
+def get_monthly_income(months=6):
+    client = get_supabase()
+    result = client.table('freelancing_income').select('*').order('date', desc=True).execute()
+    
+    monthly_totals = {}
+    for row in result.data:
+        job_date = row.get('date', '')
+        if isinstance(job_date, str):
+            try:
+                d = date.fromisoformat(job_date.split('T')[0])
+                key = (d.year, d.month)
+                amount = float(row.get('amount', 0) or 0)
+                monthly_totals[key] = monthly_totals.get(key, 0) + amount
+            except:
+                pass
+    
+    sorted_months = sorted(monthly_totals.keys(), reverse=True)[:months]
+    sorted_months.reverse()
+    
+    return [(year, month, monthly_totals[(year, month)]) for year, month in sorted_months]
+
+
 @freelancing_bp.route('/')
 def index():
-    jobs = FreelanceJob.query.order_by(FreelanceJob.date_completed.desc()).all()
+    jobs = FreelancingIncome.query_all(order_by='date', order_desc=True)
     
-    total_income = FreelanceJob.get_total_income()
-    income_by_category = FreelanceJob.get_income_by_category()
-    monthly_income = FreelanceJob.get_monthly_income(6)
+    total_income = get_total_income()
+    income_by_category = get_income_by_category()
+    monthly_income = get_monthly_income(6)
     
-    category_labels = dict(FreelanceJob.category_choices())
+    category_labels = dict(category_choices())
     
     chart_labels = []
     chart_data = []
@@ -48,88 +95,87 @@ def index():
 @freelancing_bp.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
         category = request.form.get('category', 'other')
         amount = request.form.get('amount', 0)
-        date_completed_str = request.form.get('date_completed')
-        client_name = request.form.get('client_name', '').strip()
-        notes = request.form.get('notes', '').strip()
+        date_str = request.form.get('date')
         
-        if not title:
-            flash('Title is required', 'error')
-            return render_template('freelancing/form.html', job=None, categories=FreelanceJob.category_choices())
+        if not description:
+            flash('Description is required', 'error')
+            return render_template('freelancing/form.html', job=None, categories=category_choices())
         
         try:
             amount = float(amount)
         except ValueError:
             flash('Invalid amount', 'error')
-            return render_template('freelancing/form.html', job=None, categories=FreelanceJob.category_choices())
+            return render_template('freelancing/form.html', job=None, categories=category_choices())
         
-        date_completed = date.today()
-        if date_completed_str:
+        job_date = date.today()
+        if date_str:
             try:
-                date_completed = date.fromisoformat(date_completed_str)
+                job_date = date.fromisoformat(date_str)
             except ValueError:
                 pass
         
-        job = FreelanceJob(  # type: ignore[call-arg]
-            title=title,
-            description=description,
-            category=category,
-            amount=amount,
-            date_completed=date_completed,
-            client_name=client_name,
-            notes=notes
-        )
-        db.session.add(job)
-        db.session.commit()
+        FreelancingIncome.insert({
+            'description': description,
+            'category': category,
+            'amount': amount,
+            'date': job_date.isoformat()
+        })
         
-        flash('Freelance job added successfully!', 'success')
+        flash('Freelance income added successfully!', 'success')
         return redirect(url_for('freelancing.index'))
     
-    return render_template('freelancing/form.html', job=None, categories=FreelanceJob.category_choices())
+    return render_template('freelancing/form.html', job=None, categories=category_choices())
 
 
 @freelancing_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
-    job = FreelanceJob.query.get_or_404(id)
+    job = FreelancingIncome.get_by_id(id)
+    if not job:
+        abort(404)
     
     if request.method == 'POST':
-        job.title = request.form.get('title', '').strip()
-        job.description = request.form.get('description', '').strip()
-        job.category = request.form.get('category', 'other')
-        job.client_name = request.form.get('client_name', '').strip()
-        job.notes = request.form.get('notes', '').strip()
+        description = request.form.get('description', '').strip()
+        category = request.form.get('category', 'other')
         
         try:
-            job.amount = float(request.form.get('amount', 0))
+            amount = float(request.form.get('amount', 0))
         except ValueError:
             flash('Invalid amount', 'error')
-            return render_template('freelancing/form.html', job=job, categories=FreelanceJob.category_choices())
+            return render_template('freelancing/form.html', job=job, categories=category_choices())
         
-        date_completed_str = request.form.get('date_completed')
-        if date_completed_str:
+        date_str = request.form.get('date')
+        job_date = getattr(job, 'date', date.today().isoformat())
+        if date_str:
             try:
-                job.date_completed = date.fromisoformat(date_completed_str)
+                job_date = date.fromisoformat(date_str).isoformat()
             except ValueError:
                 pass
         
-        if not job.title:
-            flash('Title is required', 'error')
-            return render_template('freelancing/form.html', job=job, categories=FreelanceJob.category_choices())
+        if not description:
+            flash('Description is required', 'error')
+            return render_template('freelancing/form.html', job=job, categories=category_choices())
         
-        db.session.commit()
-        flash('Freelance job updated!', 'success')
+        FreelancingIncome.update_by_id(id, {
+            'description': description,
+            'category': category,
+            'amount': amount,
+            'date': job_date
+        })
+        
+        flash('Freelance income updated!', 'success')
         return redirect(url_for('freelancing.index'))
     
-    return render_template('freelancing/form.html', job=job, categories=FreelanceJob.category_choices())
+    return render_template('freelancing/form.html', job=job, categories=category_choices())
 
 
 @freelancing_bp.route('/delete/<int:id>', methods=['POST'])
 def delete(id):
-    job = FreelanceJob.query.get_or_404(id)
-    db.session.delete(job)
-    db.session.commit()
-    flash('Freelance job deleted', 'success')
+    job = FreelancingIncome.get_by_id(id)
+    if not job:
+        abort(404)
+    FreelancingIncome.delete_by_id(id)
+    flash('Freelance income deleted', 'success')
     return redirect(url_for('freelancing.index'))

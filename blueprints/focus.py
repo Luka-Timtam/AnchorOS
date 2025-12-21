@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from datetime import datetime, timedelta
-from models import db, UserSettings, UserStats, UserTokens, FocusSession, ActivityLog, XPLog
+from datetime import datetime, date, timedelta
+from db_supabase import UserSettings, UserStats, UserTokens, FocusSession, ActivityLog, XPLog, get_supabase
 
 focus_bp = Blueprint('focus', __name__, url_prefix='/focus')
 
@@ -12,26 +12,28 @@ def start_timer():
     
     settings = UserSettings.get_settings()
     
-    if settings.focus_timer_active:
+    if getattr(settings, 'focus_timer_active', False):
         return jsonify({'error': 'Timer already active'}), 400
     
-    settings.focus_timer_active = True
-    settings.focus_timer_end = datetime.utcnow() + timedelta(minutes=duration)
-    settings.focus_timer_length = duration
+    end_time = datetime.utcnow() + timedelta(minutes=duration)
     
-    session = FocusSession(
-        start_time=datetime.utcnow(),
-        duration_minutes=duration,
-        completed=False
-    )
-    db.session.add(session)
-    db.session.commit()
+    UserSettings.update_by_id(settings.id, {
+        'focus_timer_active': True,
+        'focus_timer_end': end_time.isoformat(),
+        'focus_timer_length': duration
+    })
+    
+    session = FocusSession.insert({
+        'start_time': datetime.utcnow().isoformat(),
+        'duration_minutes': duration,
+        'completed': False
+    })
     
     ActivityLog.log_activity('focus_started', f'Started {duration}-minute focus session')
     
     return jsonify({
         'success': True,
-        'end_time': settings.focus_timer_end.isoformat(),
+        'end_time': end_time.isoformat(),
         'duration': duration,
         'session_id': session.id
     })
@@ -40,17 +42,19 @@ def start_timer():
 def cancel_timer():
     settings = UserSettings.get_settings()
     
-    if not settings.focus_timer_active:
+    if not getattr(settings, 'focus_timer_active', False):
         return jsonify({'error': 'No active timer'}), 400
     
-    active_session = FocusSession.query.filter_by(completed=False).order_by(FocusSession.id.desc()).first()
-    if active_session:
-        db.session.delete(active_session)
+    client = get_supabase()
+    result = client.table('focus_sessions').select('*').eq('completed', False).order('id', desc=True).limit(1).execute()
+    if result.data:
+        FocusSession.delete_by_id(result.data[0]['id'])
     
-    settings.focus_timer_active = False
-    settings.focus_timer_end = None
-    settings.focus_timer_length = None
-    db.session.commit()
+    UserSettings.update_by_id(settings.id, {
+        'focus_timer_active': False,
+        'focus_timer_end': None,
+        'focus_timer_length': None
+    })
     
     ActivityLog.log_activity('focus_cancelled', 'Cancelled focus session')
     
@@ -60,55 +64,68 @@ def cancel_timer():
 def check_timer():
     settings = UserSettings.get_settings()
     
-    if not settings.focus_timer_active:
+    if not getattr(settings, 'focus_timer_active', False):
         return jsonify({
             'active': False,
             'remaining_seconds': 0
         })
     
     now = datetime.utcnow()
-    if settings.focus_timer_end and now >= settings.focus_timer_end:
+    focus_end = getattr(settings, 'focus_timer_end', None)
+    
+    if focus_end:
+        if isinstance(focus_end, str):
+            try:
+                focus_end = datetime.fromisoformat(focus_end.replace('Z', '+00:00').replace('+00:00', ''))
+            except:
+                focus_end = None
+    
+    if focus_end and now >= focus_end:
         return complete_session_internal(settings)
     
-    remaining = (settings.focus_timer_end - now).total_seconds() if settings.focus_timer_end else 0
+    remaining = (focus_end - now).total_seconds() if focus_end else 0
     
     return jsonify({
         'active': True,
         'remaining_seconds': max(0, int(remaining)),
-        'duration': settings.focus_timer_length,
-        'end_time': settings.focus_timer_end.isoformat() if settings.focus_timer_end else None
+        'duration': getattr(settings, 'focus_timer_length', 25),
+        'end_time': getattr(settings, 'focus_timer_end', None)
     })
 
 @focus_bp.route('/complete', methods=['POST'])
 def complete_timer():
     settings = UserSettings.get_settings()
     
-    if not settings.focus_timer_active:
+    if not getattr(settings, 'focus_timer_active', False):
         return jsonify({'error': 'No active timer'}), 400
     
     return complete_session_internal(settings)
 
 def complete_session_internal(settings):
-    active_session = FocusSession.query.filter_by(completed=False).order_by(FocusSession.id.desc()).first()
+    client = get_supabase()
+    result = client.table('focus_sessions').select('*').eq('completed', False).order('id', desc=True).limit(1).execute()
     
-    if active_session:
-        active_session.completed = True
-        active_session.end_time = datetime.utcnow()
+    if result.data:
+        session = result.data[0]
+        FocusSession.update_by_id(session['id'], {
+            'completed': True,
+            'end_time': datetime.utcnow().isoformat()
+        })
     
-    duration = settings.focus_timer_length or 25
+    duration = getattr(settings, 'focus_timer_length', 25) or 25
     
-    settings.focus_timer_active = False
-    settings.focus_timer_end = None
-    settings.focus_timer_length = None
+    UserSettings.update_by_id(settings.id, {
+        'focus_timer_active': False,
+        'focus_timer_end': None,
+        'focus_timer_length': None
+    })
     
     UserTokens.add_tokens(3, f'Focus session completed ({duration} min)')
     
     stats = UserStats.get_stats()
-    stats.current_xp += 5
-    xp_log = XPLog(amount=5, reason=f'Focus session completed ({duration} min)')
-    db.session.add(xp_log)
-    
-    db.session.commit()
+    new_xp = (getattr(stats, 'current_xp', 0) or 0) + 5
+    UserStats.update_by_id(stats.id, {'current_xp': new_xp})
+    XPLog.insert({'amount': 5, 'reason': f'Focus session completed ({duration} min)'})
     
     ActivityLog.log_activity('focus_completed', f'Completed {duration}-minute focus session (+3 tokens, +5 XP)')
     
@@ -125,29 +142,44 @@ def complete_session_internal(settings):
 def get_status():
     settings = UserSettings.get_settings()
     
-    if not settings.focus_timer_active:
+    if not getattr(settings, 'focus_timer_active', False):
         return jsonify({
             'active': False
         })
     
     now = datetime.utcnow()
-    if settings.focus_timer_end and now >= settings.focus_timer_end:
+    focus_end = getattr(settings, 'focus_timer_end', None)
+    
+    if focus_end:
+        if isinstance(focus_end, str):
+            try:
+                focus_end = datetime.fromisoformat(focus_end.replace('Z', '+00:00').replace('+00:00', ''))
+            except:
+                focus_end = None
+    
+    if focus_end and now >= focus_end:
         remaining = 0
     else:
-        remaining = (settings.focus_timer_end - now).total_seconds() if settings.focus_timer_end else 0
+        remaining = (focus_end - now).total_seconds() if focus_end else 0
     
     return jsonify({
         'active': True,
         'remaining_seconds': max(0, int(remaining)),
-        'duration': settings.focus_timer_length,
-        'end_time': settings.focus_timer_end.isoformat() if settings.focus_timer_end else None
+        'duration': getattr(settings, 'focus_timer_length', 25),
+        'end_time': getattr(settings, 'focus_timer_end', None)
     })
 
 @focus_bp.route('/stats', methods=['GET'])
 def get_stats():
-    total_sessions = FocusSession.get_completed_count()
-    total_minutes = FocusSession.get_total_focus_minutes()
-    today_sessions = len([s for s in FocusSession.get_today_sessions() if s.completed])
+    total_sessions = FocusSession.count({'completed': True})
+    
+    sessions = FocusSession.query_filter({'completed': True})
+    total_minutes = sum(getattr(s, 'duration_minutes', 0) or 0 for s in sessions)
+    
+    today = date.today().isoformat()
+    client = get_supabase()
+    result = client.table('focus_sessions').select('*').gte('start_time', f'{today}T00:00:00').eq('completed', True).execute()
+    today_sessions = len(result.data)
     
     return jsonify({
         'total_sessions': total_sessions,

@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, UserTokens, TokenTransaction, RewardItem
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from db_supabase import UserTokens, TokenTransaction, RewardItem
 from datetime import datetime
 
 rewards_bp = Blueprint('rewards', __name__, url_prefix='/rewards')
@@ -10,13 +10,11 @@ def index():
     RewardItem.seed_defaults()
     
     token_balance = UserTokens.get_balance()
-    rewards = RewardItem.query.filter_by(is_active=True).order_by(RewardItem.cost).all()
+    rewards = RewardItem.query_filter({'is_active': True}, order_by='cost')
     
-    recent_transactions = TokenTransaction.query.order_by(
-        TokenTransaction.created_at.desc()
-    ).limit(20).all()
+    recent_transactions = TokenTransaction.query_all(order_by='created_at', order_desc=True, limit=20)
     
-    redeemed = [t for t in recent_transactions if t.amount < 0]
+    redeemed = [t for t in recent_transactions if (getattr(t, 'amount', 0) or 0) < 0]
     
     return render_template('rewards/index.html',
         token_balance=token_balance,
@@ -28,19 +26,22 @@ def index():
 
 @rewards_bp.route('/redeem/<int:id>', methods=['POST'])
 def redeem(id):
-    reward = RewardItem.query.get_or_404(id)
+    reward = RewardItem.get_by_id(id)
+    if not reward:
+        abort(404)
     
-    if not reward.is_active:
+    if not getattr(reward, 'is_active', True):
         flash('This reward is no longer available.', 'error')
         return redirect(url_for('rewards.index'))
     
     token_balance = UserTokens.get_balance()
+    cost = getattr(reward, 'cost', 0) or 0
     
-    if token_balance < reward.cost:
-        flash(f'Not enough tokens. You need {reward.cost} but have {token_balance}.', 'error')
+    if token_balance < cost:
+        flash(f'Not enough tokens. You need {cost} but have {token_balance}.', 'error')
         return redirect(url_for('rewards.index'))
     
-    success = UserTokens.spend_tokens(reward.cost, f"Redeemed: {reward.name}")
+    success = UserTokens.spend_tokens(cost, f"Redeemed: {getattr(reward, 'name', 'Reward')}")
     
     if success:
         flash(f'Congratulations! You redeemed "{reward.name}"!', 'success')
@@ -60,13 +61,12 @@ def add_reward():
         flash('Please provide a valid name and cost.', 'error')
         return redirect(url_for('rewards.index'))
     
-    reward = RewardItem(  # type: ignore[call-arg]
-        name=name,
-        cost=cost,
-        description=description
-    )
-    db.session.add(reward)
-    db.session.commit()
+    RewardItem.insert({
+        'name': name,
+        'cost': cost,
+        'description': description,
+        'is_active': True
+    })
     
     flash(f'Reward "{name}" added!', 'success')
     return redirect(url_for('rewards.index'))
@@ -74,18 +74,22 @@ def add_reward():
 
 @rewards_bp.route('/<int:id>/toggle', methods=['POST'])
 def toggle_reward(id):
-    reward = RewardItem.query.get_or_404(id)
-    reward.is_active = not reward.is_active
-    db.session.commit()
+    reward = RewardItem.get_by_id(id)
+    if not reward:
+        abort(404)
+    is_active = not getattr(reward, 'is_active', True)
+    RewardItem.update_by_id(id, {'is_active': is_active})
     
-    status = "enabled" if reward.is_active else "disabled"
+    status = "enabled" if is_active else "disabled"
     flash(f'Reward "{reward.name}" {status}.', 'success')
     return redirect(url_for('rewards.index'))
 
 
 @rewards_bp.route('/<int:id>/edit', methods=['POST'])
 def edit_reward(id):
-    reward = RewardItem.query.get_or_404(id)
+    reward = RewardItem.get_by_id(id)
+    if not reward:
+        abort(404)
     
     name = request.form.get('name', '').strip()
     cost = request.form.get('cost', type=int)
@@ -95,10 +99,11 @@ def edit_reward(id):
         flash('Please provide a valid name and cost.', 'error')
         return redirect(url_for('rewards.index'))
     
-    reward.name = name
-    reward.cost = cost
-    reward.description = description
-    db.session.commit()
+    RewardItem.update_by_id(id, {
+        'name': name,
+        'cost': cost,
+        'description': description
+    })
     
     flash(f'Reward "{name}" updated!', 'success')
     return redirect(url_for('rewards.index'))
@@ -106,9 +111,10 @@ def edit_reward(id):
 
 @rewards_bp.route('/<int:id>/delete', methods=['POST'])
 def delete_reward(id):
-    reward = RewardItem.query.get_or_404(id)
-    db.session.delete(reward)
-    db.session.commit()
+    reward = RewardItem.get_by_id(id)
+    if not reward:
+        abort(404)
+    RewardItem.delete_by_id(id)
     
     flash('Reward deleted.', 'success')
     return redirect(url_for('rewards.index'))

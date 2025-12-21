@@ -1,8 +1,7 @@
-from flask import Blueprint, render_template, request, jsonify
-from models import db, Lead, Task, DailyMission, BossFight
+from flask import Blueprint, render_template, request, jsonify, abort
+from db_supabase import Lead, Task, DailyMission, BossBattle, get_supabase
 from datetime import datetime, date, timedelta
 from calendar import monthrange
-from sqlalchemy import and_, or_
 
 calendar_bp = Blueprint('calendar', __name__, url_prefix='/calendar')
 
@@ -32,60 +31,68 @@ def get_month_data(year, month):
     grid_start = first_day - timedelta(days=start_weekday)
     grid_end = grid_start + timedelta(days=41)
     
-    tasks = Task.query.filter(
-        Task.due_date >= grid_start,
-        Task.due_date <= grid_end
-    ).all()
+    client = get_supabase()
     
-    leads = Lead.query.filter(
-        Lead.next_action_date >= grid_start,
-        Lead.next_action_date <= grid_end,
-        Lead.status.notin_(['closed_won', 'closed_lost']),
-        Lead.converted_at.is_(None)
-    ).all()
+    tasks_result = client.table('tasks').select('*').gte('due_date', grid_start.isoformat()).lte('due_date', grid_end.isoformat()).execute()
+    tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    missions = DailyMission.query.filter(
-        DailyMission.mission_date >= grid_start,
-        DailyMission.mission_date <= grid_end
-    ).all()
+    leads_result = client.table('leads').select('*').gte('next_action_date', grid_start.isoformat()).lte('next_action_date', grid_end.isoformat()).not_.in_('status', ['closed_won', 'closed_lost']).is_('converted_at', 'null').execute()
+    leads = [Lead._parse_row(row) for row in leads_result.data]
     
-    current_boss = BossFight.query.filter(
-        BossFight.month == f"{year}-{month:02d}"
-    ).first()
+    missions_result = client.table('daily_missions').select('*').gte('mission_date', grid_start.isoformat()).lte('mission_date', grid_end.isoformat()).execute()
+    missions = [DailyMission._parse_row(row) for row in missions_result.data]
+    
+    boss_result = client.table('boss_battles').select('*').eq('month_start', f"{year}-{month:02d}-01").execute()
+    current_boss = BossBattle._parse_row(boss_result.data[0]) if boss_result.data else None
     
     task_dates = {}
     for task in tasks:
-        d = task.due_date.isoformat()
-        if d not in task_dates:
-            task_dates[d] = []
-        task_dates[d].append({
-            'id': task.id,
-            'title': task.title,
-            'status': task.status,
-            'type': 'task'
-        })
+        due_date = getattr(task, 'due_date', '')
+        if isinstance(due_date, str):
+            d = due_date.split('T')[0]
+        else:
+            d = due_date.isoformat() if due_date else ''
+        if d:
+            if d not in task_dates:
+                task_dates[d] = []
+            task_dates[d].append({
+                'id': getattr(task, 'id', 0),
+                'title': getattr(task, 'title', ''),
+                'status': getattr(task, 'status', ''),
+                'type': 'task'
+            })
     
     lead_dates = {}
     for lead in leads:
-        d = lead.next_action_date.isoformat()
-        if d not in lead_dates:
-            lead_dates[d] = []
-        lead_dates[d].append({
-            'id': lead.id,
-            'name': lead.name,
-            'status': lead.status,
-            'type': 'lead'
-        })
+        next_action = getattr(lead, 'next_action_date', '')
+        if isinstance(next_action, str):
+            d = next_action.split('T')[0]
+        else:
+            d = next_action.isoformat() if next_action else ''
+        if d:
+            if d not in lead_dates:
+                lead_dates[d] = []
+            lead_dates[d].append({
+                'id': getattr(lead, 'id', 0),
+                'name': getattr(lead, 'name', ''),
+                'status': getattr(lead, 'status', ''),
+                'type': 'lead'
+            })
     
     mission_dates = {}
     for mission in missions:
-        d = mission.mission_date.isoformat()
-        mission_dates[d] = {
-            'id': mission.id,
-            'description': mission.description,
-            'is_completed': mission.is_completed,
-            'type': 'mission'
-        }
+        mission_date = getattr(mission, 'mission_date', '')
+        if isinstance(mission_date, str):
+            d = mission_date.split('T')[0]
+        else:
+            d = mission_date.isoformat() if mission_date else ''
+        if d:
+            mission_dates[d] = {
+                'id': getattr(mission, 'id', 0),
+                'mission_type': getattr(mission, 'mission_type', ''),
+                'is_completed': getattr(mission, 'is_completed', False),
+                'type': 'mission'
+            }
     
     calendar_days = []
     today = date.today()
@@ -179,11 +186,11 @@ def calendar_data():
     if data['current_boss']:
         boss = data['current_boss']
         boss_data = {
-            'description': boss.description,
-            'progress': boss.progress_value,
-            'target': boss.target_value,
-            'is_completed': boss.is_completed,
-            'reward_tokens': boss.reward_tokens
+            'boss_name': getattr(boss, 'boss_name', ''),
+            'current_outreach': getattr(boss, 'current_outreach', 0),
+            'target_outreach': getattr(boss, 'target_outreach', 0),
+            'is_defeated': getattr(boss, 'is_defeated', False),
+            'reward_tokens': getattr(boss, 'reward_tokens', 0)
         }
     
     return jsonify({
@@ -201,43 +208,44 @@ def day_detail(date_str):
     except ValueError:
         return jsonify({'error': 'Invalid date'}), 400
     
-    tasks = Task.query.filter(Task.due_date == target_date).all()
-    leads = Lead.query.filter(
-        Lead.next_action_date == target_date,
-        Lead.status.notin_(['closed_won', 'closed_lost']),
-        Lead.converted_at.is_(None)
-    ).all()
-    mission = DailyMission.query.filter(DailyMission.mission_date == target_date).first()
+    client = get_supabase()
+    
+    tasks_result = client.table('tasks').select('*').eq('due_date', target_date.isoformat()).execute()
+    tasks = [Task._parse_row(row) for row in tasks_result.data]
+    
+    leads_result = client.table('leads').select('*').eq('next_action_date', target_date.isoformat()).not_.in_('status', ['closed_won', 'closed_lost']).is_('converted_at', 'null').execute()
+    leads = [Lead._parse_row(row) for row in leads_result.data]
+    
+    mission_result = client.table('daily_missions').select('*').eq('mission_date', target_date.isoformat()).execute()
+    mission = DailyMission._parse_row(mission_result.data[0]) if mission_result.data else None
     
     return jsonify({
         'date': date_str,
         'date_formatted': target_date.strftime('%B %d, %Y'),
         'tasks': [{
-            'id': t.id,
-            'title': t.title,
-            'status': t.status,
-            'description': t.description or ''
+            'id': getattr(t, 'id', 0),
+            'title': getattr(t, 'title', ''),
+            'status': getattr(t, 'status', ''),
+            'description': getattr(t, 'description', '') or ''
         } for t in tasks],
         'leads': [{
-            'id': l.id,
-            'name': l.name,
-            'business_name': l.business_name or '',
-            'status': l.status
+            'id': getattr(l, 'id', 0),
+            'name': getattr(l, 'name', ''),
+            'business_name': getattr(l, 'business_name', '') or '',
+            'status': getattr(l, 'status', '')
         } for l in leads],
         'mission': {
-            'id': mission.id,
-            'description': mission.description,
-            'is_completed': mission.is_completed,
-            'progress': mission.progress_count,
-            'target': mission.target_count
+            'id': getattr(mission, 'id', 0),
+            'mission_type': getattr(mission, 'mission_type', ''),
+            'is_completed': getattr(mission, 'is_completed', False),
+            'progress_count': getattr(mission, 'progress_count', 0),
+            'target_count': getattr(mission, 'target_count', 0)
         } if mission else None
     })
 
 @calendar_bp.route('/task/<int:task_id>/complete', methods=['POST'])
 def complete_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    task.status = 'done'
-    db.session.commit()
+    Task.update_by_id(task_id, {'status': 'done'})
     return jsonify({'success': True, 'task_id': task_id})
 
 @calendar_bp.route('/mini')

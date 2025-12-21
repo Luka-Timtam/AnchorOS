@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, url_for
-from models import db, Lead, Client, Task, Note, ActivityLog, BossFight, DailyMission
-from sqlalchemy import or_
+from db_supabase import Lead, Client, Task, Note, ActivityLog, BossBattle, DailyMission, get_supabase
 
 search_bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -19,98 +18,63 @@ def search():
             'boss_fights': []
         })
     
-    search_term = f'%{q}%'
+    client = get_supabase()
     results = {}
     
-    leads = Lead.query.filter(
-        Lead.status != 'closed_won',
-        or_(
-            Lead.name.ilike(search_term),
-            Lead.business_name.ilike(search_term),
-            Lead.notes.ilike(search_term)
-        )
-    ).limit(20).all()
-    
+    leads_result = client.table('leads').select('*').neq('status', 'closed_won').or_(f'name.ilike.%{q}%,business_name.ilike.%{q}%,notes.ilike.%{q}%').limit(20).execute()
     results['leads'] = [{
-        'id': l.id,
-        'label': l.name + (f' ({l.business_name})' if l.business_name else ''),
+        'id': l['id'],
+        'label': l['name'] + (f" ({l['business_name']})" if l.get('business_name') else ''),
         'type': 'lead',
-        'link': url_for('leads.detail', id=l.id)
-    } for l in leads]
+        'link': url_for('leads.detail', id=l['id'])
+    } for l in leads_result.data]
     
-    clients = Client.query.filter(
-        or_(
-            Client.name.ilike(search_term),
-            Client.business_name.ilike(search_term)
-        )
-    ).limit(20).all()
-    
+    clients_result = client.table('clients').select('*').or_(f'name.ilike.%{q}%,business_name.ilike.%{q}%').limit(20).execute()
     results['clients'] = [{
-        'id': c.id,
-        'label': c.name + (f' ({c.business_name})' if c.business_name else ''),
+        'id': c['id'],
+        'label': c['name'] + (f" ({c['business_name']})" if c.get('business_name') else ''),
         'type': 'client',
-        'link': url_for('clients.detail', id=c.id)
-    } for c in clients]
+        'link': url_for('clients.detail', id=c['id'])
+    } for c in clients_result.data]
     
-    tasks = Task.query.filter(
-        or_(
-            Task.title.ilike(search_term),
-            Task.description.ilike(search_term)
-        )
-    ).limit(20).all()
-    
+    tasks_result = client.table('tasks').select('*').or_(f'title.ilike.%{q}%,description.ilike.%{q}%').limit(20).execute()
     results['tasks'] = [{
-        'id': t.id,
-        'label': t.title,
+        'id': t['id'],
+        'label': t['title'],
         'type': 'task',
-        'link': url_for('tasks.index') + f'#task-{t.id}'
-    } for t in tasks]
+        'link': url_for('tasks.index') + f'#task-{t["id"]}'
+    } for t in tasks_result.data]
     
-    notes = Note.query.filter(
-        or_(
-            Note.title.ilike(search_term),
-            Note.content.ilike(search_term)
-        )
-    ).limit(20).all()
-    
+    notes_result = client.table('notes').select('*').or_(f'title.ilike.%{q}%,content.ilike.%{q}%').limit(20).execute()
     results['notes'] = [{
-        'id': n.id,
-        'label': n.title,
+        'id': n['id'],
+        'label': n['title'],
         'type': 'note',
-        'link': url_for('notes.edit', id=n.id)
-    } for n in notes]
+        'link': url_for('notes.edit', id=n['id'])
+    } for n in notes_result.data]
     
-    timeline = ActivityLog.query.filter(
-        ActivityLog.description.ilike(search_term)
-    ).order_by(ActivityLog.timestamp.desc()).limit(20).all()
-    
+    timeline_result = client.table('activity_log').select('*').ilike('description', f'%{q}%').order('created_at', desc=True).limit(20).execute()
     results['timeline'] = [{
-        'id': a.id,
-        'label': a.description[:80] + ('...' if len(a.description) > 80 else ''),
+        'id': a['id'],
+        'label': a['description'][:80] + ('...' if len(a.get('description', '')) > 80 else ''),
         'type': 'timeline',
         'link': url_for('timeline.index')
-    } for a in timeline]
+    } for a in timeline_result.data]
     
-    missions = DailyMission.query.filter(
-        DailyMission.description.ilike(search_term)
-    ).order_by(DailyMission.mission_date.desc()).limit(20).all()
-    
+    missions_result = client.table('daily_missions').select('*').ilike('mission_type', f'%{q}%').order('mission_date', desc=True).limit(20).execute()
     results['missions'] = [{
-        'id': m.id,
-        'label': m.description,
+        'id': m['id'],
+        'label': f"{m.get('mission_type', '')} - {m.get('mission_date', '')}",
         'type': 'mission',
         'link': url_for('missions.index')
-    } for m in missions]
+    } for m in missions_result.data]
     
-    boss_fights = BossFight.query.filter(
-        BossFight.description.ilike(search_term)
-    ).order_by(BossFight.created_at.desc()).limit(20).all()
-    
+    boss_result = client.table('boss_battles').select('*').ilike('boss_name', f'%{q}%').order('month_start', desc=True).limit(20).execute()
     results['boss_fights'] = [{
-        'id': b.id,
-        'label': b.description[:80] + ('...' if len(b.description) > 80 else ''),
+        'id': b['id'],
+        'label': b.get('boss_name', '')[:80],
         'type': 'boss_fight',
         'link': url_for('boss.index')
-    } for b in boss_fights]
+    } for b in boss_result.data]
     
     return jsonify(results)

@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Lead, OutreachLog, Client, ActivityLog, WinsLog
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from db_supabase import Lead, OutreachLog, Client, ActivityLog, WinsLog, get_supabase
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
@@ -23,48 +23,42 @@ def index():
     search = request.args.get('search', '')
     next_action_filter = request.args.get('next_action', '')
     
-    query = Lead.query.filter(Lead.converted_at.is_(None), Lead.archived_at.is_(None))
+    client = get_supabase()
+    query = client.table('leads').select('*').is_('converted_at', 'null').is_('archived_at', 'null')
     
     if status_filter:
-        query = query.filter(Lead.status == status_filter)
+        query = query.eq('status', status_filter)
     if niche_filter:
-        query = query.filter(Lead.niche == niche_filter)
+        query = query.eq('niche', niche_filter)
     if source_filter:
-        query = query.filter(Lead.source == source_filter)
+        query = query.eq('source', source_filter)
     if search:
-        query = query.filter(
-            db.or_(
-                Lead.name.ilike(f'%{search}%'),
-                Lead.business_name.ilike(f'%{search}%')
-            )
-        )
+        query = query.or_(f'name.ilike.%{search}%,business_name.ilike.%{search}%')
     if next_action_filter == 'today':
-        query = query.filter(
-            Lead.next_action_date == today,
-            Lead.status.notin_(['closed_won', 'closed_lost'])
-        )
+        query = query.eq('next_action_date', today.isoformat()).not_.in_('status', ['closed_won', 'closed_lost'])
     elif next_action_filter == 'overdue':
-        query = query.filter(
-            Lead.next_action_date < today,
-            Lead.status.notin_(['closed_won', 'closed_lost'])
-        )
+        query = query.lt('next_action_date', today.isoformat()).not_.in_('status', ['closed_won', 'closed_lost'])
     
-    leads = query.order_by(Lead.created_at.desc()).all()
+    result = query.order('created_at', desc=True).execute()
+    leads = [Lead._parse_row(row) for row in result.data]
     
-    converted_leads = Lead.query.filter(Lead.converted_at.isnot(None)).order_by(Lead.converted_at.desc()).all()
+    converted_result = client.table('leads').select('*').not_.is_('converted_at', 'null').order('converted_at', desc=True).execute()
+    converted_leads = [Lead._parse_row(row) for row in converted_result.data]
     
-    archived_leads = Lead.query.filter(Lead.archived_at.isnot(None)).order_by(Lead.archived_at.desc()).all()
+    archived_result = client.table('leads').select('*').not_.is_('archived_at', 'null').order('archived_at', desc=True).execute()
+    archived_leads = [Lead._parse_row(row) for row in archived_result.data]
     
-    niches = db.session.query(Lead.niche).distinct().filter(Lead.niche.isnot(None), Lead.niche != '').all()
-    sources = db.session.query(Lead.source).distinct().filter(Lead.source.isnot(None), Lead.source != '').all()
+    all_leads = client.table('leads').select('niche,source').execute()
+    niches = list(set([l['niche'] for l in all_leads.data if l.get('niche')]))
+    sources = list(set([l['source'] for l in all_leads.data if l.get('source')]))
     
     return render_template('leads/index.html',
         leads=leads,
         converted_leads=converted_leads,
         archived_leads=archived_leads,
         statuses=Lead.status_choices(),
-        niches=[n[0] for n in niches],
-        sources=[s[0] for s in sources],
+        niches=niches,
+        sources=sources,
         current_status=status_filter,
         current_niche=niche_filter,
         current_source=source_filter,
@@ -73,12 +67,14 @@ def index():
     )
 
 def get_existing_niches():
-    niches = db.session.query(Lead.niche).distinct().filter(Lead.niche.isnot(None), Lead.niche != '').all()
-    return [n[0] for n in niches]
+    client = get_supabase()
+    result = client.table('leads').select('niche').not_.is_('niche', 'null').neq('niche', '').execute()
+    return list(set([r['niche'] for r in result.data if r.get('niche')]))
 
 def get_existing_sources():
-    sources = db.session.query(Lead.source).distinct().filter(Lead.source.isnot(None), Lead.source != '').all()
-    return [s[0] for s in sources]
+    client = get_supabase()
+    result = client.table('leads').select('source').not_.is_('source', 'null').neq('source', '').execute()
+    return list(set([r['source'] for r in result.data if r.get('source')]))
 
 @leads_bp.route('/create', methods=['GET', 'POST'])
 def create():
@@ -87,22 +83,22 @@ def create():
         quality_issues = request.form.getlist('website_quality') if has_website else []
         website_quality = ','.join(quality_issues) if quality_issues else ('no_website' if not has_website else '')
         
-        lead = Lead(
-            name=request.form.get('name'),
-            business_name=request.form.get('business_name'),
-            niche=request.form.get('niche'),
-            email=request.form.get('email'),
-            phone=request.form.get('phone'),
-            source=request.form.get('source'),
-            status=request.form.get('status', 'new'),
-            notes=request.form.get('notes'),
-            next_action_date=parse_date(request.form.get('next_action_date')),
-            has_website=has_website,
-            website_quality=website_quality,
-            demo_site_built=request.form.get('demo_site_built') == 'on'
-        )
-        db.session.add(lead)
-        db.session.commit()
+        next_action = parse_date(request.form.get('next_action_date'))
+        
+        lead = Lead.insert({
+            'name': request.form.get('name'),
+            'business_name': request.form.get('business_name'),
+            'niche': request.form.get('niche'),
+            'email': request.form.get('email'),
+            'phone': request.form.get('phone'),
+            'source': request.form.get('source'),
+            'status': request.form.get('status', 'new'),
+            'notes': request.form.get('notes'),
+            'next_action_date': next_action.isoformat() if next_action else None,
+            'has_website': has_website,
+            'website_quality': website_quality,
+            'demo_site_built': request.form.get('demo_site_built') == 'on'
+        })
         flash('Lead created successfully!', 'success')
         return redirect(url_for('leads.index'))
     
@@ -117,34 +113,40 @@ def create():
 
 @leads_bp.route('/<int:id>')
 def detail(id):
-    lead = Lead.query.get_or_404(id)
-    outreach_logs = OutreachLog.query.filter_by(lead_id=id).order_by(OutreachLog.date.desc()).all()
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
+    outreach_logs = OutreachLog.query_filter({'lead_id': id}, order_by='date', order_desc=True)
     return render_template('leads/detail.html', lead=lead, outreach_logs=outreach_logs)
 
 @leads_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 def edit(id):
-    lead = Lead.query.get_or_404(id)
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
     
     if request.method == 'POST':
         has_website = request.form.get('has_website') == 'yes'
         quality_issues = request.form.getlist('website_quality') if has_website else []
         website_quality = ','.join(quality_issues) if quality_issues else ('no_website' if not has_website else '')
         
-        lead.name = request.form.get('name')
-        lead.business_name = request.form.get('business_name')
-        lead.niche = request.form.get('niche')
-        lead.email = request.form.get('email')
-        lead.phone = request.form.get('phone')
-        lead.source = request.form.get('source')
-        lead.status = request.form.get('status')
-        lead.notes = request.form.get('notes')
-        lead.next_action_date = parse_date(request.form.get('next_action_date'))
-        lead.has_website = has_website
-        lead.website_quality = website_quality
-        lead.demo_site_built = request.form.get('demo_site_built') == 'on'
-        lead.updated_at = datetime.utcnow()
+        next_action = parse_date(request.form.get('next_action_date'))
         
-        db.session.commit()
+        Lead.update_by_id(id, {
+            'name': request.form.get('name'),
+            'business_name': request.form.get('business_name'),
+            'niche': request.form.get('niche'),
+            'email': request.form.get('email'),
+            'phone': request.form.get('phone'),
+            'source': request.form.get('source'),
+            'status': request.form.get('status'),
+            'notes': request.form.get('notes'),
+            'next_action_date': next_action.isoformat() if next_action else None,
+            'has_website': has_website,
+            'website_quality': website_quality,
+            'demo_site_built': request.form.get('demo_site_built') == 'on',
+            'updated_at': datetime.utcnow().isoformat()
+        })
         flash('Lead updated successfully!', 'success')
         return redirect(url_for('leads.detail', id=id))
     
@@ -159,32 +161,38 @@ def edit(id):
 
 @leads_bp.route('/<int:id>/archive', methods=['POST'])
 def archive(id):
-    lead = Lead.query.get_or_404(id)
-    lead.archived_at = datetime.utcnow()
-    db.session.commit()
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
+    Lead.update_by_id(id, {'archived_at': datetime.utcnow().isoformat()})
     flash('Lead archived successfully!', 'success')
     return redirect(url_for('leads.index'))
 
 @leads_bp.route('/<int:id>/unarchive', methods=['POST'])
 def unarchive(id):
-    lead = Lead.query.get_or_404(id)
-    lead.archived_at = None
-    db.session.commit()
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
+    Lead.update_by_id(id, {'archived_at': None})
     flash('Lead restored from archive!', 'success')
     return redirect(url_for('leads.index'))
 
 @leads_bp.route('/<int:id>/update-status', methods=['POST'])
 def update_status(id):
-    lead = Lead.query.get_or_404(id)
-    old_status = lead.status
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
+    old_status = getattr(lead, 'status', '')
     new_status = request.form.get('status')
     if new_status in Lead.status_choices():
         if new_status == 'closed_won':
             flash('Lead marked as won! Convert to client below.', 'success')
             return redirect(url_for('leads.convert_to_client', id=id))
-        lead.status = new_status
-        lead.updated_at = datetime.utcnow()
-        db.session.commit()
+        
+        Lead.update_by_id(id, {
+            'status': new_status,
+            'updated_at': datetime.utcnow().isoformat()
+        })
         
         if old_status != new_status:
             if new_status == 'contacted':
@@ -214,7 +222,9 @@ def update_status(id):
 
 @leads_bp.route('/<int:id>/convert', methods=['GET', 'POST'])
 def convert_to_client(id):
-    lead = Lead.query.get_or_404(id)
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
     
     if request.method == 'POST':
         close_reasons = request.form.getlist('close_reason')
@@ -234,43 +244,45 @@ def convert_to_client(id):
             close_reasons.append(f'Other: {other_reason}')
         close_reason_str = ', '.join(close_reasons) if close_reasons else None
         
-        client = Client(
-            name=request.form.get('name'),
-            business_name=request.form.get('business_name'),
-            contact_email=request.form.get('contact_email'),
-            phone=request.form.get('phone'),
-            project_type=request.form.get('project_type', 'website'),
-            start_date=parse_date(request.form.get('start_date')) or date.today(),
-            amount_charged=request.form.get('amount_charged') or 0,
-            status='active',
-            hosting_active=request.form.get('hosting_active') == 'on',
-            monthly_hosting_fee=request.form.get('monthly_hosting_fee') or 0,
-            saas_active=request.form.get('saas_active') == 'on',
-            monthly_saas_fee=request.form.get('monthly_saas_fee') or 0,
-            notes=request.form.get('notes'),
-            related_lead_id=lead.id
-        )
+        start_date = parse_date(request.form.get('start_date')) or date.today()
         
-        lead.status = 'closed_won'
-        lead.converted_at = datetime.utcnow()
-        lead.updated_at = datetime.utcnow()
-        lead.close_reason = close_reason_str
-        lead.closed_at = datetime.utcnow()
+        client = Client.insert({
+            'name': request.form.get('name'),
+            'business_name': request.form.get('business_name'),
+            'contact_email': request.form.get('contact_email'),
+            'phone': request.form.get('phone'),
+            'project_type': request.form.get('project_type', 'website'),
+            'start_date': start_date.isoformat(),
+            'amount_charged': float(request.form.get('amount_charged') or 0),
+            'status': 'active',
+            'hosting_active': request.form.get('hosting_active') == 'on',
+            'monthly_hosting_fee': float(request.form.get('monthly_hosting_fee') or 0),
+            'saas_active': request.form.get('saas_active') == 'on',
+            'monthly_saas_fee': float(request.form.get('monthly_saas_fee') or 0),
+            'notes': request.form.get('notes'),
+            'related_lead_id': lead.id
+        })
         
-        db.session.add(client)
-        db.session.commit()
+        now = datetime.utcnow().isoformat()
+        Lead.update_by_id(id, {
+            'status': 'closed_won',
+            'converted_at': now,
+            'updated_at': now,
+            'close_reason': close_reason_str,
+            'closed_at': now
+        })
         
         add_xp(XP_RULES['lead_closed_won'], 'Deal closed')
         update_boss_progress('close_deals')
         
         ActivityLog.log_activity('deal_closed_won', f'Closed {lead.name} (WON): {close_reason_str}', lead.id, 'lead')
         
-        WinsLog.log_win(
-            title=f'Deal Won: {lead.name}',
-            description=f'Closed deal with {lead.business_name or lead.name}. Reason: {close_reason_str}',
-            xp_value=XP_RULES['lead_closed_won'],
-            token_value=0
-        )
+        WinsLog.insert({
+            'title': f'Deal Won: {lead.name}',
+            'description': f'Closed deal with {getattr(lead, "business_name", "") or lead.name}. Reason: {close_reason_str}',
+            'xp_value': XP_RULES['lead_closed_won'],
+            'token_value': 0
+        })
         
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))
@@ -284,7 +296,9 @@ def convert_to_client(id):
 
 @leads_bp.route('/<int:id>/close-lost', methods=['GET', 'POST'])
 def close_lost(id):
-    lead = Lead.query.get_or_404(id)
+    lead = Lead.get_by_id(id)
+    if not lead:
+        abort(404)
     
     if request.method == 'POST':
         close_reasons = request.form.getlist('close_reason')
@@ -302,11 +316,13 @@ def close_lost(id):
             close_reasons.append(f'Other: {other_reason}')
         close_reason_str = ', '.join(close_reasons) if close_reasons else None
         
-        lead.status = 'closed_lost'
-        lead.close_reason = close_reason_str
-        lead.closed_at = datetime.utcnow()
-        lead.updated_at = datetime.utcnow()
-        db.session.commit()
+        now = datetime.utcnow().isoformat()
+        Lead.update_by_id(id, {
+            'status': 'closed_lost',
+            'close_reason': close_reason_str,
+            'closed_at': now,
+            'updated_at': now
+        })
         
         ActivityLog.log_activity('deal_closed_lost', f'Closed {lead.name} (LOST): {close_reason_str}', lead.id, 'lead')
         

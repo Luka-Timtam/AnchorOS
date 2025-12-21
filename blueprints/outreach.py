@@ -1,7 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, OutreachLog, Lead, ActivityLog
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from db_supabase import OutreachLog, Lead, ActivityLog, get_supabase
 from datetime import datetime, date, timedelta
-from sqlalchemy import and_
 from blueprints.gamification import add_xp, update_outreach_streak, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
 
@@ -27,28 +26,37 @@ def index():
     week_start = get_week_start(today)
     month_start = get_month_start(today)
     
-    outreach_today = OutreachLog.query.filter(OutreachLog.date == today).count()
-    outreach_week = OutreachLog.query.filter(OutreachLog.date >= week_start).count()
-    outreach_month = OutreachLog.query.filter(OutreachLog.date >= month_start).count()
+    client = get_supabase()
+    
+    today_result = client.table('outreach_logs').select('id', count='exact').eq('date', today.isoformat()).execute()
+    outreach_today = today_result.count if today_result.count else len(today_result.data)
+    
+    week_result = client.table('outreach_logs').select('id', count='exact').gte('date', week_start.isoformat()).execute()
+    outreach_week = week_result.count if week_result.count else len(week_result.data)
+    
+    month_result = client.table('outreach_logs').select('id', count='exact').gte('date', month_start.isoformat()).execute()
+    outreach_month = month_result.count if month_result.count else len(month_result.data)
     
     type_filter = request.args.get('type', '')
     outcome_filter = request.args.get('outcome', '')
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
     
-    query = OutreachLog.query
+    query = client.table('outreach_logs').select('*')
     
     if type_filter:
-        query = query.filter(OutreachLog.type == type_filter)
+        query = query.eq('type', type_filter)
     if outcome_filter:
-        query = query.filter(OutreachLog.outcome == outcome_filter)
+        query = query.eq('outcome', outcome_filter)
     if date_from:
-        query = query.filter(OutreachLog.date >= date_from)
+        query = query.gte('date', date_from)
     if date_to:
-        query = query.filter(OutreachLog.date <= date_to)
+        query = query.lte('date', date_to)
     
-    logs = query.order_by(OutreachLog.date.desc(), OutreachLog.created_at.desc()).all()
-    leads = Lead.query.order_by(Lead.name).all()
+    result = query.order('date', desc=True).order('created_at', desc=True).execute()
+    logs = [OutreachLog._parse_row(row) for row in result.data]
+    
+    leads = Lead.query_all(order_by='name')
     
     return render_template('outreach/index.html',
         logs=logs,
@@ -67,28 +75,35 @@ def index():
 
 @outreach_bp.route('/create', methods=['POST'])
 def create():
-    log = OutreachLog(
-        date=parse_date(request.form.get('date')) or date.today(),
-        type=request.form.get('type', 'email'),
-        lead_id=request.form.get('lead_id') or None,
-        outcome=request.form.get('outcome', 'contacted'),
-        notes=request.form.get('notes')
-    )
+    log_date = parse_date(request.form.get('date')) or date.today()
+    lead_id = request.form.get('lead_id')
+    lead_id = int(lead_id) if lead_id else None
     
     is_cold_lead_revival = False
-    if log.lead_id:
-        lead = Lead.query.get(log.lead_id)
+    lead_name = 'Unknown'
+    
+    if lead_id:
+        lead = Lead.get_by_id(lead_id)
         if lead:
-            if lead.last_contacted_at:
-                if lead.last_contacted_at < datetime.utcnow() - timedelta(days=30):
+            lead_name = getattr(lead, 'name', 'Unknown')
+            last_contacted = getattr(lead, 'last_contacted_at', None)
+            if last_contacted:
+                from db_supabase import parse_datetime
+                last_dt = parse_datetime(last_contacted)
+                if last_dt and last_dt < datetime.utcnow() - timedelta(days=30):
                     is_cold_lead_revival = True
             else:
                 is_cold_lead_revival = True
-            lead.last_contacted_at = datetime.utcnow()
-            db.session.add(lead)
+            
+            Lead.update_by_id(lead_id, {'last_contacted_at': datetime.utcnow().isoformat()})
     
-    db.session.add(log)
-    db.session.commit()
+    log = OutreachLog.insert({
+        'date': log_date.isoformat(),
+        'type': request.form.get('type', 'email'),
+        'lead_id': lead_id,
+        'outcome': request.form.get('outcome', 'contacted'),
+        'notes': request.form.get('notes')
+    })
     
     add_xp(XP_RULES['outreach_log'], 'Outreach logged')
     add_tokens(TOKEN_RULES['outreach_log'], 'Outreach logged')
@@ -99,9 +114,8 @@ def create():
     if is_cold_lead_revival:
         update_boss_progress('revive_leads')
     
-    lead_name = Lead.query.get(log.lead_id).name if log.lead_id else 'Unknown'
     ActivityLog.log_activity('outreach_logged', f'Logged {log.type} outreach for {lead_name}', 
-                            log.lead_id, 'lead' if log.lead_id else None)
+                            lead_id, 'lead' if lead_id else None)
     
     flash('Outreach logged successfully! +5 XP, +1 token', 'success')
     
@@ -109,8 +123,9 @@ def create():
 
 @outreach_bp.route('/<int:id>/delete', methods=['POST'])
 def delete(id):
-    log = OutreachLog.query.get_or_404(id)
-    db.session.delete(log)
-    db.session.commit()
+    log = OutreachLog.get_by_id(id)
+    if not log:
+        abort(404)
+    OutreachLog.delete_by_id(id)
     flash('Outreach log deleted!', 'success')
     return redirect(url_for('outreach.index'))

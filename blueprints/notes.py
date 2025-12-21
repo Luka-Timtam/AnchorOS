@@ -1,8 +1,35 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Note, UserStats, ActivityLog, XPLog
-from datetime import date
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from db_supabase import Note, UserStats, ActivityLog, XPLog, get_supabase
+from datetime import date, datetime
 
 notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
+
+
+def get_all_tags():
+    client = get_supabase()
+    result = client.table('notes').select('tags').not_.is_('tags', 'null').neq('tags', '').execute()
+    all_tags = set()
+    for row in result.data:
+        if row.get('tags'):
+            for tag in row['tags'].split(','):
+                tag = tag.strip()
+                if tag:
+                    all_tags.add(tag)
+    return sorted(list(all_tags))
+
+
+def has_note_today():
+    client = get_supabase()
+    today = date.today()
+    result = client.table('notes').select('id', count='exact').gte('created_at', f'{today.isoformat()}T00:00:00').execute()
+    return (result.count if result.count else len(result.data)) > 0
+
+
+def has_pinned_today():
+    client = get_supabase()
+    today = date.today()
+    result = client.table('notes').select('id', count='exact').eq('pinned', True).gte('updated_at', f'{today.isoformat()}T00:00:00').execute()
+    return (result.count if result.count else len(result.data)) > 0
 
 
 @notes_bp.route('/')
@@ -11,48 +38,45 @@ def index():
     tag_filter = request.args.get('tag', '').strip()
     sort_by = request.args.get('sort', 'updated_desc')
     
-    pinned_query = Note.query.filter(Note.pinned == True)
-    unpinned_query = Note.query.filter(Note.pinned == False)
+    client = get_supabase()
+    
+    order_field = 'updated_at'
+    order_desc = True
+    
+    if sort_by == 'updated_asc':
+        order_field = 'updated_at'
+        order_desc = False
+    elif sort_by == 'created_desc':
+        order_field = 'created_at'
+        order_desc = True
+    elif sort_by == 'created_asc':
+        order_field = 'created_at'
+        order_desc = False
+    elif sort_by == 'title_asc':
+        order_field = 'title'
+        order_desc = False
+    elif sort_by == 'title_desc':
+        order_field = 'title'
+        order_desc = True
+    
+    pinned_query = client.table('notes').select('*').eq('pinned', True)
+    unpinned_query = client.table('notes').select('*').eq('pinned', False)
     
     if search:
-        search_filter = db.or_(
-            Note.title.ilike(f'%{search}%'),
-            Note.content.ilike(f'%{search}%')
-        )
-        pinned_query = pinned_query.filter(search_filter)
-        unpinned_query = unpinned_query.filter(search_filter)
+        pinned_query = pinned_query.or_(f'title.ilike.%{search}%,content.ilike.%{search}%')
+        unpinned_query = unpinned_query.or_(f'title.ilike.%{search}%,content.ilike.%{search}%')
     
     if tag_filter:
-        tag_search = f'%{tag_filter}%'
-        pinned_query = pinned_query.filter(Note.tags.ilike(tag_search))
-        unpinned_query = unpinned_query.filter(Note.tags.ilike(tag_search))
+        pinned_query = pinned_query.ilike('tags', f'%{tag_filter}%')
+        unpinned_query = unpinned_query.ilike('tags', f'%{tag_filter}%')
     
-    if sort_by == 'updated_desc':
-        pinned_query = pinned_query.order_by(Note.updated_at.desc())
-        unpinned_query = unpinned_query.order_by(Note.updated_at.desc())
-    elif sort_by == 'updated_asc':
-        pinned_query = pinned_query.order_by(Note.updated_at.asc())
-        unpinned_query = unpinned_query.order_by(Note.updated_at.asc())
-    elif sort_by == 'created_desc':
-        pinned_query = pinned_query.order_by(Note.created_at.desc())
-        unpinned_query = unpinned_query.order_by(Note.created_at.desc())
-    elif sort_by == 'created_asc':
-        pinned_query = pinned_query.order_by(Note.created_at.asc())
-        unpinned_query = unpinned_query.order_by(Note.created_at.asc())
-    elif sort_by == 'title_asc':
-        pinned_query = pinned_query.order_by(Note.title.asc())
-        unpinned_query = unpinned_query.order_by(Note.title.asc())
-    elif sort_by == 'title_desc':
-        pinned_query = pinned_query.order_by(Note.title.desc())
-        unpinned_query = unpinned_query.order_by(Note.title.desc())
-    else:
-        pinned_query = pinned_query.order_by(Note.updated_at.desc())
-        unpinned_query = unpinned_query.order_by(Note.updated_at.desc())
+    pinned_result = pinned_query.order(order_field, desc=order_desc).execute()
+    unpinned_result = unpinned_query.order(order_field, desc=order_desc).execute()
     
-    pinned_notes = pinned_query.all()
-    unpinned_notes = unpinned_query.all()
+    pinned_notes = [Note._parse_row(row) for row in pinned_result.data]
+    unpinned_notes = [Note._parse_row(row) for row in unpinned_result.data]
     
-    all_tags = Note.get_all_tags()
+    all_tags = get_all_tags()
     
     return render_template('notes/index.html',
                          pinned_notes=pinned_notes,
@@ -72,28 +96,26 @@ def new():
         
         if not title:
             flash('Title is required', 'error')
-            return render_template('notes/new.html', title=title, content=content, tags=tags, all_tags=Note.get_all_tags())
+            return render_template('notes/new.html', title=title, content=content, tags=tags, all_tags=get_all_tags())
         
         if not content:
             flash('Content is required', 'error')
-            return render_template('notes/new.html', title=title, content=content, tags=tags, all_tags=Note.get_all_tags())
+            return render_template('notes/new.html', title=title, content=content, tags=tags, all_tags=get_all_tags())
         
-        is_first_today = not Note.has_note_today()
+        is_first_today = not has_note_today()
         
-        note = Note(
-            title=title,
-            content=content,
-            tags=tags if tags else None
-        )
-        db.session.add(note)
-        db.session.commit()
+        note = Note.insert({
+            'title': title,
+            'content': content,
+            'tags': tags if tags else None,
+            'pinned': False
+        })
         
         if is_first_today:
             user_stats = UserStats.get_stats()
-            user_stats.current_xp += 2
-            xp_log = XPLog(amount=2, reason="First note of the day")
-            db.session.add(xp_log)
-            db.session.commit()
+            new_xp = (getattr(user_stats, 'current_xp', 0) or 0) + 2
+            UserStats.update_by_id(user_stats.id, {'current_xp': new_xp})
+            XPLog.insert({'amount': 2, 'reason': 'First note of the day'})
             ActivityLog.log_activity('note_created', f'Created note: {title}', note.id, 'note')
             flash(f'Note created! +2 XP for first note today!', 'success')
         else:
@@ -102,19 +124,23 @@ def new():
         
         return redirect(url_for('notes.view', id=note.id))
     
-    all_tags = Note.get_all_tags()
+    all_tags = get_all_tags()
     return render_template('notes/new.html', all_tags=all_tags)
 
 
 @notes_bp.route('/<int:id>')
 def view(id):
-    note = Note.query.get_or_404(id)
+    note = Note.get_by_id(id)
+    if not note:
+        abort(404)
     return render_template('notes/view.html', note=note)
 
 
 @notes_bp.route('/<int:id>/edit', methods=['GET', 'POST'])
 def edit(id):
-    note = Note.query.get_or_404(id)
+    note = Note.get_by_id(id)
+    if not note:
+        abort(404)
     
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
@@ -123,30 +149,33 @@ def edit(id):
         
         if not title:
             flash('Title is required', 'error')
-            return render_template('notes/edit.html', note=note, all_tags=Note.get_all_tags())
+            return render_template('notes/edit.html', note=note, all_tags=get_all_tags())
         
         if not content:
             flash('Content is required', 'error')
-            return render_template('notes/edit.html', note=note, all_tags=Note.get_all_tags())
+            return render_template('notes/edit.html', note=note, all_tags=get_all_tags())
         
-        note.title = title
-        note.content = content
-        note.tags = tags if tags else None
-        db.session.commit()
+        Note.update_by_id(id, {
+            'title': title,
+            'content': content,
+            'tags': tags if tags else None,
+            'updated_at': datetime.utcnow().isoformat()
+        })
         
         flash('Note updated!', 'success')
         return redirect(url_for('notes.view', id=note.id))
     
-    all_tags = Note.get_all_tags()
+    all_tags = get_all_tags()
     return render_template('notes/edit.html', note=note, all_tags=all_tags)
 
 
 @notes_bp.route('/<int:id>/delete', methods=['POST'])
 def delete(id):
-    note = Note.query.get_or_404(id)
-    title = note.title
-    db.session.delete(note)
-    db.session.commit()
+    note = Note.get_by_id(id)
+    if not note:
+        abort(404)
+    title = getattr(note, 'title', 'Untitled')
+    Note.delete_by_id(id)
     
     flash(f'Note "{title}" deleted', 'success')
     return redirect(url_for('notes.index'))
@@ -154,26 +183,27 @@ def delete(id):
 
 @notes_bp.route('/<int:id>/pin', methods=['POST'])
 def pin(id):
-    note = Note.query.get_or_404(id)
+    note = Note.get_by_id(id)
+    if not note:
+        abort(404)
     
-    if not note.pinned:
-        has_pinned_today = Note.has_pinned_today()
+    is_pinned = getattr(note, 'pinned', False)
+    
+    if not is_pinned:
+        pinned_today = has_pinned_today()
         
-        note.pinned = True
-        db.session.commit()
+        Note.update_by_id(id, {'pinned': True, 'updated_at': datetime.utcnow().isoformat()})
         
-        if not has_pinned_today:
+        if not pinned_today:
             user_stats = UserStats.get_stats()
-            user_stats.current_xp += 1
-            xp_log = XPLog(amount=1, reason="Pinned a note")
-            db.session.add(xp_log)
-            db.session.commit()
+            new_xp = (getattr(user_stats, 'current_xp', 0) or 0) + 1
+            UserStats.update_by_id(user_stats.id, {'current_xp': new_xp})
+            XPLog.insert({'amount': 1, 'reason': 'Pinned a note'})
             flash(f'Note pinned! +1 XP', 'success')
         else:
             flash('Note pinned!', 'success')
     else:
-        note.pinned = False
-        db.session.commit()
+        Note.update_by_id(id, {'pinned': False})
         flash('Note unpinned', 'success')
     
     return redirect(url_for('notes.view', id=note.id))

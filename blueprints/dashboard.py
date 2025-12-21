@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
-from models import db, Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, DailyMission, BossFight, ActivityLog, RevenueReward
+from db_supabase import (Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, 
+                         DailyMission, BossBattle, ActivityLog, RevenueReward, get_supabase)
 from datetime import datetime, date, timedelta
-from sqlalchemy import func, and_
 from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
 from blueprints.monthly_review import auto_generate_monthly_review_if_needed, get_newly_generated_review
@@ -20,48 +20,47 @@ def index():
     week_start = get_week_start(today)
     month_start = get_month_start(today)
     
-    lead_counts = db.session.query(
-        Lead.status, func.count(Lead.id)
-    ).group_by(Lead.status).all()
-    lead_counts_dict = {status: count for status, count in lead_counts}
+    client = get_supabase()
     
-    new_leads_week = Lead.query.filter(
-        func.date(Lead.created_at) >= week_start
-    ).count()
+    leads = Lead.query_all()
+    lead_counts_dict = {}
+    for lead in leads:
+        status = getattr(lead, 'status', 'new')
+        lead_counts_dict[status] = lead_counts_dict.get(status, 0) + 1
     
-    new_leads_month = Lead.query.filter(
-        func.date(Lead.created_at) >= month_start
-    ).count()
+    new_leads_week = 0
+    new_leads_month = 0
+    for lead in leads:
+        created = getattr(lead, 'created_at', '')
+        if isinstance(created, str):
+            created_date = created.split('T')[0]
+            if created_date >= week_start.isoformat():
+                new_leads_week += 1
+            if created_date >= month_start.isoformat():
+                new_leads_month += 1
     
-    outreach_today = OutreachLog.query.filter(
-        OutreachLog.date == today
-    ).count()
+    outreach_result = client.table('outreach_logs').select('date').execute()
+    outreach_today = sum(1 for o in outreach_result.data if o.get('date') == today.isoformat())
+    outreach_week = sum(1 for o in outreach_result.data if o.get('date', '') >= week_start.isoformat())
+    outreach_month = sum(1 for o in outreach_result.data if o.get('date', '') >= month_start.isoformat())
     
-    outreach_week = OutreachLog.query.filter(
-        OutreachLog.date >= week_start
-    ).count()
+    clients = Client.query_all()
     
-    outreach_month = OutreachLog.query.filter(
-        OutreachLog.date >= month_start
-    ).count()
+    new_clients_month = 0
+    project_revenue_month = Decimal('0')
+    hosting_mrr = Decimal('0')
+    saas_mrr = Decimal('0')
     
-    new_clients_month = Client.query.filter(
-        Client.start_date >= month_start
-    ).count()
-    
-    project_revenue_month = db.session.query(
-        func.coalesce(func.sum(Client.amount_charged), 0)
-    ).filter(
-        Client.start_date >= month_start
-    ).scalar() or Decimal('0')
-    
-    hosting_mrr = db.session.query(
-        func.coalesce(func.sum(Client.monthly_hosting_fee), 0)
-    ).filter(Client.hosting_active == True).scalar() or Decimal('0')
-    
-    saas_mrr = db.session.query(
-        func.coalesce(func.sum(Client.monthly_saas_fee), 0)
-    ).filter(Client.saas_active == True).scalar() or Decimal('0')
+    for c in clients:
+        start_date = getattr(c, 'start_date', '')
+        if isinstance(start_date, str) and start_date >= month_start.isoformat():
+            new_clients_month += 1
+            project_revenue_month += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
+        
+        if getattr(c, 'hosting_active', False):
+            hosting_mrr += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
+        if getattr(c, 'saas_active', False):
+            saas_mrr += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
     
     total_mrr = hosting_mrr + saas_mrr
     
@@ -69,11 +68,12 @@ def index():
     for i in range(1, 4):
         m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
         m_end = (m_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        rev = db.session.query(
-            func.coalesce(func.sum(Client.amount_charged), 0)
-        ).filter(
-            and_(Client.start_date >= m_start, Client.start_date <= m_end)
-        ).scalar() or Decimal('0')
+        rev = Decimal('0')
+        for c in clients:
+            start_date = getattr(c, 'start_date', '')
+            if isinstance(start_date, str):
+                if m_start.isoformat() <= start_date <= m_end.isoformat():
+                    rev += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
         last_3_months_revenue.append(float(rev))
     
     avg_project_revenue = sum(last_3_months_revenue) / 3 if last_3_months_revenue else 0
@@ -90,18 +90,18 @@ def index():
         
         week_labels.append(w_start.strftime('%b %d'))
         
-        outreach_count = OutreachLog.query.filter(
-            and_(OutreachLog.date >= w_start, OutreachLog.date <= w_end)
-        ).count()
+        outreach_count = sum(1 for o in outreach_result.data 
+                            if w_start.isoformat() <= o.get('date', '') <= w_end.isoformat())
         outreach_weekly_data.append(outreach_count)
         
-        deals_count = Lead.query.filter(
-            and_(
-                Lead.status == 'closed_won',
-                func.date(Lead.updated_at) >= w_start,
-                func.date(Lead.updated_at) <= w_end
-            )
-        ).count()
+        deals_count = 0
+        for lead in leads:
+            if getattr(lead, 'status', '') == 'closed_won':
+                updated = getattr(lead, 'updated_at', '')
+                if isinstance(updated, str):
+                    updated_date = updated.split('T')[0]
+                    if w_start.isoformat() <= updated_date <= w_end.isoformat():
+                        deals_count += 1
         deals_weekly_data.append(deals_count)
     
     settings = UserSettings.get_settings()
@@ -109,17 +109,19 @@ def index():
     user_stats = UserStats.get_stats()
     consistency = calculate_consistency_score()
     
-    followup_today = Lead.query.filter(
-        Lead.next_action_date == today,
-        Lead.status.notin_(['closed_won', 'closed_lost']),
-        Lead.converted_at.is_(None)
-    ).count()
-    
-    followup_overdue = Lead.query.filter(
-        Lead.next_action_date < today,
-        Lead.status.notin_(['closed_won', 'closed_lost']),
-        Lead.converted_at.is_(None)
-    ).count()
+    followup_today = 0
+    followup_overdue = 0
+    for lead in leads:
+        next_action = getattr(lead, 'next_action_date', None)
+        status = getattr(lead, 'status', '')
+        converted = getattr(lead, 'converted_at', None)
+        if next_action and status not in ['closed_won', 'closed_lost'] and not converted:
+            if isinstance(next_action, str):
+                next_action = next_action.split('T')[0]
+            if next_action == today.isoformat():
+                followup_today += 1
+            elif next_action < today.isoformat():
+                followup_overdue += 1
     
     monthly_revenue_data = []
     monthly_mrr_data = []
@@ -134,62 +136,77 @@ def index():
         
         month_labels.append(m_start.strftime('%b %Y'))
         
-        month_revenue = db.session.query(
-            func.coalesce(func.sum(Client.amount_charged), 0)
-        ).filter(
-            and_(Client.start_date >= m_start, Client.start_date <= m_end)
-        ).scalar() or Decimal('0')
+        month_revenue = Decimal('0')
+        hosting_at_month = Decimal('0')
+        saas_at_month = Decimal('0')
+        
+        for c in clients:
+            start_date = getattr(c, 'start_date', '')
+            if isinstance(start_date, str):
+                if m_start.isoformat() <= start_date <= m_end.isoformat():
+                    month_revenue += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
+                if start_date <= m_end.isoformat():
+                    if getattr(c, 'hosting_active', False):
+                        hosting_at_month += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
+                    if getattr(c, 'saas_active', False):
+                        saas_at_month += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
+        
         monthly_revenue_data.append(float(month_revenue))
-        
-        hosting_at_month = db.session.query(
-            func.coalesce(func.sum(Client.monthly_hosting_fee), 0)
-        ).filter(
-            Client.hosting_active == True,
-            Client.start_date <= m_end
-        ).scalar() or Decimal('0')
-        
-        saas_at_month = db.session.query(
-            func.coalesce(func.sum(Client.monthly_saas_fee), 0)
-        ).filter(
-            Client.saas_active == True,
-            Client.start_date <= m_end
-        ).scalar() or Decimal('0')
-        
         monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
     
     token_balance = UserTokens.get_balance()
     
     daily_mission = DailyMission.get_today_mission()
-    mission_progress_pct = 0
-    if daily_mission.target_count > 0:
-        mission_progress_pct = min(100, int((daily_mission.progress_count / daily_mission.target_count) * 100))
+    if not daily_mission:
+        daily_mission = DailyMission.create_today_mission()
     
-    current_boss = BossFight.get_current_boss()
+    mission_progress_pct = 0
+    if daily_mission:
+        target = getattr(daily_mission, 'target_count', 0) or 0
+        progress = getattr(daily_mission, 'progress_count', 0) or 0
+        if target > 0:
+            mission_progress_pct = min(100, int((progress / target) * 100))
+    
+    current_boss = BossBattle.get_current_battle()
+    if not current_boss:
+        current_boss = BossBattle.create_current_battle()
+    
     boss_progress_pct = 0
-    if current_boss and current_boss.target_value > 0:
-        boss_progress_pct = min(100, int((current_boss.progress_value / current_boss.target_value) * 100))
+    if current_boss:
+        target = getattr(current_boss, 'target_value', 0) or 0
+        progress = getattr(current_boss, 'progress_value', 0) or 0
+        if target > 0:
+            boss_progress_pct = min(100, int((progress / target) * 100))
     
     pause_active = settings.is_paused()
-    pause_end = settings.pause_end
+    pause_end = getattr(settings, 'pause_end', None)
     
-    recent_activities = ActivityLog.get_recent(5)
+    recent_activities = ActivityLog.query_all(order_by='timestamp', order_desc=True, limit=5)
     
-    deals_closed_today = Lead.query.filter(
-        Lead.closed_at.isnot(None),
-        func.date(Lead.closed_at) == today,
-        Lead.status.in_(['closed_won', 'closed_lost'])
-    ).all()
+    deals_closed_today = []
+    for lead in leads:
+        closed_at = getattr(lead, 'closed_at', None)
+        status = getattr(lead, 'status', '')
+        if closed_at and status in ['closed_won', 'closed_lost']:
+            if isinstance(closed_at, str):
+                closed_date = closed_at.split('T')[0]
+                if closed_date == today.isoformat():
+                    deals_closed_today.append(lead)
     
     widget_order = settings.get_dashboard_order()
     widget_active = settings.get_dashboard_active()
     widget_names = UserSettings.DEFAULT_WIDGET_NAMES
     
-    seven_days_ago = datetime.utcnow() - timedelta(days=7)
-    revenue_notifications = RevenueReward.query.filter(
-        RevenueReward.unlocked_at.isnot(None),
-        RevenueReward.claimed_at.is_(None),
-        RevenueReward.unlocked_at >= seven_days_ago
-    ).order_by(RevenueReward.target_revenue).all()
+    seven_days_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
+    revenue_rewards = RevenueReward.query_all()
+    revenue_notifications = []
+    for r in revenue_rewards:
+        unlocked = getattr(r, 'unlocked_at', None)
+        claimed = getattr(r, 'claimed_at', None)
+        if unlocked and not claimed:
+            if isinstance(unlocked, str) and unlocked >= seven_days_ago:
+                revenue_notifications.append(r)
+    revenue_notifications.sort(key=lambda x: getattr(x, 'target_revenue', 0))
     
     auto_generate_monthly_review_if_needed()
     new_monthly_review = get_newly_generated_review()
@@ -247,5 +264,5 @@ def save_widget_settings():
     if 'active' in data:
         settings.set_dashboard_active(data['active'])
     
-    db.session.commit()
+    settings.save()
     return jsonify({'success': True})

@@ -1,0 +1,91 @@
+This project is misconfigured and currently uses a local SQLite database and an incorrect raw PostgreSQL connection string.
+
+Fix the project completely by performing the following steps in order. Do not skip any step.
+
+1. Remove incorrect database connections
+
+Search the entire codebase for any usage of:
+
+DATABASE_URL
+
+any string starting with postgresql://
+
+psycopg2, asyncpg, SQLAlchemy engines, or raw PostgreSQL socket connections
+
+Remove all of these completely.
+
+The application must NOT connect directly to PostgreSQL.
+
+2. Delete SQLite and prevent regressions
+
+Permanently delete the file database.db from the project.
+
+Remove all imports of sqlite3.
+
+Remove any database initialization or fallback logic that attempts to recreate a local database file.
+
+The app must be able to run with a wiped filesystem.
+
+3. Configure Supabase correctly (REST client only)
+
+Use the official Supabase client library.
+
+Read credentials ONLY from environment variables:
+
+SUPABASE_URL
+
+SUPABASE_ANON_KEY
+
+Do NOT hardcode secrets anywhere in the codebase.
+
+Supabase Project URL to use:
+
+https://awolrifvhifwjmbmalrd.supabase.co
+
+
+The anon public key must be read from SUPABASE_ANON_KEY in Replit Secrets.
+
+4. Create a single shared Supabase client
+
+Initialize exactly one Supabase client instance and reuse it across the app.
+
+Example structure (do not inline secrets):
+
+from supabase import create_client
+import os
+
+supabase = create_client(
+    os.environ["SUPABASE_URL"],
+    os.environ["SUPABASE_ANON_KEY"]
+)
+
+
+5. Replace all database operations
+
+Convert all database reads and writes to Supabase table calls using:
+
+.select()
+
+.insert()
+
+.update()
+
+.delete()
+
+Ensure no code path references SQLite or raw PostgreSQL.
+
+6. Add a startup sanity check
+
+On application startup, perform a lightweight Supabase query (e.g. fetch 1 row from any table).
+
+If the query fails, log a clear error explaining that Supabase credentials are missing or invalid.
+
+7. Final requirement
+
+Redeploying the app must NEVER reset data.
+
+The database must live entirely in Supabase.
+
+The filesystem must be disposable without consequence.
+
+This migration must result in a deploy-safe, Supabase-backed application with no local database usage.

@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import db, Goal
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+from db_supabase import Goal
 from blueprints.gamification import get_recommended_goal
 
 goals_bp = Blueprint('goals', __name__, url_prefix='/goals')
@@ -17,11 +17,12 @@ def index():
     for gt in goal_types:
         goal = Goal.get_or_create(gt['type'], gt['period'])
         recommended = get_recommended_goal(gt['type'])
-        current_value = goal.target_value if goal.is_manual else recommended
+        is_manual = getattr(goal, 'is_manual', False)
+        target_value = getattr(goal, 'target_value', 0) or 0
+        current_value = target_value if is_manual else recommended
         
-        if not goal.is_manual and goal.target_value != recommended:
-            goal.target_value = recommended
-            db.session.commit()
+        if not is_manual and target_value != recommended:
+            Goal.update_by_id(goal.id, {'target_value': recommended})
         
         goals_data.append({
             'id': goal.id,
@@ -30,7 +31,7 @@ def index():
             'description': gt['description'],
             'current': current_value,
             'recommended': recommended,
-            'is_manual': goal.is_manual,
+            'is_manual': is_manual,
             'period': gt['period']
         })
     
@@ -43,24 +44,22 @@ def update():
     target_value = request.form.get('target_value', type=int)
     is_manual = request.form.get('is_manual') == 'on'
     
-    goal = Goal.query.filter_by(goal_type=goal_type, period=period).first()
+    goal = Goal.get_first({'goal_type': goal_type, 'period': period})
     if goal:
         if is_manual and target_value is not None:
-            goal.target_value = target_value
-            goal.is_manual = True
+            Goal.update_by_id(goal.id, {'target_value': target_value, 'is_manual': True})
         else:
-            goal.target_value = get_recommended_goal(goal_type)
-            goal.is_manual = False
-        db.session.commit()
+            Goal.update_by_id(goal.id, {'target_value': get_recommended_goal(goal_type), 'is_manual': False})
         flash('Goal updated!', 'success')
     
     return redirect(url_for('goals.index'))
 
 @goals_bp.route('/reset/<int:goal_id>', methods=['POST'])
 def reset(goal_id):
-    goal = Goal.query.get_or_404(goal_id)
-    goal.is_manual = False
-    goal.target_value = get_recommended_goal(goal.goal_type)
-    db.session.commit()
+    goal = Goal.get_by_id(goal_id)
+    if not goal:
+        abort(404)
+    goal_type = getattr(goal, 'goal_type', '')
+    Goal.update_by_id(goal_id, {'is_manual': False, 'target_value': get_recommended_goal(goal_type)})
     flash('Goal reset to recommended value!', 'success')
     return redirect(url_for('goals.index'))

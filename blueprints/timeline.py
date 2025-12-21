@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request
-from models import ActivityLog
+from db_supabase import ActivityLog, get_supabase
 from datetime import date, timedelta
 
 timeline_bp = Blueprint('timeline', __name__, url_prefix='/timeline')
@@ -8,11 +8,31 @@ timeline_bp = Blueprint('timeline', __name__, url_prefix='/timeline')
 def index():
     page = request.args.get('page', 1, type=int)
     per_page = 50
+    offset = (page - 1) * per_page
     
-    pagination = ActivityLog.get_paginated(page=page, per_page=per_page)
-    activities = pagination.items
+    client = get_supabase()
+    
+    count_result = client.table('activity_log').select('id', count='exact').execute()
+    total = count_result.count if count_result.count else len(count_result.data)
+    
+    result = client.table('activity_log').select('*').order('created_at', desc=True).range(offset, offset + per_page - 1).execute()
+    activities = [ActivityLog._parse_row(row) for row in result.data]
     
     grouped = group_activities_by_day(activities)
+    
+    has_next = offset + per_page < total
+    has_prev = page > 1
+    
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total,
+        'pages': (total + per_page - 1) // per_page,
+        'has_next': has_next,
+        'has_prev': has_prev,
+        'next_num': page + 1 if has_next else None,
+        'prev_num': page - 1 if has_prev else None
+    }
     
     return render_template('timeline/index.html', 
                          activities=activities,
@@ -36,7 +56,11 @@ def group_activities_by_day(activities):
     }
     
     for activity in activities:
-        activity_date = activity.timestamp.date()
+        created = getattr(activity, 'created_at', '')
+        if isinstance(created, str):
+            activity_date = date.fromisoformat(created.split('T')[0])
+        else:
+            activity_date = created.date() if hasattr(created, 'date') else today
         
         if activity_date == today:
             groups['Today'].append(activity)

@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from models import db, UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, TokenTransaction, UserSettings, ActivityLog, WinsLog, BossFight, RewardItem, RevenueReward, Client
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from db_supabase import (UserStats, Achievement, Goal, OutreachLog, Lead, Task, XPLog, 
+                         LevelReward, MilestoneReward, UnlockedReward, UserTokens, DailyMission, 
+                         TokenTransaction, UserSettings, ActivityLog, WinsLog, BossBattle, 
+                         RewardItem, RevenueReward, Client, FreelancingIncome, get_supabase)
 from datetime import datetime, date, timedelta
-from sqlalchemy import func
 
 
 def is_paused():
@@ -78,117 +80,118 @@ def add_tokens(amount, reason=""):
 
 def update_mission_progress(mission_type, count=1):
     today = date.today()
-    mission = DailyMission.query.filter_by(mission_date=today, mission_type=mission_type).first()
-    if mission and not mission.is_completed:
-        mission.progress_count += count
-        db.session.commit()
-        if mission.check_completion():
-            flash(f'Mission complete! +{mission.reward_tokens} tokens!', 'success')
+    mission = DailyMission.get_first({'mission_date': today.isoformat(), 'mission_type': mission_type})
+    if mission and not getattr(mission, 'is_completed', False):
+        new_progress = (getattr(mission, 'progress_count', 0) or 0) + count
+        target = getattr(mission, 'target_count', 0) or 0
+        is_completed = new_progress >= target
+        DailyMission.update_by_id(mission.id, {'progress_count': new_progress, 'is_completed': is_completed})
+        if is_completed:
+            reward_tokens = getattr(mission, 'reward_tokens', 0) or 0
+            add_tokens(reward_tokens, f'Mission completed: {mission_type}')
+            flash(f'Mission complete! +{reward_tokens} tokens!', 'success')
 
 
 def add_xp(amount, reason=""):
     stats = UserStats.get_stats()
-    old_level = stats.current_level
-    stats.current_xp += amount
-    new_level = get_level_from_xp(stats.current_xp)
-    stats.current_level = new_level
+    old_level = getattr(stats, 'current_level', 1) or 1
+    current_xp = (getattr(stats, 'current_xp', 0) or 0) + amount
+    new_level = get_level_from_xp(current_xp)
     
-    log = XPLog(amount=amount, reason=reason)
-    db.session.add(log)
-    db.session.commit()
+    UserStats.update_by_id(stats.id, {'current_xp': current_xp, 'current_level': new_level})
+    XPLog.insert({'amount': amount, 'reason': reason})
     
     check_and_unlock_achievements()
     
     if new_level > old_level:
         flash(f'Level Up! You are now Level {new_level}!', 'success')
         ActivityLog.log_activity('level_up', f'Leveled up to Level {new_level}!')
-        WinsLog.log_win(
-            title=f'Level Up to {new_level}',
-            description=f'Reached Level {new_level} after gaining XP.',
-            xp_value=amount,
-            token_value=0
-        )
+        WinsLog.insert({
+            'title': f'Level Up to {new_level}',
+            'description': f'Reached Level {new_level} after gaining XP.',
+            'xp_value': amount,
+            'token_value': 0
+        })
         check_level_interval_rewards(new_level)
         check_milestone_rewards(new_level)
     
-    return stats.current_xp
+    return current_xp
 
 
 def check_level_interval_rewards(current_level):
-    level_rewards = LevelReward.query.filter_by(is_active=True).all()
-    now = datetime.utcnow()
+    level_rewards = LevelReward.query_filter({'is_active': True})
+    now = datetime.utcnow().isoformat()
     
     for reward in level_rewards:
-        if current_level % reward.level_interval == 0:
-            existing = UnlockedReward.query.filter_by(
-                reward_type='level',
-                reward_reference_id=reward.id,
-                level_achieved=current_level
-            ).first()
+        interval = getattr(reward, 'level_interval', 0) or 0
+        if interval > 0 and current_level % interval == 0:
+            existing = UnlockedReward.get_first({
+                'reward_type': 'level',
+                'reward_reference_id': reward.id,
+                'level_achieved': current_level
+            })
             
             if not existing:
-                unlocked = UnlockedReward(
-                    reward_type='level',
-                    reward_reference_id=reward.id,
-                    level_achieved=current_level,
-                    reward_text=reward.reward_text,
-                    unlocked_at=now
-                )
-                db.session.add(unlocked)
+                UnlockedReward.insert({
+                    'reward_type': 'level',
+                    'reward_reference_id': reward.id,
+                    'level_achieved': current_level,
+                    'reward_text': getattr(reward, 'reward_text', ''),
+                    'unlocked_at': now
+                })
                 flash(f'You unlocked a reward: {reward.reward_text}!', 'success')
-    
-    db.session.commit()
 
 
 def check_milestone_rewards(current_level):
-    milestone_rewards = MilestoneReward.query.filter_by(is_active=True, unlocked_at=None).all()
-    now = datetime.utcnow()
+    milestone_rewards = MilestoneReward.query_filter({'is_active': True})
+    now = datetime.utcnow().isoformat()
     
     for reward in milestone_rewards:
-        if current_level >= reward.target_level:
-            reward.unlocked_at = now
+        if getattr(reward, 'unlocked_at', None):
+            continue
+        target = getattr(reward, 'target_level', 0) or 0
+        if current_level >= target:
+            MilestoneReward.update_by_id(reward.id, {'unlocked_at': now})
             
-            unlocked = UnlockedReward(
-                reward_type='milestone',
-                reward_reference_id=reward.id,
-                level_achieved=current_level,
-                reward_text=reward.reward_text,
-                unlocked_at=now
-            )
-            db.session.add(unlocked)
+            UnlockedReward.insert({
+                'reward_type': 'milestone',
+                'reward_reference_id': reward.id,
+                'level_achieved': current_level,
+                'reward_text': getattr(reward, 'reward_text', ''),
+                'unlocked_at': now
+            })
             flash(f'Milestone reward unlocked: {reward.reward_text}!', 'success')
-    
-    db.session.commit()
 
 
 def get_lifetime_revenue():
-    """Calculate total lifetime revenue including:
-    - One-time project fees (amount_charged)
-    - Accumulated hosting revenue (months since start × monthly_hosting_fee)
-    - Accumulated SaaS revenue (months since start × monthly_saas_fee)
-    - Freelance income from side jobs
-    """
-    from datetime import date
-    from models import FreelanceJob
-    
     total_revenue = 0.0
-    clients = Client.query.all()
+    clients = Client.query_all()
     today = date.today()
     
     for client in clients:
-        total_revenue += float(client.amount_charged or 0)
+        total_revenue += float(getattr(client, 'amount_charged', 0) or 0)
         
-        if client.start_date:
-            months_active = (today.year - client.start_date.year) * 12 + (today.month - client.start_date.month)
-            months_active = max(1, months_active)
+        start_date = getattr(client, 'start_date', None)
+        if start_date:
+            if isinstance(start_date, str):
+                try:
+                    start_date = date.fromisoformat(start_date.split('T')[0])
+                except:
+                    start_date = None
             
-            if client.hosting_active and client.monthly_hosting_fee:
-                total_revenue += float(client.monthly_hosting_fee) * months_active
-            
-            if client.saas_active and client.monthly_saas_fee:
-                total_revenue += float(client.monthly_saas_fee) * months_active
+            if start_date:
+                months_active = (today.year - start_date.year) * 12 + (today.month - start_date.month)
+                months_active = max(1, months_active)
+                
+                if getattr(client, 'hosting_active', False) and getattr(client, 'monthly_hosting_fee', 0):
+                    total_revenue += float(client.monthly_hosting_fee) * months_active
+                
+                if getattr(client, 'saas_active', False) and getattr(client, 'monthly_saas_fee', 0):
+                    total_revenue += float(client.monthly_saas_fee) * months_active
     
-    total_revenue += FreelanceJob.get_total_income()
+    freelance_income = FreelancingIncome.query_all()
+    for income in freelance_income:
+        total_revenue += float(getattr(income, 'amount', 0) or 0)
     
     return total_revenue
 
@@ -196,37 +199,42 @@ def get_lifetime_revenue():
 def check_revenue_rewards():
     RevenueReward.seed_defaults()
     lifetime_revenue = get_lifetime_revenue()
-    revenue_rewards = RevenueReward.query.filter_by(is_active=True, unlocked_at=None).all()
-    now = datetime.utcnow()
+    revenue_rewards = RevenueReward.query_filter({'is_active': True})
+    now = datetime.utcnow().isoformat()
     
     for reward in revenue_rewards:
-        if lifetime_revenue >= reward.target_revenue:
-            reward.unlocked_at = now
+        if getattr(reward, 'unlocked_at', None):
+            continue
+        target = getattr(reward, 'target_revenue', 0) or 0
+        if lifetime_revenue >= target:
+            RevenueReward.update_by_id(reward.id, {'unlocked_at': now})
             flash(f'Revenue milestone unlocked: {reward.reward_text}!', 'success')
-    
-    db.session.commit()
 
 
 def get_upcoming_rewards(current_level):
     upcoming = []
     
-    level_rewards = LevelReward.query.filter_by(is_active=True).order_by(LevelReward.level_interval).all()
+    level_rewards = LevelReward.query_filter({'is_active': True}, order_by='level_interval')
     for reward in level_rewards:
-        next_level = ((current_level // reward.level_interval) + 1) * reward.level_interval
+        interval = getattr(reward, 'level_interval', 0) or 1
+        next_level = ((current_level // interval) + 1) * interval
         upcoming.append({
             'type': 'level',
             'level': next_level,
-            'reward_text': reward.reward_text,
-            'interval': reward.level_interval
+            'reward_text': getattr(reward, 'reward_text', ''),
+            'interval': interval
         })
     
-    milestone_rewards = MilestoneReward.query.filter_by(is_active=True, unlocked_at=None).order_by(MilestoneReward.target_level).all()
+    milestone_rewards = MilestoneReward.query_filter({'is_active': True}, order_by='target_level')
     for reward in milestone_rewards:
-        if reward.target_level > current_level:
+        if getattr(reward, 'unlocked_at', None):
+            continue
+        target = getattr(reward, 'target_level', 0)
+        if target > current_level:
             upcoming.append({
                 'type': 'milestone',
-                'level': reward.target_level,
-                'reward_text': reward.reward_text
+                'level': target,
+                'reward_text': getattr(reward, 'reward_text', '')
             })
     
     upcoming.sort(key=lambda x: x['level'])
@@ -237,29 +245,39 @@ def update_outreach_streak():
     today = date.today()
     yesterday = today - timedelta(days=1)
     
-    if stats.last_outreach_date == today:
-        return stats.current_outreach_streak_days
+    last_outreach = getattr(stats, 'last_outreach_date', None)
+    if last_outreach:
+        if isinstance(last_outreach, str):
+            try:
+                last_outreach = date.fromisoformat(last_outreach.split('T')[0])
+            except:
+                last_outreach = None
     
-    old_streak = stats.current_outreach_streak_days
+    if last_outreach == today:
+        return getattr(stats, 'current_outreach_streak_days', 0) or 0
+    
+    old_streak = getattr(stats, 'current_outreach_streak_days', 0) or 0
     
     if is_paused():
-        stats.last_outreach_date = today
-        db.session.commit()
-        return stats.current_outreach_streak_days
+        UserStats.update_by_id(stats.id, {'last_outreach_date': today.isoformat()})
+        return old_streak
     
-    if stats.last_outreach_date == yesterday:
-        stats.current_outreach_streak_days += 1
-    elif stats.last_outreach_date is None or stats.last_outreach_date < yesterday:
-        stats.current_outreach_streak_days = 1
+    if last_outreach == yesterday:
+        new_streak = old_streak + 1
+    elif last_outreach is None or last_outreach < yesterday:
+        new_streak = 1
+    else:
+        new_streak = old_streak
     
-    stats.last_outreach_date = today
+    longest = getattr(stats, 'longest_outreach_streak_days', 0) or 0
+    if new_streak > longest:
+        longest = new_streak
     
-    if stats.current_outreach_streak_days > stats.longest_outreach_streak_days:
-        stats.longest_outreach_streak_days = stats.current_outreach_streak_days
-    
-    db.session.commit()
-    
-    new_streak = stats.current_outreach_streak_days
+    UserStats.update_by_id(stats.id, {
+        'current_outreach_streak_days': new_streak,
+        'longest_outreach_streak_days': longest,
+        'last_outreach_date': today.isoformat()
+    })
     
     if new_streak > old_streak:
         ActivityLog.log_activity('streak_increased', f'Streak increased to {new_streak} days!')
@@ -280,39 +298,44 @@ def update_outreach_streak():
     
     for milestone, rule_key, reason in streak_token_milestones:
         if old_streak < milestone and new_streak >= milestone:
-            existing = TokenTransaction.query.filter(
-                TokenTransaction.reason == reason
-            ).first()
+            existing = TokenTransaction.get_first({'reason': reason})
             if not existing:
                 add_tokens(TOKEN_RULES[rule_key], reason)
                 flash(f'{reason}: +{TOKEN_RULES[rule_key]} tokens!', 'success')
                 if milestone in [7, 14, 30]:
-                    WinsLog.log_win(
-                        title=f'{milestone}-Day Streak!',
-                        description=f'Reached a {milestone}-day outreach streak. Keep it up!',
-                        xp_value=XP_RULES.get(f'streak_{milestone}', 0) if milestone in [10, 30] else 0,
-                        token_value=TOKEN_RULES[rule_key]
-                    )
+                    WinsLog.insert({
+                        'title': f'{milestone}-Day Streak!',
+                        'description': f'Reached a {milestone}-day outreach streak. Keep it up!',
+                        'xp_value': XP_RULES.get(f'streak_{milestone}', 0) if milestone in [10, 30] else 0,
+                        'token_value': TOKEN_RULES[rule_key]
+                    })
     
     check_and_unlock_achievements()
-    return stats.current_outreach_streak_days
+    return new_streak
 
 
 def check_daily_goal():
     today = date.today()
     
-    daily_goal = Goal.query.filter_by(goal_type='daily_outreach').first()
-    if not daily_goal or daily_goal.target_value <= 0:
+    daily_goal = Goal.get_first({'goal_type': 'daily_outreach'})
+    if not daily_goal or (getattr(daily_goal, 'target_value', 0) or 0) <= 0:
         return False
     
-    today_outreach = OutreachLog.query.filter(OutreachLog.date == today).count()
+    client = get_supabase()
+    result = client.table('outreach_logs').select('id', count='exact').eq('date', today.isoformat()).execute()
+    today_outreach = result.count if result.count else len(result.data)
     
-    existing_log = XPLog.query.filter(
-        XPLog.reason == "Daily outreach goal hit!",
-        func.date(XPLog.created_at) == today
-    ).first()
+    xp_logs = XPLog.query_filter({'reason': 'Daily outreach goal hit!'})
+    today_start = f'{today.isoformat()}T00:00:00'
+    existing_log = None
+    for log in xp_logs:
+        created = getattr(log, 'created_at', '')
+        if isinstance(created, str) and created >= today_start:
+            existing_log = log
+            break
     
-    if today_outreach >= daily_goal.target_value and not existing_log:
+    target = getattr(daily_goal, 'target_value', 0) or 0
+    if today_outreach >= target and not existing_log:
         add_xp(XP_RULES['daily_goal_hit'], "Daily outreach goal hit!")
         add_tokens(TOKEN_RULES['daily_goal_hit'], "Daily goal hit!")
         flash('Daily goal hit: +10 XP, +3 tokens!', 'success')
@@ -325,26 +348,33 @@ def check_weekly_goal():
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
     
-    weekly_goal = Goal.query.filter_by(goal_type='weekly_outreach').first()
-    if not weekly_goal or weekly_goal.target_value <= 0:
+    weekly_goal = Goal.get_first({'goal_type': 'weekly_outreach'})
+    if not weekly_goal or (getattr(weekly_goal, 'target_value', 0) or 0) <= 0:
         return False
     
-    week_outreach = OutreachLog.query.filter(OutreachLog.date >= week_start).count()
+    client = get_supabase()
+    result = client.table('outreach_logs').select('id', count='exact').gte('date', week_start.isoformat()).execute()
+    week_outreach = result.count if result.count else len(result.data)
     
-    existing_log = XPLog.query.filter(
-        XPLog.reason == "Weekly outreach goal hit!",
-        func.date(XPLog.created_at) >= week_start
-    ).first()
+    xp_logs = XPLog.query_filter({'reason': 'Weekly outreach goal hit!'})
+    week_start_ts = f'{week_start.isoformat()}T00:00:00'
+    existing_log = None
+    for log in xp_logs:
+        created = getattr(log, 'created_at', '')
+        if isinstance(created, str) and created >= week_start_ts:
+            existing_log = log
+            break
     
-    if week_outreach >= weekly_goal.target_value and not existing_log:
+    target = getattr(weekly_goal, 'target_value', 0) or 0
+    if week_outreach >= target and not existing_log:
         add_xp(XP_RULES['weekly_goal_hit'], "Weekly outreach goal hit!")
         add_tokens(TOKEN_RULES['weekly_goal_hit'], "Weekly goal hit!")
-        WinsLog.log_win(
-            title='Weekly Goal Hit',
-            description=f'Completed {week_outreach} outreach activities this week, hitting the weekly target of {weekly_goal.target_value}.',
-            xp_value=XP_RULES['weekly_goal_hit'],
-            token_value=TOKEN_RULES['weekly_goal_hit']
-        )
+        WinsLog.insert({
+            'title': 'Weekly Goal Hit',
+            'description': f'Completed {week_outreach} outreach activities this week, hitting the weekly target of {target}.',
+            'xp_value': XP_RULES['weekly_goal_hit'],
+            'token_value': TOKEN_RULES['weekly_goal_hit']
+        })
         flash('Weekly goal hit: +25 XP, +7 tokens!', 'success')
         return True
     
@@ -355,23 +385,34 @@ def check_monthly_revenue_goal():
     today = date.today()
     month_start = today.replace(day=1)
     
-    from models import Client
-    
-    monthly_goal = Goal.query.filter_by(goal_type='monthly_revenue').first()
-    if not monthly_goal or monthly_goal.target_value <= 0:
+    monthly_goal = Goal.get_first({'goal_type': 'monthly_revenue'})
+    if not monthly_goal or (getattr(monthly_goal, 'target_value', 0) or 0) <= 0:
         return False
     
-    monthly_revenue = db.session.query(func.sum(Client.amount_charged)).filter(
-        Client.start_date >= month_start,
-        Client.start_date <= today
-    ).scalar() or 0
+    clients = Client.query_all()
+    monthly_revenue = 0
+    for c in clients:
+        start_date = getattr(c, 'start_date', None)
+        if start_date:
+            if isinstance(start_date, str):
+                try:
+                    start_date = date.fromisoformat(start_date.split('T')[0])
+                except:
+                    continue
+            if month_start <= start_date <= today:
+                monthly_revenue += float(getattr(c, 'amount_charged', 0) or 0)
     
-    existing_log = XPLog.query.filter(
-        XPLog.reason == "Monthly revenue goal hit!",
-        func.date(XPLog.created_at) >= month_start
-    ).first()
+    xp_logs = XPLog.query_filter({'reason': 'Monthly revenue goal hit!'})
+    month_start_ts = f'{month_start.isoformat()}T00:00:00'
+    existing_log = None
+    for log in xp_logs:
+        created = getattr(log, 'created_at', '')
+        if isinstance(created, str) and created >= month_start_ts:
+            existing_log = log
+            break
     
-    if float(monthly_revenue) >= monthly_goal.target_value and not existing_log:
+    target = getattr(monthly_goal, 'target_value', 0) or 0
+    if monthly_revenue >= target and not existing_log:
         add_xp(XP_RULES['monthly_revenue_goal_hit'], "Monthly revenue goal hit!")
         flash('Monthly revenue goal hit: +50 XP!', 'success')
         return True
@@ -389,50 +430,44 @@ def calculate_consistency_score():
     today = date.today()
     week_ago = today - timedelta(days=7)
     
-    daily_goal = Goal.query.filter_by(goal_type='daily_outreach').first()
-    daily_target = daily_goal.target_value if daily_goal and daily_goal.target_value > 0 else get_recommended_goal('daily_outreach')
+    daily_goal = Goal.get_first({'goal_type': 'daily_outreach'})
+    daily_target = (getattr(daily_goal, 'target_value', 0) or 0) if daily_goal else 0
+    if daily_target == 0:
+        daily_target = get_recommended_goal('daily_outreach')
     if daily_target == 0:
         daily_target = 3
     
-    outreach_count = OutreachLog.query.filter(OutreachLog.date >= week_ago).count()
+    client = get_supabase()
+    result = client.table('outreach_logs').select('id', count='exact').gte('date', week_ago.isoformat()).execute()
+    outreach_count = result.count if result.count else len(result.data)
     outreach_goal = daily_target * 7
     outreach_pct = min(100, (outreach_count / outreach_goal * 100)) if outreach_goal > 0 else 0
     
-    leads_with_followup = Lead.query.filter(
-        Lead.next_action_date.isnot(None),
-        Lead.next_action_date >= week_ago,
-        Lead.next_action_date <= today,
-        Lead.status.notin_(['closed_won', 'closed_lost'])
-    ).count()
+    leads_result = client.table('leads').select('id', count='exact').not_.is_('next_action_date', 'null').gte('next_action_date', week_ago.isoformat()).lte('next_action_date', today.isoformat()).not_.in_('status', ['closed_won', 'closed_lost']).execute()
+    leads_with_followup = leads_result.count if leads_result.count else len(leads_result.data)
     
-    leads_contacted = Lead.query.filter(
-        Lead.last_contacted_at.isnot(None),
-        Lead.last_contacted_at >= week_ago
-    ).count()
+    contacted_result = client.table('leads').select('id', count='exact').not_.is_('last_contacted_at', 'null').gte('last_contacted_at', f'{week_ago.isoformat()}T00:00:00').execute()
+    leads_contacted = contacted_result.count if contacted_result.count else len(contacted_result.data)
     
     followup_pct = min(100, (leads_contacted / max(1, leads_with_followup) * 100))
     
-    tasks_due = Task.query.filter(
-        Task.due_date >= week_ago,
-        Task.due_date <= today
-    ).count()
+    tasks_due_result = client.table('tasks').select('id', count='exact').gte('due_date', week_ago.isoformat()).lte('due_date', today.isoformat()).execute()
+    tasks_due = tasks_due_result.count if tasks_due_result.count else len(tasks_due_result.data)
     
-    tasks_done = Task.query.filter(
-        Task.due_date >= week_ago,
-        Task.due_date <= today,
-        Task.status == 'done'
-    ).count()
+    tasks_done_result = client.table('tasks').select('id', count='exact').gte('due_date', week_ago.isoformat()).lte('due_date', today.isoformat()).eq('status', 'done').execute()
+    tasks_done = tasks_done_result.count if tasks_done_result.count else len(tasks_done_result.data)
     
     task_pct = min(100, (tasks_done / max(1, tasks_due) * 100))
     
     consistency_score = int((outreach_pct + followup_pct + task_pct) / 3)
     
     if not is_paused():
-        stats.last_consistency_score = consistency_score
-        stats.last_consistency_calculated_at = datetime.utcnow()
-        db.session.commit()
+        UserStats.update_by_id(stats.id, {
+            'last_consistency_score': consistency_score,
+            'last_consistency_calculated_at': datetime.utcnow().isoformat()
+        })
     else:
-        consistency_score = stats.last_consistency_score or consistency_score
+        consistency_score = getattr(stats, 'last_consistency_score', 0) or consistency_score
     
     return {
         'score': consistency_score,
@@ -447,68 +482,78 @@ def calculate_consistency_score():
 
 def check_and_unlock_achievements():
     stats = UserStats.get_stats()
-    now = datetime.utcnow()
+    now = datetime.utcnow().isoformat()
     
-    streak_7 = Achievement.query.filter_by(key='streak_7').first()
-    if streak_7 and not streak_7.unlocked_at and stats.current_outreach_streak_days >= 7:
-        streak_7.unlocked_at = now
+    streak = getattr(stats, 'current_outreach_streak_days', 0) or 0
+    xp = getattr(stats, 'current_xp', 0) or 0
     
-    streak_30 = Achievement.query.filter_by(key='streak_30').first()
-    if streak_30 and not streak_30.unlocked_at and stats.current_outreach_streak_days >= 30:
-        streak_30.unlocked_at = now
+    streak_7 = Achievement.get_first({'key': 'streak_7'})
+    if streak_7 and not getattr(streak_7, 'unlocked_at', None) and streak >= 7:
+        Achievement.update_by_id(streak_7.id, {'unlocked_at': now})
     
-    xp_1000 = Achievement.query.filter_by(key='xp_1000').first()
-    if xp_1000 and not xp_1000.unlocked_at and stats.current_xp >= 1000:
-        xp_1000.unlocked_at = now
+    streak_30 = Achievement.get_first({'key': 'streak_30'})
+    if streak_30 and not getattr(streak_30, 'unlocked_at', None) and streak >= 30:
+        Achievement.update_by_id(streak_30.id, {'unlocked_at': now})
     
-    xp_5000 = Achievement.query.filter_by(key='xp_5000').first()
-    if xp_5000 and not xp_5000.unlocked_at and stats.current_xp >= 5000:
-        xp_5000.unlocked_at = now
+    xp_1000 = Achievement.get_first({'key': 'xp_1000'})
+    if xp_1000 and not getattr(xp_1000, 'unlocked_at', None) and xp >= 1000:
+        Achievement.update_by_id(xp_1000.id, {'unlocked_at': now})
     
-    outreach_100 = Achievement.query.filter_by(key='outreach_100').first()
-    if outreach_100 and not outreach_100.unlocked_at:
-        total_outreach = OutreachLog.query.count()
+    xp_5000 = Achievement.get_first({'key': 'xp_5000'})
+    if xp_5000 and not getattr(xp_5000, 'unlocked_at', None) and xp >= 5000:
+        Achievement.update_by_id(xp_5000.id, {'unlocked_at': now})
+    
+    outreach_100 = Achievement.get_first({'key': 'outreach_100'})
+    if outreach_100 and not getattr(outreach_100, 'unlocked_at', None):
+        total_outreach = OutreachLog.count()
         if total_outreach >= 100:
-            outreach_100.unlocked_at = now
+            Achievement.update_by_id(outreach_100.id, {'unlocked_at': now})
     
-    deals_10 = Achievement.query.filter_by(key='deals_10').first()
-    if deals_10 and not deals_10.unlocked_at:
-        total_deals = Lead.query.filter_by(status='closed_won').count()
+    deals_10 = Achievement.get_first({'key': 'deals_10'})
+    if deals_10 and not getattr(deals_10, 'unlocked_at', None):
+        total_deals = Lead.count({'status': 'closed_won'})
         if total_deals >= 10:
-            deals_10.unlocked_at = now
-    
-    db.session.commit()
+            Achievement.update_by_id(deals_10.id, {'unlocked_at': now})
 
 def get_recommended_goal(goal_type):
     today = date.today()
+    client = get_supabase()
     
     if goal_type == 'daily_outreach':
         month_ago = today - timedelta(days=30)
-        total = OutreachLog.query.filter(OutreachLog.date >= month_ago).count()
+        result = client.table('outreach_logs').select('id', count='exact').gte('date', month_ago.isoformat()).execute()
+        total = result.count if result.count else len(result.data)
         avg = total / 30
         return max(1, int(avg) + 1)
     
     elif goal_type == 'weekly_outreach':
         eight_weeks_ago = today - timedelta(weeks=8)
-        total = OutreachLog.query.filter(OutreachLog.date >= eight_weeks_ago).count()
+        result = client.table('outreach_logs').select('id', count='exact').gte('date', eight_weeks_ago.isoformat()).execute()
+        total = result.count if result.count else len(result.data)
         avg = total / 8
         return max(5, int(avg) + 1)
     
     elif goal_type == 'monthly_revenue':
-        from models import Client
         three_months_ago = today - timedelta(days=90)
-        total = db.session.query(func.sum(Client.amount_charged)).filter(
-            Client.start_date >= three_months_ago
-        ).scalar() or 0
-        avg = float(total) / 3
+        clients = Client.query_all()
+        total = 0
+        for c in clients:
+            start_date = getattr(c, 'start_date', None)
+            if start_date:
+                if isinstance(start_date, str):
+                    try:
+                        start_date = date.fromisoformat(start_date.split('T')[0])
+                    except:
+                        continue
+                if start_date >= three_months_ago:
+                    total += float(getattr(c, 'amount_charged', 0) or 0)
+        avg = total / 3
         return max(100, int(avg) + 100)
     
     elif goal_type == 'monthly_deals':
         three_months_ago = today - timedelta(days=90)
-        total = Lead.query.filter(
-            Lead.status == 'closed_won',
-            Lead.converted_at >= three_months_ago
-        ).count()
+        result = client.table('leads').select('id', count='exact').eq('status', 'closed_won').gte('converted_at', f'{three_months_ago.isoformat()}T00:00:00').execute()
+        total = result.count if result.count else len(result.data)
         avg = total / 3
         return max(1, int(avg) + 1)
     
@@ -517,9 +562,8 @@ def get_recommended_goal(goal_type):
 def get_xp_this_week():
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
-    logs = XPLog.query.filter(
-        func.date(XPLog.created_at) >= week_start
-    ).all()
+    
+    logs = XPLog.query_all()
     
     daily_xp = {}
     for i in range(7):
@@ -527,9 +571,11 @@ def get_xp_this_week():
         daily_xp[day.isoformat()] = 0
     
     for log in logs:
-        log_date = log.created_at.date().isoformat()
-        if log_date in daily_xp:
-            daily_xp[log_date] += log.amount
+        created = getattr(log, 'created_at', '')
+        if isinstance(created, str):
+            log_date = created.split('T')[0]
+            if log_date in daily_xp:
+                daily_xp[log_date] += getattr(log, 'amount', 0) or 0
     
     return list(daily_xp.values())
 
@@ -548,9 +594,9 @@ def index():
     
     check_all_goals()
     
-    achievements = Achievement.query.all()
-    unlocked = [a for a in achievements if a.unlocked_at]
-    locked = [a for a in achievements if not a.unlocked_at]
+    achievements = Achievement.query_all()
+    unlocked = [a for a in achievements if getattr(a, 'unlocked_at', None)]
+    locked = [a for a in achievements if not getattr(a, 'unlocked_at', None)]
     
     consistency = calculate_consistency_score()
     
@@ -562,30 +608,33 @@ def index():
     
     xp_progress = 0
     if xp_for_next:
-        xp_in_level = stats.current_xp - current_level_xp
+        xp_in_level = (getattr(stats, 'current_xp', 0) or 0) - current_level_xp
         xp_needed = xp_for_next - current_level_xp
         xp_progress = int((xp_in_level / xp_needed) * 100) if xp_needed > 0 else 100
     
     upcoming_rewards = get_upcoming_rewards(current_level)
-    unlocked_rewards = UnlockedReward.query.order_by(UnlockedReward.unlocked_at.desc()).limit(10).all()
+    unlocked_rewards = UnlockedReward.query_all(order_by='unlocked_at', order_desc=True, limit=10)
     
-    level_rewards = LevelReward.query.order_by(LevelReward.level_interval).all()
-    milestone_rewards = MilestoneReward.query.order_by(MilestoneReward.target_level).all()
+    level_rewards = LevelReward.query_all(order_by='level_interval')
+    milestone_rewards = MilestoneReward.query_all(order_by='target_level')
     
-    wins = WinsLog.get_all_wins()
+    wins = WinsLog.query_all(order_by='created_at', order_desc=True)
     
     max_level = 15
     
     token_balance = UserTokens.get_balance()
     RewardItem.seed_defaults()
-    available_rewards = RewardItem.query.filter_by(is_active=True).count()
+    available_rewards = RewardItem.count({'is_active': True})
     
-    current_boss = BossFight.get_current_boss()
+    current_boss = BossBattle.get_current_battle()
     boss_progress = 0
-    if current_boss and current_boss.target_value > 0:
-        boss_progress = min(100, int((current_boss.progress_value / current_boss.target_value) * 100))
+    if current_boss:
+        target = getattr(current_boss, 'target_outreach', 0) or 0
+        progress = getattr(current_boss, 'current_outreach', 0) or 0
+        if target > 0:
+            boss_progress = min(100, int((progress / target) * 100))
     
-    goals = Goal.query.all()
+    goals = Goal.query_all()
     active_goals_count = len(goals)
     
     return render_template('gamification/index.html',
@@ -617,9 +666,7 @@ def add_level_reward():
     text = request.form.get('reward_text', '')
     
     if interval and text:
-        reward = LevelReward(level_interval=interval, reward_text=text)
-        db.session.add(reward)
-        db.session.commit()
+        LevelReward.insert({'level_interval': interval, 'reward_text': text, 'is_active': True})
         flash('Level reward added successfully!', 'success')
     
     return redirect(url_for('gamification.index'))
@@ -631,11 +678,9 @@ def add_milestone_reward():
     text = request.form.get('reward_text', '')
     
     if target and text:
-        existing = MilestoneReward.query.filter_by(target_level=target).first()
+        existing = MilestoneReward.get_first({'target_level': target})
         if not existing:
-            reward = MilestoneReward(target_level=target, reward_text=text)
-            db.session.add(reward)
-            db.session.commit()
+            MilestoneReward.insert({'target_level': target, 'reward_text': text, 'is_active': True})
             flash('Milestone reward added successfully!', 'success')
         else:
             flash('A milestone reward for this level already exists.', 'error')
@@ -645,53 +690,24 @@ def add_milestone_reward():
 
 @gamification_bp.route('/rewards/level/<int:id>/toggle', methods=['POST'])
 def toggle_level_reward(id):
-    reward = LevelReward.query.get_or_404(id)
-    reward.is_active = not reward.is_active
-    db.session.commit()
+    reward = LevelReward.get_by_id(id)
+    if reward:
+        LevelReward.update_by_id(id, {'is_active': not getattr(reward, 'is_active', True)})
     return redirect(url_for('gamification.index'))
 
 
 @gamification_bp.route('/rewards/milestone/<int:id>/toggle', methods=['POST'])
 def toggle_milestone_reward(id):
-    reward = MilestoneReward.query.get_or_404(id)
-    reward.is_active = not reward.is_active
-    db.session.commit()
+    reward = MilestoneReward.get_by_id(id)
+    if reward:
+        MilestoneReward.update_by_id(id, {'is_active': not getattr(reward, 'is_active', True)})
     return redirect(url_for('gamification.index'))
 
 
-@gamification_bp.route('/rewards/level/<int:id>/delete', methods=['POST'])
-def delete_level_reward(id):
-    reward = LevelReward.query.get_or_404(id)
-    db.session.delete(reward)
-    db.session.commit()
-    flash('Level reward deleted.', 'success')
-    return redirect(url_for('gamification.index'))
-
-
-@gamification_bp.route('/rewards/milestone/<int:id>/delete', methods=['POST'])
-def delete_milestone_reward(id):
-    reward = MilestoneReward.query.get_or_404(id)
-    db.session.delete(reward)
-    db.session.commit()
-    flash('Milestone reward deleted.', 'success')
-    return redirect(url_for('gamification.index'))
-
-
-@gamification_bp.route('/wins/add', methods=['POST'])
-def add_win():
-    title = request.form.get('title', '').strip()
-    description = request.form.get('description', '').strip()
-    
-    if not title:
-        flash('Please enter a title for your win.', 'error')
-        return redirect(url_for('gamification.index'))
-    
-    WinsLog.log_win(
-        title=title,
-        description=description if description else None,
-        xp_value=None,
-        token_value=None
-    )
-    
-    flash('Win added successfully!', 'success')
+@gamification_bp.route('/rewards/<int:id>/claim', methods=['POST'])
+def claim_reward(id):
+    reward = UnlockedReward.get_by_id(id)
+    if reward and not getattr(reward, 'claimed_at', None):
+        UnlockedReward.update_by_id(id, {'claimed_at': datetime.utcnow().isoformat()})
+        flash('Reward claimed!', 'success')
     return redirect(url_for('gamification.index'))
