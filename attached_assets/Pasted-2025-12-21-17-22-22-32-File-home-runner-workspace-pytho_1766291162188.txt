@@ -1,0 +1,52 @@
+2025-12-21 17:22:22.32
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+2025-12-21 17:22:22.32
+rv = self.handle_user_exception(e)
+2025-12-21 17:22:22.32
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:22.32
+freelance_result = client.table('freelancing_income').select('*').gte('date_completed', first_of_month).execute()
+2025-12-21 17:22:22.32
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:22.32
+^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:26.66
+raise APIError(dict(json_obj))
+2025-12-21 17:22:26.66
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:26.66
+rv = self.handle_user_exception(e)
+2025-12-21 17:22:26.66
+Traceback (most recent call last):
+2025-12-21 17:22:26.66
+postgrest.exceptions.APIError: {'message': "Could not find the table 'public.freelancing_income' in the schema cache", 'code': 'PGRST205', 'hint': "Perhaps you meant the table 'public.freelance_jobs'", 'details': None}
+2025-12-21 17:22:26.66
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+2025-12-21 17:22:26.66
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:26.66
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+2025-12-21 17:22:26.66
+File "/home/runner/workspace/blueprints/mobile.py", line 47, in index
+2025-12-21 17:22:26.66
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/postgrest/_sync/request_builder.py", line 53, in execute
+2025-12-21 17:22:26.66
+rv = self.dispatch_request()
+2025-12-21 17:22:26.66
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:26.66
+[2025-12-21 04:22:26,662] ERROR in app: Exception on /mobile/ [GET]
+2025-12-21 17:22:26.66
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+2025-12-21 17:22:26.66
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:26.66
+response = self.full_dispatch_request()
+2025-12-21 17:22:26.66
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args) # type: ignore[no-any-return]
+2025-12-21 17:22:26.66
+freelance_result = client.table('freelancing_income').select('*').gte('date_completed', first_of_month).execute()
+2025-12-21 17:22:26.66
+^^^^^^^^^^^^^^^^^^^^^^^
+2025-12-21 17:22:26.66
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request

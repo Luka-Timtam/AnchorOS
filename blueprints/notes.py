@@ -7,7 +7,7 @@ notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
 
 def get_all_tags():
     client = get_supabase()
-    result = client.table('notes').select('tags').not_.is_('tags', 'null').neq('tags', '').execute()
+    result = client.table('notes').select('tags').filter('tags', 'not.is', 'null').neq('tags', '').execute()
     all_tags = set()
     for row in result.data:
         if row.get('tags'):

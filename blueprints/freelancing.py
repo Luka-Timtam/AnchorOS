@@ -34,7 +34,7 @@ def get_income_by_category():
 
 def get_monthly_income(months=6):
     client = get_supabase()
-    result = client.table('freelancing_income').select('*').order('date', desc=True).execute()
+    result = client.table('freelance_jobs').select('*').order('date', desc=True).execute()
     
     monthly_totals = {}
     for row in result.data:

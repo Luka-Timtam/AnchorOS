@@ -443,10 +443,10 @@ def calculate_consistency_score():
     outreach_goal = daily_target * 7
     outreach_pct = min(100, (outreach_count / outreach_goal * 100)) if outreach_goal > 0 else 0
     
-    leads_result = client.table('leads').select('id', count='exact').not_.is_('next_action_date', 'null').gte('next_action_date', week_ago.isoformat()).lte('next_action_date', today.isoformat()).not_.in_('status', ['closed_won', 'closed_lost']).execute()
+    leads_result = client.table('leads').select('id', count='exact').filter('next_action_date', 'not.is', 'null').gte('next_action_date', week_ago.isoformat()).lte('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').execute()
     leads_with_followup = leads_result.count if leads_result.count else len(leads_result.data)
     
-    contacted_result = client.table('leads').select('id', count='exact').not_.is_('last_contacted_at', 'null').gte('last_contacted_at', f'{week_ago.isoformat()}T00:00:00').execute()
+    contacted_result = client.table('leads').select('id', count='exact').filter('last_contacted_at', 'not.is', 'null').gte('last_contacted_at', f'{week_ago.isoformat()}T00:00:00').execute()
     leads_contacted = contacted_result.count if contacted_result.count else len(contacted_result.data)
     
     followup_pct = min(100, (leads_contacted / max(1, leads_with_followup) * 100))

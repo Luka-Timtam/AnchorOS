@@ -739,7 +739,7 @@ class BattlePassTier(SupabaseModel):
 
 
 class FreelancingIncome(SupabaseModel):
-    __tablename__ = 'freelancing_income'
+    __tablename__ = 'freelance_jobs'
     
     @staticmethod
     def category_choices():

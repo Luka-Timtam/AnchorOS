@@ -35,17 +35,17 @@ def index():
     if search:
         query = query.or_(f'name.ilike.%{search}%,business_name.ilike.%{search}%')
     if next_action_filter == 'today':
-        query = query.eq('next_action_date', today.isoformat()).not_.in_('status', ['closed_won', 'closed_lost'])
+        query = query.eq('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")')
     elif next_action_filter == 'overdue':
-        query = query.lt('next_action_date', today.isoformat()).not_.in_('status', ['closed_won', 'closed_lost'])
+        query = query.lt('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")')
     
     result = query.order('created_at', desc=True).execute()
     leads = [Lead._parse_row(row) for row in result.data]
     
-    converted_result = client.table('leads').select('*').not_.is_('converted_at', 'null').order('converted_at', desc=True).execute()
+    converted_result = client.table('leads').select('*').filter('converted_at', 'not.is', 'null').order('converted_at', desc=True).execute()
     converted_leads = [Lead._parse_row(row) for row in converted_result.data]
     
-    archived_result = client.table('leads').select('*').not_.is_('archived_at', 'null').order('archived_at', desc=True).execute()
+    archived_result = client.table('leads').select('*').filter('archived_at', 'not.is', 'null').order('archived_at', desc=True).execute()
     archived_leads = [Lead._parse_row(row) for row in archived_result.data]
     
     all_leads = client.table('leads').select('niche,source').execute()
@@ -68,12 +68,12 @@ def index():
 
 def get_existing_niches():
     client = get_supabase()
-    result = client.table('leads').select('niche').not_.is_('niche', 'null').neq('niche', '').execute()
+    result = client.table('leads').select('niche').filter('niche', 'not.is', 'null').neq('niche', '').execute()
     return list(set([r['niche'] for r in result.data if r.get('niche')]))
 
 def get_existing_sources():
     client = get_supabase()
-    result = client.table('leads').select('source').not_.is_('source', 'null').neq('source', '').execute()
+    result = client.table('leads').select('source').filter('source', 'not.is', 'null').neq('source', '').execute()
     return list(set([r['source'] for r in result.data if r.get('source')]))
 
 @leads_bp.route('/create', methods=['GET', 'POST'])

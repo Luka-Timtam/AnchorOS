@@ -36,7 +36,7 @@ def get_month_data(year, month):
     tasks_result = client.table('tasks').select('*').gte('due_date', grid_start.isoformat()).lte('due_date', grid_end.isoformat()).execute()
     tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    leads_result = client.table('leads').select('*').gte('next_action_date', grid_start.isoformat()).lte('next_action_date', grid_end.isoformat()).not_.in_('status', ['closed_won', 'closed_lost']).is_('converted_at', 'null').execute()
+    leads_result = client.table('leads').select('*').gte('next_action_date', grid_start.isoformat()).lte('next_action_date', grid_end.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').is_('converted_at', 'null').execute()
     leads = [Lead._parse_row(row) for row in leads_result.data]
     
     missions_result = client.table('daily_missions').select('*').gte('mission_date', grid_start.isoformat()).lte('mission_date', grid_end.isoformat()).execute()
@@ -213,7 +213,7 @@ def day_detail(date_str):
     tasks_result = client.table('tasks').select('*').eq('due_date', target_date.isoformat()).execute()
     tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    leads_result = client.table('leads').select('*').eq('next_action_date', target_date.isoformat()).not_.in_('status', ['closed_won', 'closed_lost']).is_('converted_at', 'null').execute()
+    leads_result = client.table('leads').select('*').eq('next_action_date', target_date.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').is_('converted_at', 'null').execute()
     leads = [Lead._parse_row(row) for row in leads_result.data]
     
     mission_result = client.table('daily_missions').select('*').eq('mission_date', target_date.isoformat()).execute()

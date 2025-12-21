@@ -44,11 +44,11 @@ def index():
     follow_ups = [Lead._parse_row(row) for row in followups_result.data if row.get('status') not in ['closed_won', 'closed_lost']][:3]
     
     first_of_month = today.replace(day=1).isoformat()
-    freelance_result = client.table('freelancing_income').select('*').gte('date_completed', first_of_month).execute()
+    freelance_result = client.table('freelance_jobs').select('*').gte('date_completed', first_of_month).execute()
     month_income = sum(float(row.get('amount', 0) or 0) for row in freelance_result.data)
     
     six_months_ago = (today - timedelta(days=180)).isoformat()
-    freelance_6mo = client.table('freelancing_income').select('*').gte('date_completed', six_months_ago).execute()
+    freelance_6mo = client.table('freelance_jobs').select('*').gte('date_completed', six_months_ago).execute()
     total_6mo = sum(float(row.get('amount', 0) or 0) for row in freelance_6mo.data)
     avg_monthly = float(total_6mo) / 6 if total_6mo else 0
     
@@ -406,12 +406,12 @@ def freelancing():
     current_month_start = today.replace(day=1).isoformat()
     client = get_supabase()
     
-    result = client.table('freelancing_income').select('*').gte('date_completed', current_month_start).order('date_completed', desc=True).execute()
+    result = client.table('freelance_jobs').select('*').gte('date_completed', current_month_start).order('date_completed', desc=True).execute()
     entries = [FreelancingIncome._parse_row(row) for row in result.data]
     
     month_total = sum(float(getattr(e, 'amount', 0) or 0) for e in entries)
     
-    all_result = client.table('freelancing_income').select('*').execute()
+    all_result = client.table('freelance_jobs').select('*').execute()
     all_time_total = sum(float(row.get('amount', 0) or 0) for row in all_result.data)
     
     return render_template('mobile/freelancing.html',

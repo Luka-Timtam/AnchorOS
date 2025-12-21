@@ -81,7 +81,12 @@ Key table name mappings (some differ from legacy models):
 - `boss_fights` - Uses `month` (YYYY-MM format), `target_value`, `progress_value`, `is_completed`
 - `activity_log` - Uses `timestamp`, `action_type`, `related_object_type`
 - `outreach_logs` - Plural form
-- `freelancing_income` - Income tracking table
+- `freelance_jobs` - Income tracking table
+
+**Query Filter Syntax:**
+- NOT IN: `.filter('status', 'not.in', '("closed_won","closed_lost")')`
+- IS NOT NULL: `.filter('column', 'not.is', 'null')`
+- IS NULL: `.is_('column', 'null')`
 
 ## Page Transitions (December 2025)
 - Swup.js integration for smooth, native-app-like page transitions
