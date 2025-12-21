@@ -7,7 +7,13 @@ A private, single-user personal CRM web application named "AnchorOS" designed to
 I prefer simple language and clear explanations. I want iterative development, with small, testable changes. Please ask before making any major architectural changes or adding new external dependencies. Do not make changes to the `database.db` file directly. I prefer detailed explanations for complex logic.
 
 ## System Architecture
-The application is built with Python 3 and Flask, utilizing SQLite via SQLAlchemy for data persistence. Server-rendered HTML templates (Jinja2) are styled with Tailwind CSS (CDN) for a modern, responsive UI. Chart.js is integrated for dynamic dashboard visualizations and comprehensive analytics.
+The application is built with Python 3 and Flask, utilizing **Supabase** (PostgreSQL) via REST API for data persistence. Server-rendered HTML templates (Jinja2) are styled with Tailwind CSS (CDN) for a modern, responsive UI. Chart.js is integrated for dynamic dashboard visualizations and comprehensive analytics.
+
+**Database Migration (December 2025):**
+- Migrated from SQLAlchemy/SQLite to Supabase REST API
+- All database operations use `db_supabase.py` module with `SupabaseModel` base class
+- Environment variables: `SUPABASE_URL` and `SUPABASE_ANON_KEY` required
+- Legacy `models.py` retained for reference but not used in production
 
 **Key Features:**
 *   **Authentication:** Single-password login with session persistence.
@@ -63,13 +69,19 @@ Dark glassmorphic design with modern aesthetics:
 ## External Dependencies
 *   **Python 3:** Core programming language.
 *   **Flask:** Web framework.
-*   **SQLAlchemy:** ORM for database interaction.
-*   **SQLite:** Default database.
+*   **Supabase:** PostgreSQL database via REST API (replaced SQLAlchemy/SQLite).
 *   **Jinja2:** Templating engine.
 *   **Tailwind CSS (CDN):** For styling and UI.
 *   **Chart.js:** For data visualization and charts.
 *   **Swup.js:** For smooth page transitions (native-app-like navigation).
 *   **External Scheduler:** (Implied for Daily Summary Email) To trigger the `/internal/run-daily-summary` endpoint.
+
+## Supabase Schema Notes
+Key table name mappings (some differ from legacy models):
+- `boss_fights` - Uses `month` (YYYY-MM format), `target_value`, `progress_value`, `is_completed`
+- `activity_log` - Uses `timestamp`, `action_type`, `related_object_type`
+- `outreach_logs` - Plural form
+- `freelancing_income` - Income tracking table
 
 ## Page Transitions (December 2025)
 - Swup.js integration for smooth, native-app-like page transitions
