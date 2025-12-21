@@ -27,8 +27,9 @@ def index():
     tasks_result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('created_at', desc=True).limit(5).execute()
     today_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    leads_result = client.table('leads').select('*').not_.in_('status', ['closed_won', 'closed_lost']).execute()
-    total_leads = len(leads_result.data)
+    leads_result = client.table('leads').select('*').execute()
+    active_leads = [row for row in leads_result.data if row.get('status') not in ['closed_won', 'closed_lost']]
+    total_leads = len(active_leads)
     
     clients_result = client.table('clients').select('*').eq('status', 'active').execute()
     total_clients = len(clients_result.data)
@@ -39,8 +40,8 @@ def index():
     pending_result = client.table('tasks').select('*').neq('status', 'done').execute()
     pending_tasks = len(pending_result.data)
     
-    followups_result = client.table('leads').select('*').lte('next_action_date', today_str).not_.in_('status', ['closed_won', 'closed_lost']).order('next_action_date').limit(3).execute()
-    follow_ups = [Lead._parse_row(row) for row in followups_result.data]
+    followups_result = client.table('leads').select('*').lte('next_action_date', today_str).order('next_action_date').execute()
+    follow_ups = [Lead._parse_row(row) for row in followups_result.data if row.get('status') not in ['closed_won', 'closed_lost']][:3]
     
     first_of_month = today.replace(day=1).isoformat()
     freelance_result = client.table('freelancing_income').select('*').gte('date_completed', first_of_month).execute()
@@ -85,13 +86,16 @@ def leads():
     status_filter = request.args.get('status', '')
     client = get_supabase()
     
-    query = client.table('leads').select('*').not_.in_('status', ['closed_won', 'closed_lost'])
+    result = client.table('leads').select('*').order('updated_at', desc=True).execute()
     
+    # Filter out closed leads
+    leads_list = [Lead._parse_row(row) for row in result.data if row.get('status') not in ['closed_won', 'closed_lost']]
+    
+    # Apply status filter if provided
     if status_filter:
-        query = query.eq('status', status_filter)
+        leads_list = [lead for lead in leads_list if getattr(lead, 'status', '') == status_filter]
     
-    result = query.order('updated_at', desc=True).limit(50).execute()
-    leads_list = [Lead._parse_row(row) for row in result.data]
+    leads_list = leads_list[:50]
     
     status_choices = [
         ('new', 'New'),
@@ -301,8 +305,8 @@ def calendar():
     tasks_result = client.table('tasks').select('*').gte('due_date', today_str).neq('status', 'done').order('due_date').limit(10).execute()
     upcoming_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    leads_result = client.table('leads').select('*').gte('next_action_date', today_str).not_.in_('status', ['closed_won', 'closed_lost']).order('next_action_date').limit(10).execute()
-    follow_ups = [Lead._parse_row(row) for row in leads_result.data]
+    leads_result = client.table('leads').select('*').gte('next_action_date', today_str).order('next_action_date').execute()
+    follow_ups = [Lead._parse_row(row) for row in leads_result.data if row.get('status') not in ['closed_won', 'closed_lost']][:10]
     
     return render_template('mobile/calendar.html',
         today=today,
@@ -469,8 +473,8 @@ def quick_outreach():
         flash('Outreach logged', 'success')
         return redirect(url_for('mobile.index'))
     
-    result = client.table('leads').select('*').not_.in_('status', ['closed_won', 'closed_lost']).order('updated_at', desc=True).limit(20).execute()
-    leads_list = [Lead._parse_row(row) for row in result.data]
+    result = client.table('leads').select('*').order('updated_at', desc=True).execute()
+    leads_list = [Lead._parse_row(row) for row in result.data if row.get('status') not in ['closed_won', 'closed_lost']][:20]
     
     type_choices = [('email', 'Email'), ('dm', 'DM'), ('call', 'Call'), ('in_person', 'In Person')]
     outcome_choices = [('contacted', 'Contacted'), ('no_response', 'No Response'), ('booked_call', 'Booked Call'), ('follow_up_set', 'Follow Up Set')]
