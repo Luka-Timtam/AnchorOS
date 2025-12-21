@@ -4,49 +4,41 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, date, timedelta
 from flask import Blueprint, request, jsonify, session
-from models import db, Lead, Client, OutreachLog, Task, UserStats, Goal
+from db_supabase import get_supabase
 
 internal_bp = Blueprint('internal', __name__, url_prefix='/internal')
 
 def get_summary_data():
+    client = get_supabase()
     today = date.today()
     yesterday = today - timedelta(days=1)
-    week_start = today - timedelta(days=today.weekday())
-    month_start = today.replace(day=1)
     
-    followups_today = Lead.query.filter(
-        Lead.next_action_date == today,
-        Lead.status.notin_(['closed_won', 'closed_lost'])
-    ).count()
+    followups_result = client.table('leads').select('id', count='exact').eq('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').execute()
+    followups_today = followups_result.count if followups_result.count else len(followups_result.data)
     
-    overdue_followups = Lead.query.filter(
-        Lead.next_action_date < today,
-        Lead.status.notin_(['closed_won', 'closed_lost'])
-    ).count()
+    overdue_result = client.table('leads').select('id', count='exact').lt('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').execute()
+    overdue_followups = overdue_result.count if overdue_result.count else len(overdue_result.data)
     
-    tasks_today = Task.query.filter(
-        Task.due_date == today,
-        Task.status != 'done'
-    ).count()
+    tasks_result = client.table('tasks').select('id', count='exact').eq('due_date', today.isoformat()).neq('status', 'done').execute()
+    tasks_today = tasks_result.count if tasks_result.count else len(tasks_result.data)
     
-    outreach_yesterday = OutreachLog.query.filter(
-        OutreachLog.date == yesterday
-    ).count()
+    outreach_result = client.table('outreach_logs').select('id', count='exact').eq('date', yesterday.isoformat()).execute()
+    outreach_yesterday = outreach_result.count if outreach_result.count else len(outreach_result.data)
     
-    daily_goal = Goal.query.filter_by(goal_type='daily_outreach', period='daily').first()
-    daily_goal_value = daily_goal.target_value if daily_goal else 5
+    goals_result = client.table('goals').select('target_value').eq('goal_type', 'daily_outreach').eq('period', 'daily').execute()
+    daily_goal_value = goals_result.data[0]['target_value'] if goals_result.data else 5
     
-    stats = UserStats.get_stats()
+    stats_result = client.table('user_stats').select('*').execute()
+    stats = stats_result.data[0] if stats_result.data else {}
     
-    new_leads_yesterday = Lead.query.filter(
-        db.func.date(Lead.created_at) == yesterday
-    ).count()
+    new_leads_result = client.table('leads').select('id', count='exact').gte('created_at', f'{yesterday.isoformat()}T00:00:00').lt('created_at', f'{today.isoformat()}T00:00:00').execute()
+    new_leads_yesterday = new_leads_result.count if new_leads_result.count else len(new_leads_result.data)
     
-    active_hosting = Client.query.filter(Client.hosting_active == True).all()
-    hosting_mrr = sum(float(c.monthly_hosting_fee or 0) for c in active_hosting)
+    hosting_result = client.table('clients').select('monthly_hosting_fee').eq('hosting_active', True).execute()
+    hosting_mrr = sum(float(c.get('monthly_hosting_fee') or 0) for c in hosting_result.data)
     
-    active_saas = Client.query.filter(Client.saas_active == True).all()
-    saas_mrr = sum(float(c.monthly_saas_fee or 0) for c in active_saas)
+    saas_result = client.table('clients').select('monthly_saas_fee').eq('saas_active', True).execute()
+    saas_mrr = sum(float(c.get('monthly_saas_fee') or 0) for c in saas_result.data)
     
     total_mrr = hosting_mrr + saas_mrr
     
@@ -56,10 +48,10 @@ def get_summary_data():
         'tasks_today': tasks_today,
         'outreach_yesterday': outreach_yesterday,
         'daily_goal': daily_goal_value,
-        'streak': stats.current_outreach_streak_days,
-        'xp': stats.current_xp,
-        'level': stats.current_level,
-        'consistency': stats.last_consistency_score,
+        'streak': stats.get('current_outreach_streak_days', 0),
+        'xp': stats.get('current_xp', 0),
+        'level': stats.get('current_level', 1),
+        'consistency': stats.get('last_consistency_score', 0),
         'new_leads_yesterday': new_leads_yesterday,
         'hosting_mrr': hosting_mrr,
         'saas_mrr': saas_mrr,
@@ -68,34 +60,26 @@ def get_summary_data():
 
 
 def get_weekly_data():
+    client = get_supabase()
     today = date.today()
     last_week_start = today - timedelta(days=today.weekday() + 7)
     last_week_end = last_week_start + timedelta(days=6)
-    two_weeks_ago_start = last_week_start - timedelta(days=7)
     
-    outreach_last_week = OutreachLog.query.filter(
-        OutreachLog.date >= last_week_start,
-        OutreachLog.date <= last_week_end
-    ).count()
+    outreach_result = client.table('outreach_logs').select('id', count='exact').gte('date', last_week_start.isoformat()).lte('date', last_week_end.isoformat()).execute()
+    outreach_last_week = outreach_result.count if outreach_result.count else len(outreach_result.data)
     
-    weekly_goal = Goal.query.filter_by(goal_type='weekly_outreach', period='weekly').first()
-    weekly_goal_value = weekly_goal.target_value if weekly_goal else 25
+    weekly_goal_result = client.table('goals').select('target_value').eq('goal_type', 'weekly_outreach').eq('period', 'weekly').execute()
+    weekly_goal_value = weekly_goal_result.data[0]['target_value'] if weekly_goal_result.data else 25
     
-    deals_last_week = Lead.query.filter(
-        Lead.status == 'closed_won',
-        Lead.converted_at >= datetime.combine(last_week_start, datetime.min.time()),
-        Lead.converted_at <= datetime.combine(last_week_end, datetime.max.time())
-    ).count()
+    deals_result = client.table('leads').select('id', count='exact').eq('status', 'closed_won').gte('converted_at', f'{last_week_start.isoformat()}T00:00:00').lte('converted_at', f'{last_week_end.isoformat()}T23:59:59').execute()
+    deals_last_week = deals_result.count if deals_result.count else len(deals_result.data)
     
     month_start = today.replace(day=1)
-    revenue_this_month = db.session.query(
-        db.func.sum(Client.amount_charged)
-    ).filter(
-        Client.start_date >= month_start
-    ).scalar() or 0
+    revenue_result = client.table('clients').select('amount_charged').gte('start_date', month_start.isoformat()).execute()
+    revenue_this_month = sum(float(c.get('amount_charged') or 0) for c in revenue_result.data)
     
-    active_hosting_now = Client.query.filter(Client.hosting_active == True).all()
-    current_mrr = sum(float(c.monthly_hosting_fee or 0) + float(c.monthly_saas_fee or 0) for c in active_hosting_now)
+    mrr_result = client.table('clients').select('monthly_hosting_fee,monthly_saas_fee').or_('hosting_active.eq.true,saas_active.eq.true').execute()
+    current_mrr = sum(float(c.get('monthly_hosting_fee') or 0) + float(c.get('monthly_saas_fee') or 0) for c in mrr_result.data)
     
     return {
         'outreach_last_week': outreach_last_week,

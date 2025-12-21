@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from models import (db, Lead, Client, OutreachLog, UserSettings, UserStats, 
-                    XPLog, TokenTransaction, DailyMission, BossFight, ActivityLog)
+from db_supabase import get_supabase, UserSettings
 from datetime import datetime, date, timedelta
-from sqlalchemy import func, and_
 from decimal import Decimal
 import json
 
 analytics_bp = Blueprint('analytics', __name__, url_prefix='/analytics')
+
+def status_choices():
+    return ['new', 'contacted', 'qualified', 'proposal_sent', 'negotiating', 'closed_won', 'closed_lost']
 
 def get_week_start(d):
     return d - timedelta(days=d.weekday())
@@ -16,6 +17,7 @@ def get_month_start(d):
 
 @analytics_bp.route('/')
 def index():
+    client = get_supabase()
     today = date.today()
     settings = UserSettings.get_settings()
     
@@ -41,23 +43,17 @@ def index():
     else:
         end_date = today
     
-    niches = db.session.query(Lead.niche).filter(Lead.niche.isnot(None), Lead.niche != '').distinct().all()
-    niches = [n[0] for n in niches]
+    niches_result = client.table('leads').select('niche').filter('niche', 'not.is', 'null').neq('niche', '').execute()
+    niches = list(set([n['niche'] for n in niches_result.data if n.get('niche')]))
     
-    sources = db.session.query(Lead.source).filter(Lead.source.isnot(None), Lead.source != '').distinct().all()
-    sources = [s[0] for s in sources]
+    sources_result = client.table('leads').select('source').filter('source', 'not.is', 'null').neq('source', '').execute()
+    sources = list(set([s['source'] for s in sources_result.data if s.get('source')]))
     
-    followup_today = Lead.query.filter(
-        Lead.next_action_date == today,
-        Lead.status.notin_(['closed_won', 'closed_lost']),
-        Lead.converted_at.is_(None)
-    ).count()
+    followup_today_result = client.table('leads').select('id', count='exact').eq('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').is_('converted_at', 'null').execute()
+    followup_today = followup_today_result.count if followup_today_result.count else len(followup_today_result.data)
     
-    followup_overdue = Lead.query.filter(
-        Lead.next_action_date < today,
-        Lead.status.notin_(['closed_won', 'closed_lost']),
-        Lead.converted_at.is_(None)
-    ).count()
+    followup_overdue_result = client.table('leads').select('id', count='exact').lt('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').is_('converted_at', 'null').execute()
+    followup_overdue = followup_overdue_result.count if followup_overdue_result.count else len(followup_overdue_result.data)
     
     monthly_revenue_data = []
     month_labels = []
@@ -71,11 +67,8 @@ def index():
         
         month_labels.append(m_start.strftime('%b %Y'))
         
-        month_revenue = db.session.query(
-            func.coalesce(func.sum(Client.amount_charged), 0)
-        ).filter(
-            and_(Client.start_date >= m_start, Client.start_date <= m_end)
-        ).scalar() or Decimal('0')
+        revenue_result = client.table('clients').select('amount_charged').gte('start_date', m_start.isoformat()).lte('start_date', m_end.isoformat()).execute()
+        month_revenue = sum(float(r.get('amount_charged') or 0) for r in revenue_result.data)
         monthly_revenue_data.append(float(month_revenue))
     
     hosting_mrr_data = []
@@ -89,19 +82,11 @@ def index():
         else:
             m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
         
-        hosting_at_month = db.session.query(
-            func.coalesce(func.sum(Client.monthly_hosting_fee), 0)
-        ).filter(
-            Client.hosting_active == True,
-            Client.start_date <= m_end
-        ).scalar() or Decimal('0')
+        hosting_result = client.table('clients').select('monthly_hosting_fee').eq('hosting_active', True).lte('start_date', m_end.isoformat()).execute()
+        hosting_at_month = sum(float(r.get('monthly_hosting_fee') or 0) for r in hosting_result.data)
         
-        saas_at_month = db.session.query(
-            func.coalesce(func.sum(Client.monthly_saas_fee), 0)
-        ).filter(
-            Client.saas_active == True,
-            Client.start_date <= m_end
-        ).scalar() or Decimal('0')
+        saas_result = client.table('clients').select('monthly_saas_fee').eq('saas_active', True).lte('start_date', m_end.isoformat()).execute()
+        saas_at_month = sum(float(r.get('monthly_saas_fee') or 0) for r in saas_result.data)
         
         hosting_mrr_data.append(float(hosting_at_month))
         saas_mrr_data.append(float(saas_at_month))
@@ -117,62 +102,46 @@ def index():
         
         week_labels.append(w_start.strftime('%b %d'))
         
-        outreach_query = OutreachLog.query.filter(
-            and_(OutreachLog.date >= w_start, OutreachLog.date <= w_end)
-        )
-        if niche_filter or source_filter:
-            outreach_query = outreach_query.join(Lead, OutreachLog.lead_id == Lead.id, isouter=True)
-            if niche_filter:
-                outreach_query = outreach_query.filter(Lead.niche == niche_filter)
-            if source_filter:
-                outreach_query = outreach_query.filter(Lead.source == source_filter)
-        outreach_weekly_data.append(outreach_query.count())
+        outreach_result = client.table('outreach_logs').select('id', count='exact').gte('date', w_start.isoformat()).lte('date', w_end.isoformat()).execute()
+        outreach_weekly_data.append(outreach_result.count if outreach_result.count else len(outreach_result.data))
         
-        deals_query = Lead.query.filter(
-            and_(
-                Lead.status == 'closed_won',
-                func.date(Lead.updated_at) >= w_start,
-                func.date(Lead.updated_at) <= w_end
-            )
-        )
+        deals_query = client.table('leads').select('id', count='exact').eq('status', 'closed_won').gte('updated_at', f'{w_start.isoformat()}T00:00:00').lte('updated_at', f'{w_end.isoformat()}T23:59:59')
         if niche_filter:
-            deals_query = deals_query.filter(Lead.niche == niche_filter)
+            deals_query = deals_query.eq('niche', niche_filter)
         if source_filter:
-            deals_query = deals_query.filter(Lead.source == source_filter)
-        deals_weekly_data.append(deals_query.count())
+            deals_query = deals_query.eq('source', source_filter)
+        deals_result = deals_query.execute()
+        deals_weekly_data.append(deals_result.count if deals_result.count else len(deals_result.data))
     
     lead_pipeline = {}
-    for status in Lead.status_choices():
-        query = Lead.query.filter(Lead.status == status, Lead.converted_at.is_(None))
+    for status in status_choices():
+        query = client.table('leads').select('id', count='exact').eq('status', status).is_('converted_at', 'null')
         if niche_filter:
-            query = query.filter(Lead.niche == niche_filter)
+            query = query.eq('niche', niche_filter)
         if source_filter:
-            query = query.filter(Lead.source == source_filter)
-        if status_filter:
-            query = query.filter(Lead.status == status_filter)
-        lead_pipeline[status] = query.count()
+            query = query.eq('source', source_filter)
+        result = query.execute()
+        lead_pipeline[status] = result.count if result.count else len(result.data)
     
     win_reasons_count = {}
-    won_leads = Lead.query.filter(
-        Lead.status == 'closed_won',
-        Lead.close_reason.isnot(None),
-        Lead.close_reason != ''
-    ).all()
-    for lead in won_leads:
-        for reason in lead.get_close_reasons_list():
-            reason_key = reason.split(':')[0].strip() if reason.startswith('Other:') else reason
-            win_reasons_count[reason_key] = win_reasons_count.get(reason_key, 0) + 1
+    won_leads_result = client.table('leads').select('close_reason').eq('status', 'closed_won').filter('close_reason', 'not.is', 'null').neq('close_reason', '').execute()
+    for lead in won_leads_result.data:
+        close_reason = lead.get('close_reason', '')
+        if close_reason:
+            for reason in close_reason.split(','):
+                reason = reason.strip()
+                reason_key = reason.split(':')[0].strip() if reason.startswith('Other:') else reason
+                win_reasons_count[reason_key] = win_reasons_count.get(reason_key, 0) + 1
     
     loss_reasons_count = {}
-    lost_leads = Lead.query.filter(
-        Lead.status == 'closed_lost',
-        Lead.close_reason.isnot(None),
-        Lead.close_reason != ''
-    ).all()
-    for lead in lost_leads:
-        for reason in lead.get_close_reasons_list():
-            reason_key = reason.split(':')[0].strip() if reason.startswith('Other:') else reason
-            loss_reasons_count[reason_key] = loss_reasons_count.get(reason_key, 0) + 1
+    lost_leads_result = client.table('leads').select('close_reason').eq('status', 'closed_lost').filter('close_reason', 'not.is', 'null').neq('close_reason', '').execute()
+    for lead in lost_leads_result.data:
+        close_reason = lead.get('close_reason', '')
+        if close_reason:
+            for reason in close_reason.split(','):
+                reason = reason.strip()
+                reason_key = reason.split(':')[0].strip() if reason.startswith('Other:') else reason
+                loss_reasons_count[reason_key] = loss_reasons_count.get(reason_key, 0) + 1
     
     win_reasons_sorted = sorted(win_reasons_count.items(), key=lambda x: x[1], reverse=True)
     loss_reasons_sorted = sorted(loss_reasons_count.items(), key=lambda x: x[1], reverse=True)
@@ -193,8 +162,8 @@ def index():
         'outreachWeekly': outreach_weekly_data,
         'dealsWeekly': deals_weekly_data,
         'leadPipeline': lead_pipeline,
-        'pipelineLabels': [s.replace('_', ' ').title() for s in Lead.status_choices()],
-        'pipelineData': [lead_pipeline.get(s, 0) for s in Lead.status_choices()],
+        'pipelineLabels': [s.replace('_', ' ').title() for s in status_choices()],
+        'pipelineData': [lead_pipeline.get(s, 0) for s in status_choices()],
         'winReasonLabels': [r[0] for r in win_reasons_sorted[:8]],
         'winReasonData': [r[1] for r in win_reasons_sorted[:8]],
         'lossReasonLabels': [r[0] for r in loss_reasons_sorted[:8]],
@@ -206,7 +175,7 @@ def index():
         settings=settings,
         niches=niches,
         sources=sources,
-        statuses=Lead.status_choices(),
+        statuses=status_choices(),
         current_niche=niche_filter,
         current_source=source_filter,
         current_status=status_filter,
@@ -223,18 +192,26 @@ def index():
 
 @analytics_bp.route('/settings', methods=['GET', 'POST'])
 def settings():
+    client = get_supabase()
     user_settings = UserSettings.get_settings()
     
     if request.method == 'POST':
-        user_settings.show_mrr_widget = 'show_mrr_widget' in request.form
-        user_settings.show_project_revenue_widget = 'show_project_revenue_widget' in request.form
-        user_settings.show_outreach_widget = 'show_outreach_widget' in request.form
-        user_settings.show_deals_widget = 'show_deals_widget' in request.form
-        user_settings.show_consistency_score_widget = 'show_consistency_score_widget' in request.form
-        user_settings.show_forecast_widget = 'show_forecast_widget' in request.form
-        user_settings.show_followup_widget = 'show_followup_widget' in request.form
+        update_data = {
+            'show_mrr_widget': 'show_mrr_widget' in request.form,
+            'show_project_revenue_widget': 'show_project_revenue_widget' in request.form,
+            'show_outreach_widget': 'show_outreach_widget' in request.form,
+            'show_deals_widget': 'show_deals_widget' in request.form,
+            'show_consistency_score_widget': 'show_consistency_score_widget' in request.form,
+            'show_forecast_widget': 'show_forecast_widget' in request.form,
+            'show_followup_widget': 'show_followup_widget' in request.form
+        }
         
-        db.session.commit()
+        settings_result = client.table('user_settings').select('id').execute()
+        if settings_result.data:
+            client.table('user_settings').update(update_data).eq('id', settings_result.data[0]['id']).execute()
+        else:
+            client.table('user_settings').insert(update_data).execute()
+        
         flash('Dashboard settings saved!', 'success')
         return redirect(url_for('analytics.settings'))
     
@@ -243,21 +220,15 @@ def settings():
 
 @analytics_bp.route('/flex')
 def flex():
+    client = get_supabase()
     today = date.today()
     
-    total_revenue = db.session.query(
-        func.coalesce(func.sum(Client.amount_charged), 0)
-    ).scalar() or Decimal('0')
-    total_revenue = float(total_revenue)
+    total_revenue_result = client.table('clients').select('amount_charged').execute()
+    total_revenue = sum(float(r.get('amount_charged') or 0) for r in total_revenue_result.data)
     
     month_start = today.replace(day=1)
-    current_month_revenue = db.session.query(
-        func.coalesce(func.sum(Client.amount_charged), 0)
-    ).filter(
-        Client.start_date >= month_start,
-        Client.start_date <= today
-    ).scalar() or Decimal('0')
-    current_month_revenue = float(current_month_revenue)
+    current_month_result = client.table('clients').select('amount_charged').gte('start_date', month_start.isoformat()).lte('start_date', today.isoformat()).execute()
+    current_month_revenue = sum(float(r.get('amount_charged') or 0) for r in current_month_result.data)
     
     last_3_months = []
     for i in range(2, -1, -1):
@@ -271,39 +242,39 @@ def flex():
             else:
                 m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
         
-        month_rev = db.session.query(
-            func.coalesce(func.sum(Client.amount_charged), 0)
-        ).filter(
-            and_(Client.start_date >= m_start, Client.start_date <= m_end)
-        ).scalar() or Decimal('0')
+        month_result = client.table('clients').select('amount_charged').gte('start_date', m_start.isoformat()).lte('start_date', m_end.isoformat()).execute()
+        month_rev = sum(float(r.get('amount_charged') or 0) for r in month_result.data)
         
         last_3_months.append({
             'label': m_start.strftime('%b %Y'),
             'amount': float(month_rev)
         })
     
-    total_deals_won = Lead.query.filter(Lead.status == 'closed_won').count()
-    total_deals_lost = Lead.query.filter(Lead.status == 'closed_lost').count()
+    won_result = client.table('leads').select('id', count='exact').eq('status', 'closed_won').execute()
+    total_deals_won = won_result.count if won_result.count else len(won_result.data)
+    
+    lost_result = client.table('leads').select('id', count='exact').eq('status', 'closed_lost').execute()
+    total_deals_lost = lost_result.count if lost_result.count else len(lost_result.data)
+    
     total_closed = total_deals_won + total_deals_lost
     win_rate = int((total_deals_won / total_closed * 100)) if total_closed > 0 else 0
     
-    stats = UserStats.get_stats()
-    highest_streak = stats.longest_outreach_streak_days if stats else 0
-    current_streak = stats.current_outreach_streak_days if stats else 0
+    stats_result = client.table('user_stats').select('*').execute()
+    stats = stats_result.data[0] if stats_result.data else {}
+    highest_streak = stats.get('longest_outreach_streak_days', 0)
+    current_streak = stats.get('current_outreach_streak_days', 0)
     
-    total_xp = db.session.query(func.coalesce(func.sum(XPLog.amount), 0)).scalar() or 0
+    xp_result = client.table('xp_log').select('amount').execute()
+    total_xp = sum(r.get('amount', 0) for r in xp_result.data)
     
-    total_outreach = OutreachLog.query.count()
+    outreach_result = client.table('outreach_logs').select('id', count='exact').execute()
+    total_outreach = outreach_result.count if outreach_result.count else len(outreach_result.data)
     
-    this_month_outreach = OutreachLog.query.filter(
-        OutreachLog.date >= month_start,
-        OutreachLog.date <= today
-    ).count()
+    this_month_outreach_result = client.table('outreach_logs').select('id', count='exact').gte('date', month_start.isoformat()).lte('date', today.isoformat()).execute()
+    this_month_outreach = this_month_outreach_result.count if this_month_outreach_result.count else len(this_month_outreach_result.data)
     
-    largest_deal = db.session.query(
-        func.max(Client.amount_charged)
-    ).scalar() or Decimal('0')
-    largest_deal = float(largest_deal)
+    largest_deal_result = client.table('clients').select('amount_charged').order('amount_charged', desc=True).limit(1).execute()
+    largest_deal = float(largest_deal_result.data[0].get('amount_charged', 0)) if largest_deal_result.data else 0
     
     monthly_revenues = []
     for i in range(24):
@@ -313,11 +284,8 @@ def flex():
         else:
             m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
         
-        month_rev = db.session.query(
-            func.coalesce(func.sum(Client.amount_charged), 0)
-        ).filter(
-            and_(Client.start_date >= m_start, Client.start_date <= m_end)
-        ).scalar() or Decimal('0')
+        month_result = client.table('clients').select('amount_charged').gte('start_date', m_start.isoformat()).lte('start_date', m_end.isoformat()).execute()
+        month_rev = sum(float(r.get('amount_charged') or 0) for r in month_result.data)
         
         if float(month_rev) > 0:
             monthly_revenues.append({
@@ -328,25 +296,28 @@ def flex():
     highest_month = max(monthly_revenues, key=lambda x: x['amount']) if monthly_revenues else None
     
     fastest_deal_days = None
-    won_leads = Lead.query.filter(
-        Lead.status == 'closed_won',
-        Lead.closed_at.isnot(None)
-    ).all()
+    won_leads_result = client.table('leads').select('id,closed_at').eq('status', 'closed_won').filter('closed_at', 'not.is', 'null').execute()
     
-    for lead in won_leads:
-        first_outreach = OutreachLog.query.filter(
-            OutreachLog.lead_id == lead.id
-        ).order_by(OutreachLog.date.asc()).first()
-        
-        if first_outreach and lead.closed_at:
-            days = (lead.closed_at.date() - first_outreach.date).days
-            if days >= 0:
-                if fastest_deal_days is None or days < fastest_deal_days:
-                    fastest_deal_days = days
+    for lead in won_leads_result.data:
+        lead_id = lead.get('id')
+        closed_at_str = lead.get('closed_at')
+        if closed_at_str:
+            try:
+                closed_at = datetime.fromisoformat(closed_at_str.replace('Z', '+00:00'))
+                first_outreach_result = client.table('outreach_logs').select('date').eq('lead_id', lead_id).order('date').limit(1).execute()
+                if first_outreach_result.data:
+                    first_date_str = first_outreach_result.data[0].get('date')
+                    if first_date_str:
+                        first_date = datetime.strptime(first_date_str, '%Y-%m-%d').date()
+                        days = (closed_at.date() - first_date).days
+                        if days >= 0:
+                            if fastest_deal_days is None or days < fastest_deal_days:
+                                fastest_deal_days = days
+            except (ValueError, TypeError):
+                pass
     
-    leads_revived = ActivityLog.query.filter(
-        ActivityLog.action_type == 'lead_revived'
-    ).count()
+    leads_revived_result = client.table('activity_log').select('id', count='exact').eq('action_type', 'lead_revived').execute()
+    leads_revived = leads_revived_result.count if leads_revived_result.count else len(leads_revived_result.data)
     
     avg_deal_value = total_revenue / total_deals_won if total_deals_won > 0 else 0
     

@@ -675,6 +675,62 @@ class BossBattle(SupabaseModel):
 class ActivityLog(SupabaseModel):
     __tablename__ = 'activity_log'
     
+    def get_icon(self):
+        icons = {
+            'outreach_logged': 'envelope',
+            'lead_contacted': 'user-plus',
+            'call_booked': 'phone',
+            'proposal_sent': 'file-text',
+            'deal_closed_won': 'check-circle',
+            'deal_closed_lost': 'x-circle',
+            'task_created': 'plus-square',
+            'task_completed': 'check-square',
+            'task_overdue': 'alert-triangle',
+            'mission_completed': 'target',
+            'boss_progress': 'trending-up',
+            'boss_defeated': 'award',
+            'tokens_earned': 'coin',
+            'xp_gained': 'zap',
+            'level_up': 'trophy',
+            'reward_claimed': 'gift',
+            'streak_milestone': 'flame',
+            'lead_created': 'user-plus',
+            'lead_updated': 'edit',
+            'lead_revived': 'refresh-cw',
+        }
+        action_type = getattr(self, 'action_type', '')
+        return icons.get(action_type, 'activity')
+    
+    def get_color(self):
+        colors = {
+            'outreach_logged': 'blue',
+            'lead_contacted': 'indigo',
+            'call_booked': 'green',
+            'proposal_sent': 'purple',
+            'deal_closed_won': 'emerald',
+            'deal_closed_lost': 'red',
+            'task_created': 'slate',
+            'task_completed': 'green',
+            'task_overdue': 'orange',
+            'mission_completed': 'yellow',
+            'boss_progress': 'cyan',
+            'boss_defeated': 'gold',
+            'tokens_earned': 'amber',
+            'xp_gained': 'violet',
+            'level_up': 'purple',
+            'reward_claimed': 'pink',
+            'streak_milestone': 'orange',
+            'lead_created': 'green',
+            'lead_updated': 'yellow',
+            'lead_revived': 'cyan',
+        }
+        action_type = getattr(self, 'action_type', '')
+        return colors.get(action_type, 'gray')
+    
+    def is_highlight(self):
+        action_type = getattr(self, 'action_type', '')
+        return action_type in ['boss_defeated', 'level_up', 'deal_closed_won', 'xp_gained']
+    
     @staticmethod
     def log_activity(action_type, description, related_id=None, related_object_type=None, xp_earned=0, tokens_earned=0):
         return ActivityLog.insert({
