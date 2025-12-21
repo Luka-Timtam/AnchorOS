@@ -1,0 +1,4 @@
+id,mission_date,description,mission_type,target_count,reward_tokens,is_completed,progress_count,created_at
+1,2025-12-19,Message 1 old lead(s),message_old_leads,1,6,0,0,2025-12-19 10:39:07.267944
+2,2025-12-20,Message 2 old lead(s),message_old_leads,2,8,0,0,2025-12-20 23:42:47.705365
+3,2025-12-21,Send 4 outreaches today,outreach,4,5,0,0,2025-12-21 00:58:02.847801

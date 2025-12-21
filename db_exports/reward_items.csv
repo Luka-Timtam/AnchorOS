@@ -1,0 +1,16 @@
+id,name,cost,description,is_active,created_at
+1,Bag of favourite lollies,8,Treat yourself to your favourite sweets,0,2025-12-19 02:38:34.361979
+2,Coffee or drink,10,A nice coffee or beverage of your choice,0,2025-12-19 02:38:34.363369
+3,1 hour guilt-free gaming,12,Take a break and play your favourite game,0,2025-12-19 02:38:34.364232
+4,Nice lunch treat,20,Enjoy a nice lunch out,0,2025-12-19 02:38:34.365129
+5,Car care item,50,Something nice for your car,0,2025-12-19 02:38:34.365908
+6,T-shirt,75,Buy yourself a new t-shirt,0,2025-12-19 02:38:34.366569
+7,Quick Win,30,,1,2025-12-19 03:27:27.800271
+8,End-of-Day Treat,60,,1,2025-12-19 03:27:55.031017
+9,Weekly Micro Reward,100,,1,2025-12-19 03:28:05.917438
+10,Solid Weekly Reward,150,,1,2025-12-19 03:28:19.454813
+11,Bi-Weekly Earned Reward,250,,1,2025-12-19 03:28:30.234889
+12,Monthly Anchor,400,,1,2025-12-19 03:28:44.082669
+13,Serious Commitment,600,,1,2025-12-19 03:28:57.703785
+14,Long-Horizon Reward,850,,1,2025-12-19 03:29:09.133450
+15,Flagship Reward,1200,,1,2025-12-19 03:29:36.121768
