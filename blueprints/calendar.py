@@ -42,7 +42,7 @@ def get_month_data(year, month):
     missions_result = client.table('daily_missions').select('*').gte('mission_date', grid_start.isoformat()).lte('mission_date', grid_end.isoformat()).execute()
     missions = [DailyMission._parse_row(row) for row in missions_result.data]
     
-    boss_result = client.table('boss_battles').select('*').eq('month_start', f"{year}-{month:02d}-01").execute()
+    boss_result = client.table('boss_fights').select('*').eq('month', f"{year}-{month:02d}").execute()
     current_boss = BossBattle._parse_row(boss_result.data[0]) if boss_result.data else None
     
     task_dates = {}
