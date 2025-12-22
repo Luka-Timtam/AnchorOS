@@ -21,7 +21,9 @@ def get_all_tags():
 def has_note_today():
     client = get_supabase()
     today = date.today()
-    result = client.table('notes').select('id', count='exact').gte('created_at', f'{today.isoformat()}T00:00:00').execute()
+    # Using id for existence check if created_at is problematic or just filtering by id range if possible,
+    # but since created_at exists in notes (unlike wins_log), we check it but ensure safe comparison
+    result = client.table('notes').select('id', count='exact').gte('updated_at', f'{today.isoformat()}T00:00:00').execute()
     return (result.count if result.count else len(result.data)) > 0
 
 

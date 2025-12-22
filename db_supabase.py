@@ -755,15 +755,29 @@ class ActivityLog(SupabaseModel):
 class Note(SupabaseModel):
     __tablename__ = 'notes'
     
+    def get_tags_list(self):
+        if not hasattr(self, 'tags') or not self.tags:
+            return []
+        if isinstance(self, str): # Handle potential parsing issues
+            return [t.strip() for t in self.split(',') if t.strip()]
+        return [t.strip() for t in self.tags.split(',') if t.strip()]
+
+    def get_preview(self):
+        if not hasattr(self, 'content') or not self.content:
+            return ""
+        content = self.content
+        if len(content) > 150:
+            return content[:147] + "..."
+        return content
+
     @classmethod
     def _parse_row(cls, row: dict):
-        if row is None:
-            return None
-        obj = cls(**row)
-        if hasattr(obj, 'created_at') and obj.created_at:
-            obj.created_at = parse_datetime(obj.created_at)
-        if hasattr(obj, 'updated_at') and obj.updated_at:
-            obj.updated_at = parse_datetime(obj.updated_at)
+        obj = super()._parse_row(row)
+        if obj:
+            if hasattr(obj, 'created_at') and obj.created_at:
+                obj.created_at = parse_datetime(obj.created_at)
+            if hasattr(obj, 'updated_at') and obj.updated_at:
+                obj.updated_at = parse_datetime(obj.updated_at)
         return obj
 
 
