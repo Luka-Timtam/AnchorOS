@@ -39,10 +39,19 @@ def index():
             if created_date >= month_start.isoformat():
                 new_leads_month += 1
     
-    outreach_result = client.table('outreach_logs').select('date').execute()
-    outreach_today = sum(1 for o in outreach_result.data if o.get('date') == today.isoformat())
-    outreach_week = sum(1 for o in outreach_result.data if o.get('date', '') >= week_start.isoformat())
-    outreach_month = sum(1 for o in outreach_result.data if o.get('date', '') >= month_start.isoformat())
+    # Use count queries for outreach stats
+    outreach_today_result = client.table('outreach_logs').select('id', count='exact').eq('date', today.isoformat()).execute()
+    outreach_today = outreach_today_result.count if outreach_today_result.count else len(outreach_today_result.data)
+    
+    outreach_week_result = client.table('outreach_logs').select('id', count='exact').gte('date', week_start.isoformat()).execute()
+    outreach_week = outreach_week_result.count if outreach_week_result.count else len(outreach_week_result.data)
+    
+    outreach_month_result = client.table('outreach_logs').select('id', count='exact').gte('date', month_start.isoformat()).execute()
+    outreach_month = outreach_month_result.count if outreach_month_result.count else len(outreach_month_result.data)
+    
+    # Fetch outreach dates only for weekly chart data (12 weeks)
+    twelve_weeks_ago = get_week_start(today) - timedelta(weeks=11)
+    outreach_result = client.table('outreach_logs').select('date').gte('date', twelve_weeks_ago.isoformat()).execute()
     
     clients = Client.query_all()
     

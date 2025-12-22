@@ -27,35 +27,42 @@ def index():
     tasks_result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('id', desc=True).limit(5).execute()
     today_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    leads_result = client.table('leads').select('*').execute()
-    active_leads = [row for row in leads_result.data if row.get('status') not in ['closed_won', 'closed_lost']]
-    total_leads = len(active_leads)
+    # Count active leads using count query (safe - only returns count)
+    leads_count_result = client.table('leads').select('id', count='exact').filter('status', 'not.in', '("closed_won","closed_lost")').execute()
+    total_leads = leads_count_result.count if leads_count_result.count else len(leads_count_result.data)
     
-    clients_result = client.table('clients').select('*').eq('status', 'active').execute()
-    total_clients = len(clients_result.data)
+    # Count active clients (safe - only returns count)
+    clients_count_result = client.table('clients').select('id', count='exact').eq('status', 'active').execute()
+    total_clients = clients_count_result.count if clients_count_result.count else len(clients_count_result.data)
     
-    outreach_result = client.table('outreach_logs').select('*').eq('date', today_str).execute()
-    today_outreach = len(outreach_result.data)
+    # Count today's outreach (safe - only returns count)
+    outreach_count_result = client.table('outreach_logs').select('id', count='exact').eq('date', today_str).execute()
+    today_outreach = outreach_count_result.count if outreach_count_result.count else len(outreach_count_result.data)
     
-    pending_result = client.table('tasks').select('*').neq('status', 'done').execute()
-    pending_tasks = len(pending_result.data)
+    # Count pending tasks (safe - only returns count)
+    pending_count_result = client.table('tasks').select('id', count='exact').neq('status', 'done').execute()
+    pending_tasks = pending_count_result.count if pending_count_result.count else len(pending_count_result.data)
     
-    followups_result = client.table('leads').select('*').lte('next_action_date', today_str).order('next_action_date').execute()
-    follow_ups = [Lead._parse_row(row) for row in followups_result.data if row.get('status') not in ['closed_won', 'closed_lost']][:3]
+    # Get follow-ups - need all columns for template
+    followups_result = client.table('leads').select('*').lte('next_action_date', today_str).filter('status', 'not.in', '("closed_won","closed_lost")').order('next_action_date').limit(3).execute()
+    follow_ups = [Lead._parse_row(row) for row in followups_result.data]
     
     first_of_month = today.replace(day=1).isoformat()
-    freelance_result = client.table('freelance_jobs').select('*').gte('date_completed', first_of_month).execute()
+    # Only fetch amount for sum calculation (safe - only sums values)
+    freelance_result = client.table('freelance_jobs').select('amount').gte('date_completed', first_of_month).execute()
     month_income = sum(float(row.get('amount', 0) or 0) for row in freelance_result.data)
     
     six_months_ago = (today - timedelta(days=180)).isoformat()
-    freelance_6mo = client.table('freelance_jobs').select('*').gte('date_completed', six_months_ago).execute()
+    freelance_6mo = client.table('freelance_jobs').select('amount').gte('date_completed', six_months_ago).execute()
     total_6mo = sum(float(row.get('amount', 0) or 0) for row in freelance_6mo.data)
     avg_monthly = float(total_6mo) / 6 if total_6mo else 0
     
-    clients_month = client.table('clients').select('*').gte('updated_at', first_of_month).execute()
-    clients_this_month = len(clients_month.data)
+    # Count clients this month (safe - only returns count)
+    clients_month_result = client.table('clients').select('id', count='exact').gte('updated_at', first_of_month).execute()
+    clients_this_month = clients_month_result.count if clients_month_result.count else len(clients_month_result.data)
     
-    active_clients = client.table('clients').select('*').eq('status', 'active').execute()
+    # Get MRR from active clients - only fetch needed columns for sum (safe)
+    active_clients = client.table('clients').select('monthly_hosting_fee,monthly_saas_fee').eq('status', 'active').execute()
     mrr = sum(
         float(row.get('monthly_hosting_fee', 0) or 0) + float(row.get('monthly_saas_fee', 0) or 0)
         for row in active_clients.data
@@ -86,16 +93,15 @@ def leads():
     status_filter = request.args.get('status', '')
     client = get_supabase()
     
-    result = client.table('leads').select('*').order('updated_at', desc=True).execute()
+    # Filter at query level and limit results
+    query = client.table('leads').select('*').filter('status', 'not.in', '("closed_won","closed_lost")').order('updated_at', desc=True)
     
-    # Filter out closed leads
-    leads_list = [Lead._parse_row(row) for row in result.data if row.get('status') not in ['closed_won', 'closed_lost']]
-    
-    # Apply status filter if provided
+    # Apply status filter at query level if provided
     if status_filter:
-        leads_list = [lead for lead in leads_list if getattr(lead, 'status', '') == status_filter]
+        query = query.eq('status', status_filter)
     
-    leads_list = leads_list[:50]
+    result = query.limit(50).execute()
+    leads_list = [Lead._parse_row(row) for row in result.data]
     
     status_choices = [
         ('new', 'New'),
@@ -303,11 +309,13 @@ def calendar():
     today_str = today.isoformat()
     client = get_supabase()
     
+    # Limit calendar results
     tasks_result = client.table('tasks').select('*').gte('due_date', today_str).neq('status', 'done').order('due_date').limit(10).execute()
     upcoming_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
-    leads_result = client.table('leads').select('*').gte('next_action_date', today_str).order('next_action_date').execute()
-    follow_ups = [Lead._parse_row(row) for row in leads_result.data if row.get('status') not in ['closed_won', 'closed_lost']][:10]
+    # Filter and limit follow-ups
+    leads_result = client.table('leads').select('*').gte('next_action_date', today_str).filter('status', 'not.in', '("closed_won","closed_lost")').order('next_action_date').limit(10).execute()
+    follow_ups = [Lead._parse_row(row) for row in leads_result.data]
     
     return render_template('mobile/calendar.html',
         today=today,
@@ -319,7 +327,8 @@ def calendar():
 @mobile_bp.route('/notes')
 def notes():
     client = get_supabase()
-    pinned_result = client.table('notes').select('*').eq('pinned', True).order('updated_at', desc=True).execute()
+    # Limit results for better performance
+    pinned_result = client.table('notes').select('*').eq('pinned', True).order('updated_at', desc=True).limit(20).execute()
     unpinned_result = client.table('notes').select('*').eq('pinned', False).order('updated_at', desc=True).limit(30).execute()
     pinned_notes = [Note._parse_row(row) for row in pinned_result.data]
     unpinned_notes = [Note._parse_row(row) for row in unpinned_result.data]
@@ -438,12 +447,14 @@ def freelancing():
     current_month_start = today.replace(day=1).isoformat()
     client = get_supabase()
     
+    # Fetch current month entries for display
     result = client.table('freelance_jobs').select('*').gte('date_completed', current_month_start).order('date_completed', desc=True).execute()
     entries = [FreelancingIncome._parse_row(row) for row in result.data]
     
     month_total = sum(float(getattr(e, 'amount', 0) or 0) for e in entries)
     
-    all_result = client.table('freelance_jobs').select('*').execute()
+    # Only fetch amount for all-time total (safe - only sums values)
+    all_result = client.table('freelance_jobs').select('amount').execute()
     all_time_total = sum(float(row.get('amount', 0) or 0) for row in all_result.data)
     
     return render_template('mobile/freelancing.html',
@@ -506,8 +517,9 @@ def quick_outreach():
         flash('Outreach logged', 'success')
         return redirect(url_for('mobile.index'))
     
-    result = client.table('leads').select('*').order('updated_at', desc=True).execute()
-    leads_list = [Lead._parse_row(row) for row in result.data if row.get('status') not in ['closed_won', 'closed_lost']][:20]
+    # Filter and limit leads for dropdown
+    result = client.table('leads').select('*').filter('status', 'not.in', '("closed_won","closed_lost")').order('updated_at', desc=True).limit(20).execute()
+    leads_list = [Lead._parse_row(row) for row in result.data]
     
     type_choices = [('email', 'Email'), ('dm', 'DM'), ('call', 'Call'), ('in_person', 'In Person')]
     outcome_choices = [('contacted', 'Contacted'), ('no_response', 'No Response'), ('booked_call', 'Booked Call'), ('follow_up_set', 'Follow Up Set')]

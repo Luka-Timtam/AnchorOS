@@ -18,23 +18,28 @@ def category_choices():
 
 
 def get_total_income():
-    jobs = FreelancingIncome.query_all()
-    return sum(float(getattr(j, 'amount', 0) or 0) for j in jobs)
+    # Only fetch amount column for sum calculation
+    client = get_supabase()
+    result = client.table('freelance_jobs').select('amount').execute()
+    return sum(float(row.get('amount', 0) or 0) for row in result.data)
 
 
 def get_income_by_category():
-    jobs = FreelancingIncome.query_all()
+    # Only fetch amount and category columns
+    client = get_supabase()
+    result = client.table('freelance_jobs').select('amount,category').execute()
     income_by_cat = {}
-    for job in jobs:
-        cat = getattr(job, 'category', 'other')
-        amount = float(getattr(job, 'amount', 0) or 0)
+    for row in result.data:
+        cat = row.get('category', 'other')
+        amount = float(row.get('amount', 0) or 0)
         income_by_cat[cat] = income_by_cat.get(cat, 0) + amount
     return income_by_cat
 
 
 def get_monthly_income(months=6):
     client = get_supabase()
-    result = client.table('freelance_jobs').select('*').order('date_completed', desc=True).execute()
+    # Only fetch amount and date for monthly calculations
+    result = client.table('freelance_jobs').select('amount,date_completed').order('date_completed', desc=True).execute()
     
     monthly_totals = {}
     for row in result.data:
