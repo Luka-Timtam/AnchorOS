@@ -4,7 +4,7 @@ from db_supabase import (
     Lead, Client, Task, OutreachLog, Note, FreelancingIncome, 
     UserStats, UserSettings, ActivityLog, get_supabase
 )
-from blueprints.gamification import add_xp, add_tokens, update_mission_progress, XP_RULES, TOKEN_RULES
+from blueprints.notes import get_all_tags
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/mobile')
 
@@ -350,7 +350,8 @@ def note_new():
         
         return redirect(url_for('mobile.notes'))
     
-    return render_template('mobile/note_form.html')
+    all_tags = get_all_tags()
+    return render_template('mobile/note_form.html', all_tags=all_tags)
 
 
 @mobile_bp.route('/notes/<int:note_id>')
@@ -389,7 +390,8 @@ def note_edit(note_id):
         flash('Note updated', 'success')
         return redirect(url_for('mobile.note_detail', note_id=note_id))
     
-    return render_template('mobile/note_edit_form.html', note=note)
+    all_tags = get_all_tags()
+    return render_template('mobile/note_edit_form.html', note=note, all_tags=all_tags)
 
 
 @mobile_bp.route('/notes/<int:note_id>/delete', methods=['POST'])

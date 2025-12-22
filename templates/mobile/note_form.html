@@ -17,8 +17,32 @@
     
     <div>
         <label class="block text-sm text-medium mb-2">Tags</label>
-        <input type="text" name="tags" class="input-glass" placeholder="Comma-separated tags (optional)">
+        <input type="text" name="tags" id="tags-input" class="input-glass" placeholder="Comma-separated tags (optional)">
+        {% if all_tags %}
+        <div class="flex flex-wrap gap-2 mt-2">
+            {% for tag in all_tags %}
+            <button type="button" onclick="addTag('{{ tag }}')" class="pill text-xs bg-white/5 hover:bg-white/10 text-medium border border-white/10">
+                + {{ tag }}
+            </button>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
+
+    <script>
+    function addTag(tag) {
+        const input = document.getElementById('tags-input');
+        let current = input.value.trim();
+        if (current) {
+            const tags = current.split(',').map(t => t.trim());
+            if (!tags.includes(tag)) {
+                input.value = current + ', ' + tag;
+            }
+        } else {
+            input.value = tag;
+        }
+    }
+    </script>
     
     <button type="submit" class="btn-primary">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
