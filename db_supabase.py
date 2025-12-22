@@ -617,15 +617,16 @@ class DailyMission(SupabaseModel):
             return existing
         
         mission_types = [
-            {'type': 'outreach', 'target': random.randint(3, 5), 'tokens': 5},
-            {'type': 'tasks', 'target': random.randint(2, 4), 'tokens': 4},
-            {'type': 'follow_ups', 'target': random.randint(1, 3), 'tokens': 3},
+            {'type': 'outreach', 'target': random.randint(3, 5), 'tokens': 5, 'description': 'Complete outreach activities today'},
+            {'type': 'tasks', 'target': random.randint(2, 4), 'tokens': 4, 'description': 'Complete tasks from your task list'},
+            {'type': 'follow_ups', 'target': random.randint(1, 3), 'tokens': 3, 'description': 'Follow up with leads'},
         ]
         selected = random.choice(mission_types)
         
         return DailyMission.insert({
             'mission_date': today,
             'mission_type': selected['type'],
+            'description': selected['description'],
             'target_count': selected['target'],
             'reward_tokens': selected['tokens'],
             'is_completed': False

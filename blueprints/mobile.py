@@ -177,8 +177,9 @@ def lead_outreach(lead_id):
         
         Lead.update_by_id(lead_id, update_data)
         
-        from blueprints.gamification import award_outreach_xp
-        award_outreach_xp()
+        add_xp(XP_RULES.get('outreach_log', 5), 'Outreach logged')
+        add_tokens(TOKEN_RULES.get('outreach_log', 1), 'Outreach logged')
+        update_mission_progress('outreach')
         
         flash('Outreach logged', 'success')
         return redirect(url_for('mobile.lead_detail', lead_id=lead_id))
@@ -467,8 +468,9 @@ def quick_outreach():
                 'updated_at': datetime.utcnow().isoformat()
             })
         
-        from blueprints.gamification import award_outreach_xp
-        award_outreach_xp()
+        add_xp(XP_RULES.get('outreach_log', 5), 'Outreach logged')
+        add_tokens(TOKEN_RULES.get('outreach_log', 1), 'Outreach logged')
+        update_mission_progress('outreach')
         
         flash('Outreach logged', 'success')
         return redirect(url_for('mobile.index'))
