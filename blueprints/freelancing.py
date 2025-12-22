@@ -34,11 +34,11 @@ def get_income_by_category():
 
 def get_monthly_income(months=6):
     client = get_supabase()
-    result = client.table('freelance_jobs').select('*').order('date', desc=True).execute()
+    result = client.table('freelance_jobs').select('*').order('date_completed', desc=True).execute()
     
     monthly_totals = {}
     for row in result.data:
-        job_date = row.get('date', '')
+        job_date = row.get('date_completed', '')
         if isinstance(job_date, str):
             try:
                 d = date.fromisoformat(job_date.split('T')[0])
@@ -56,7 +56,7 @@ def get_monthly_income(months=6):
 
 @freelancing_bp.route('/')
 def index():
-    jobs = FreelancingIncome.query_all(order_by='date', order_desc=True)
+    jobs = FreelancingIncome.query_all(order_by='date_completed', order_desc=True)
     
     total_income = get_total_income()
     income_by_category = get_income_by_category()
@@ -121,7 +121,7 @@ def add():
             'description': description,
             'category': category,
             'amount': amount,
-            'date': job_date.isoformat()
+            'date_completed': job_date.isoformat()
         })
         
         flash('Freelance income added successfully!', 'success')
@@ -147,7 +147,7 @@ def edit(id):
             return render_template('freelancing/form.html', job=job, categories=category_choices())
         
         date_str = request.form.get('date')
-        job_date = getattr(job, 'date', date.today().isoformat())
+        job_date = getattr(job, 'date_completed', date.today().isoformat())
         if date_str:
             try:
                 job_date = date.fromisoformat(date_str).isoformat()
@@ -162,7 +162,7 @@ def edit(id):
             'description': description,
             'category': category,
             'amount': amount,
-            'date': job_date
+            'date_completed': job_date
         })
         
         flash('Freelance income updated!', 'success')
