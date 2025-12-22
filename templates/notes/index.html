@@ -98,7 +98,7 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                <p class="text-xs text-low">{{ note.updated_at.strftime('%b %d, %Y') }}</p>
+                <p class="text-xs text-low">{% if note.updated_at %}{{ note.updated_at.strftime('%b %d, %Y') }}{% else %}Recently{% endif %}</p>
             </div>
         </a>
         {% endfor %}
