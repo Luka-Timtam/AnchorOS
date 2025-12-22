@@ -676,6 +676,15 @@ class BossBattle(SupabaseModel):
 class ActivityLog(SupabaseModel):
     __tablename__ = 'activity_log'
     
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        if hasattr(obj, 'timestamp') and obj.timestamp:
+            obj.timestamp = parse_datetime(obj.timestamp)
+        return obj
+    
     def get_icon(self):
         icons = {
             'outreach_logged': 'envelope',
