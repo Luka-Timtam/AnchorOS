@@ -762,12 +762,12 @@ class Note(SupabaseModel):
             return [t.strip() for t in self.split(',') if t.strip()]
         return [t.strip() for t in self.tags.split(',') if t.strip()]
 
-    def get_preview(self):
+    def get_preview(self, length=150):
         if not hasattr(self, 'content') or not self.content:
             return ""
         content = self.content
-        if len(content) > 150:
-            return content[:147] + "..."
+        if len(content) > length:
+            return content[:length-3] + "..."
         return content
 
     @classmethod
