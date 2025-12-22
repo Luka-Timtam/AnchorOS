@@ -334,11 +334,15 @@ def note_new():
             flash('Note content is required', 'error')
             return render_template('mobile/note_form.html', title=title, content=content)
         
+        tags = request.form.get('tags', '').strip()
+        now = datetime.utcnow().isoformat()
         note = Note.insert({
             'title': title if title else 'Quick Note',
             'content': content,
-            'created_at': datetime.utcnow().isoformat(),
-            'updated_at': datetime.utcnow().isoformat()
+            'tags': tags if tags else '',
+            'pinned': False,
+            'created_at': now,
+            'updated_at': now
         })
         
         ActivityLog.log_activity('note_created', f'Created note: {title if title else "Quick Note"}', note.id if note else None, 'note')
@@ -373,9 +377,11 @@ def note_edit(note_id):
             flash('Note content is required', 'error')
             return render_template('mobile/note_edit_form.html', note=note, title=title, content=content)
         
+        tags = request.form.get('tags', '').strip()
         Note.update_by_id(note_id, {
             'title': title if title else 'Quick Note',
             'content': content,
+            'tags': tags if tags else '',
             'updated_at': datetime.utcnow().isoformat()
         })
         

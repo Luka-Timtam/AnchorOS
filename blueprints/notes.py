@@ -106,11 +106,14 @@ def new():
         
         is_first_today = not has_note_today()
         
+        now = datetime.utcnow().isoformat()
         note = Note.insert({
             'title': title,
             'content': content,
-            'tags': tags if tags else None,
-            'pinned': False
+            'tags': tags if tags else '',
+            'pinned': False,
+            'created_at': now,
+            'updated_at': now
         })
         
         if is_first_today:
@@ -160,7 +163,7 @@ def edit(id):
         Note.update_by_id(id, {
             'title': title,
             'content': content,
-            'tags': tags if tags else None,
+            'tags': tags if tags else '',
             'updated_at': datetime.utcnow().isoformat()
         })
         

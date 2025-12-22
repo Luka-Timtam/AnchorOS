@@ -1,0 +1,83 @@
+The notes table currently contains inconsistent data because desktop and mobile note creation logic insert different sets of fields.
+
+Fix this permanently by enforcing a single, consistent insert contract for notes across both desktop and mobile, and by extending the mobile UI to support tags.
+
+1. Define the canonical notes insert contract
+Every note inserted into the notes table — regardless of source — MUST explicitly include:
+
+title (string)
+
+content (string)
+
+tags (string, default empty string)
+
+pinned (boolean, default false)
+
+created_at (UTC timestamp)
+
+updated_at (UTC timestamp)
+
+NULL values must never be inserted for these fields.
+
+2. Fix desktop note creation logic
+
+Locate all desktop routes or handlers that create notes.
+
+Update their Supabase insert logic so they explicitly set:
+
+created_at = datetime.utcnow().isoformat()
+
+updated_at = datetime.utcnow().isoformat()
+
+pinned = false (unless explicitly set otherwise)
+
+tags = "" if no tags are provided
+
+Desktop note creation must no longer rely on implicit defaults or omit fields.
+
+3. Fix mobile note creation logic
+
+Locate all mobile routes that create notes.
+
+Update their Supabase insert logic to match the same canonical contract:
+
+created_at set explicitly
+
+updated_at set explicitly
+
+pinned = false
+
+tags passed from the UI or set to empty string
+
+Mobile inserts must never produce NULL values for these fields.
+
+4. Add a tags input to the mobile note creation UI
+
+Update the mobile “create note” form to include a tags input field.
+
+The tags field should:
+
+Be optional
+
+Accept comma-separated values
+
+Submit as a plain string
+
+Ensure this value is read by the backend and passed into the insert logic.
+
+5. Do NOT change desktop note display or filtering logic
+
+Desktop fetching and rendering already works correctly.
+
+The fix must ensure inserted data conforms to existing expectations.
+
+6. Verification requirements
+After this change:
+
+Notes created on mobile appear on desktop immediately
+
+Notes created on desktop appear on mobile immediately
+
+No newly inserted notes contain NULL for created_at, updated_at, pinned, or tags
+
+This must fully resolve the PostgreSQL NULL-handling mismatch without adding workarounds or caching.

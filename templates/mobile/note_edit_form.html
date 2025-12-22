@@ -15,6 +15,11 @@
         <textarea name="content" rows="8" class="input-glass" placeholder="Write your note..." autofocus>{{ note.content or '' }}</textarea>
     </div>
     
+    <div>
+        <label class="block text-sm text-medium mb-2">Tags</label>
+        <input type="text" name="tags" class="input-glass" placeholder="Comma-separated tags (optional)" value="{{ note.tags or '' }}">
+    </div>
+    
     <button type="submit" class="btn-primary">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
