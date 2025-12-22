@@ -18,7 +18,7 @@
     <a href="{{ url_for('mobile.note_detail', note_id=note.id) }}" class="mobile-card block">
         <div class="flex items-start justify-between mb-2">
             <h3 class="text-high font-medium flex-1">{{ note.title or 'Untitled' }}</h3>
-            <span class="text-xs text-low">{{ note.updated_at.strftime('%d %b') }}</span>
+            <span class="text-xs text-low">{% if note.updated_at and note.updated_at.strftime %}{{ note.updated_at.strftime('%d %b') }}{% else %}Recent{% endif %}</span>
         </div>
         <p class="text-sm text-medium line-clamp-2">{{ note.content[:100] }}{% if note.content|length > 100 %}...{% endif %}</p>
         {% if note.tags %}

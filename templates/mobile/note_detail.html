@@ -6,7 +6,7 @@
 {% block content %}
 <div class="glass-card p-4 mb-4">
     <div class="text-xs text-low mb-3">
-        Updated {{ note.updated_at.strftime('%d %b %Y, %H:%M') }}
+        Updated {% if note.updated_at and note.updated_at.strftime %}{{ note.updated_at.strftime('%d %b %Y, %H:%M') }}{% else %}Recently{% endif %}
     </div>
     <div class="text-high whitespace-pre-wrap">{{ note.content }}</div>
 </div>
