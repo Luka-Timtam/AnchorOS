@@ -319,9 +319,11 @@ def calendar():
 @mobile_bp.route('/notes')
 def notes():
     client = get_supabase()
-    result = client.table('notes').select('*').order('updated_at', desc=True).limit(30).execute()
-    notes_list = [Note._parse_row(row) for row in result.data]
-    return render_template('mobile/notes.html', notes=notes_list)
+    pinned_result = client.table('notes').select('*').eq('pinned', True).order('updated_at', desc=True).execute()
+    unpinned_result = client.table('notes').select('*').eq('pinned', False).order('updated_at', desc=True).limit(30).execute()
+    pinned_notes = [Note._parse_row(row) for row in pinned_result.data]
+    unpinned_notes = [Note._parse_row(row) for row in unpinned_result.data]
+    return render_template('mobile/notes.html', pinned_notes=pinned_notes, unpinned_notes=unpinned_notes)
 
 
 @mobile_bp.route('/notes/new', methods=['GET', 'POST'])
@@ -407,6 +409,27 @@ def note_delete(note_id):
     ActivityLog.log_activity('note_deleted', f'Deleted note: {title}', note_id, 'note')
     flash('Note deleted', 'success')
     return redirect(url_for('mobile.notes'))
+
+
+@mobile_bp.route('/notes/<int:note_id>/pin', methods=['POST'])
+def note_pin(note_id):
+    note = Note.get_by_id(note_id)
+    if not note:
+        flash('Note not found', 'error')
+        return redirect(url_for('mobile.notes'))
+    
+    is_pinned = getattr(note, 'pinned', False)
+    Note.update_by_id(note_id, {
+        'pinned': not is_pinned,
+        'updated_at': datetime.utcnow().isoformat()
+    })
+    
+    if is_pinned:
+        flash('Note unpinned', 'success')
+    else:
+        flash('Note pinned', 'success')
+    
+    return redirect(url_for('mobile.note_detail', note_id=note_id))
 
 
 @mobile_bp.route('/freelancing')
