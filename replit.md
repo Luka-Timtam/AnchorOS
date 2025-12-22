@@ -88,6 +88,13 @@ Key table name mappings (some differ from legacy models):
 - IS NOT NULL: `.filter('column', 'not.is', 'null')`
 - IS NULL: `.is_('column', 'null')`
 
+**Performance Optimizations (December 2025):**
+- Count queries: Use `count='exact'` for totals (e.g., lead/client counts)
+- Column-specific selects: Use ONLY for sum/aggregate calculations (e.g., freelance amounts, MRR)
+- Full fetches: Always use `select('*')` for queries returning objects to templates
+- Query limits: Apply limits (20-50) to list queries to prevent over-fetching
+- Query-level filtering: Apply status filters at database level instead of Python
+
 ## Page Transitions (December 2025)
 - Swup.js integration for smooth, native-app-like page transitions
 - Fade + slide animation (0.3s) on content area only
