@@ -618,7 +618,7 @@ def index():
     level_rewards = LevelReward.query_all(order_by='level_interval')
     milestone_rewards = MilestoneReward.query_all(order_by='target_level')
     
-    wins = WinsLog.query_all(order_by='created_at', order_desc=True)
+    wins = WinsLog.query_all(order_by='id', order_desc=True)
     
     max_level = 15
     

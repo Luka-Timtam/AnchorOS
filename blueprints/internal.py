@@ -31,7 +31,7 @@ def get_summary_data():
     stats_result = client.table('user_stats').select('*').execute()
     stats = stats_result.data[0] if stats_result.data else {}
     
-    new_leads_result = client.table('leads').select('id', count='exact').gte('created_at', f'{yesterday.isoformat()}T00:00:00').lt('created_at', f'{today.isoformat()}T00:00:00').execute()
+    new_leads_result = client.table('leads').select('id', count='exact').gte('updated_at', f'{yesterday.isoformat()}T00:00:00').lt('updated_at', f'{today.isoformat()}T00:00:00').execute()
     new_leads_yesterday = new_leads_result.count if new_leads_result.count else len(new_leads_result.data)
     
     hosting_result = client.table('clients').select('monthly_hosting_fee').eq('hosting_active', True).execute()

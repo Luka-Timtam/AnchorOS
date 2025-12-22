@@ -24,7 +24,7 @@ def index():
     
     client = get_supabase()
     
-    tasks_result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('created_at', desc=True).limit(5).execute()
+    tasks_result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('id', desc=True).limit(5).execute()
     today_tasks = [Task._parse_row(row) for row in tasks_result.data]
     
     leads_result = client.table('leads').select('*').execute()
@@ -52,7 +52,7 @@ def index():
     total_6mo = sum(float(row.get('amount', 0) or 0) for row in freelance_6mo.data)
     avg_monthly = float(total_6mo) / 6 if total_6mo else 0
     
-    clients_month = client.table('clients').select('*').gte('created_at', first_of_month).execute()
+    clients_month = client.table('clients').select('*').gte('updated_at', first_of_month).execute()
     clients_this_month = len(clients_month.data)
     
     active_clients = client.table('clients').select('*').eq('status', 'active').execute()
@@ -241,7 +241,7 @@ def tasks():
     client = get_supabase()
     
     if filter_type == 'today':
-        result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('created_at', desc=True).execute()
+        result = client.table('tasks').select('*').eq('due_date', today_str).neq('status', 'done').order('id', desc=True).execute()
     elif filter_type == 'overdue':
         result = client.table('tasks').select('*').lt('due_date', today_str).neq('status', 'done').order('due_date').execute()
     else:

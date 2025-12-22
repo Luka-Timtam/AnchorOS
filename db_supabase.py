@@ -754,10 +754,31 @@ class ActivityLog(SupabaseModel):
 
 class Note(SupabaseModel):
     __tablename__ = 'notes'
+    
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        if hasattr(obj, 'created_at') and obj.created_at:
+            obj.created_at = parse_datetime(obj.created_at)
+        if hasattr(obj, 'updated_at') and obj.updated_at:
+            obj.updated_at = parse_datetime(obj.updated_at)
+        return obj
 
 
 class WinsLog(SupabaseModel):
     __tablename__ = 'wins_log'
+    
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        # Handle missing created_at in some environments
+        if hasattr(obj, 'created_at') and obj.created_at:
+            obj.created_at = parse_datetime(obj.created_at)
+        return obj
 
 
 class MonthlyReview(SupabaseModel):
