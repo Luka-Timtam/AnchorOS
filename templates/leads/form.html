@@ -151,15 +151,24 @@ function toggleWebsiteQuality() {
 // Limit website quality selections to 3 max
 document.addEventListener('DOMContentLoaded', function() {
     const checkboxes = document.querySelectorAll('.website-quality-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const checkedBoxes = document.querySelectorAll('.website-quality-checkbox:checked');
-            if (checkedBoxes.length > 3) {
-                this.checked = false;
-                alert('You can select up to 3 website quality issues');
+    
+    function updateCheckboxDisabledState() {
+        const checkedCount = document.querySelectorAll('.website-quality-checkbox:checked').length;
+        checkboxes.forEach(checkbox => {
+            if (checkedCount >= 3) {
+                checkbox.disabled = !checkbox.checked;
+            } else {
+                checkbox.disabled = false;
             }
         });
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCheckboxDisabledState);
     });
+    
+    // Set initial state
+    updateCheckboxDisabledState();
 });
 </script>
 {% endblock %}
