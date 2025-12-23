@@ -156,8 +156,13 @@ def index():
     new_leads_month = 0
     for lead in leads:
         created = getattr(lead, 'created_at', '')
+        created_date = None
         if isinstance(created, str):
             created_date = created.split('T')[0]
+        elif isinstance(created, date):
+            created_date = created.isoformat()
+        
+        if created_date:
             if created_date >= week_start.isoformat():
                 new_leads_week += 1
             if created_date >= month_start.isoformat():

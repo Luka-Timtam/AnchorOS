@@ -165,7 +165,7 @@ def index():
     this_month_deals_result = client.table('leads').select('id', count='exact').eq('status', 'closed_won').gte('closed_at', f'{month_start.isoformat()}T00:00:00').execute()
     this_month_deals = this_month_deals_result.count if this_month_deals_result.count else len(this_month_deals_result.data)
     
-    this_month_leads_result = client.table('leads').select('id', count='exact').gte('created_at', f'{month_start.isoformat()}T00:00:00').execute()
+    this_month_leads_result = client.table('leads').select('id', count='exact').gte('created_at', f'{month_start.isoformat()}T00:00:00').lte('created_at', f'{today.isoformat()}T23:59:59').execute()
     this_month_new_leads = this_month_leads_result.count if this_month_leads_result.count else len(this_month_leads_result.data)
     
     this_month_expected = this_month_project_revenue + current_mrr
