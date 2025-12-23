@@ -15,7 +15,7 @@ def index():
     count_result = client.table('activity_log').select('id', count='exact').execute()
     total = count_result.count if count_result.count else len(count_result.data)
     
-    result = client.table('activity_log').select('*').order('created_at', desc=True).range(offset, offset + per_page - 1).execute()
+    result = client.table('activity_log').select('*').order('id', desc=True).range(offset, offset + per_page - 1).execute()
     activities = [ActivityLog._parse_row(row) for row in result.data]
     
     grouped = group_activities_by_day(activities)
@@ -56,7 +56,7 @@ def group_activities_by_day(activities):
     }
     
     for activity in activities:
-        created = getattr(activity, 'created_at', '')
+        created = getattr(activity, 'timestamp', '')
         if isinstance(created, str):
             activity_date = date.fromisoformat(created.split('T')[0])
         else:

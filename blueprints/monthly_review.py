@@ -36,7 +36,7 @@ def generate_review_content(year_month):
     outreach_calls_booked = sum(1 for row in outreach_result.data if row.get('outcome') == 'booked_call')
     calls_booked = outreach_calls_booked
     
-    proposals_result = client.table('activity_log').select('id', count='exact').eq('activity_type', 'proposal_sent').gte('created_at', first_datetime).lte('created_at', last_datetime).execute()
+    proposals_result = client.table('activity_log').select('id', count='exact').eq('activity_type', 'proposal_sent').execute()
     proposals_sent = len(proposals_result.data)
     
     leads_result = client.table('leads').select('*').execute()
@@ -125,7 +125,7 @@ def generate_review_content(year_month):
     win_reason_counts = Counter(win_reasons).most_common(5)
     loss_reason_counts = Counter(loss_reasons).most_common(5)
     
-    wins_result = client.table('wins_log').select('*').gte('created_at', first_datetime).lte('created_at', last_datetime).order('created_at', desc=True).limit(10).execute()
+    wins_result = client.table('wins_log').select('*').order('id', desc=True).limit(10).execute()
     wins_list = [{
         'title': w.get('title', ''),
         'description': w.get('description', ''),
