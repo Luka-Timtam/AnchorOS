@@ -51,55 +51,31 @@ class InMemoryCache:
 cache = InMemoryCache(default_ttl=30)
 
 
-CACHE_KEY_DASHBOARD_STATS = 'dashboard:stats'
 CACHE_KEY_LIFETIME_REVENUE = 'dashboard:lifetime_revenue'
-CACHE_KEY_REVENUE_MILESTONES = 'dashboard:revenue_milestones'
 CACHE_KEY_DASHBOARD_CHARTS = 'dashboard:charts'
-CACHE_KEY_LEAD_COUNTS = 'dashboard:lead_counts'
-CACHE_KEY_OUTREACH_STATS = 'dashboard:outreach'
-CACHE_KEY_CLIENT_STATS = 'dashboard:client_stats'
 CACHE_KEY_MRR = 'dashboard:mrr'
 
 
-def invalidate_revenue_cache():
-    cache.invalidate(CACHE_KEY_LIFETIME_REVENUE)
-    cache.invalidate(CACHE_KEY_REVENUE_MILESTONES)
-    cache.invalidate(CACHE_KEY_CLIENT_STATS)
-    cache.invalidate(CACHE_KEY_MRR)
-    cache.invalidate(CACHE_KEY_DASHBOARD_STATS)
-    cache.invalidate(CACHE_KEY_DASHBOARD_CHARTS)
-    logger.debug("[Cache] Revenue-related caches invalidated")
-
-
 def invalidate_client_cache():
-    cache.invalidate(CACHE_KEY_CLIENT_STATS)
     cache.invalidate(CACHE_KEY_MRR)
     cache.invalidate(CACHE_KEY_LIFETIME_REVENUE)
-    cache.invalidate(CACHE_KEY_DASHBOARD_STATS)
     cache.invalidate(CACHE_KEY_DASHBOARD_CHARTS)
     logger.debug("[Cache] Client-related caches invalidated")
 
 
-def invalidate_lead_cache():
-    cache.invalidate(CACHE_KEY_LEAD_COUNTS)
-    cache.invalidate(CACHE_KEY_DASHBOARD_STATS)
-    logger.debug("[Cache] Lead-related caches invalidated")
-
-
-def invalidate_outreach_cache():
-    cache.invalidate(CACHE_KEY_OUTREACH_STATS)
-    cache.invalidate(CACHE_KEY_DASHBOARD_STATS)
-    cache.invalidate(CACHE_KEY_DASHBOARD_CHARTS)
-    logger.debug("[Cache] Outreach-related caches invalidated")
-
-
 def invalidate_freelance_cache():
     cache.invalidate(CACHE_KEY_LIFETIME_REVENUE)
-    cache.invalidate(CACHE_KEY_REVENUE_MILESTONES)
-    cache.invalidate(CACHE_KEY_DASHBOARD_STATS)
+    cache.invalidate(CACHE_KEY_DASHBOARD_CHARTS)
+    cache.invalidate(CACHE_KEY_MRR)
     logger.debug("[Cache] Freelance-related caches invalidated")
 
 
 def invalidate_all_dashboard_cache():
     cache.invalidate_prefix('dashboard:')
     logger.debug("[Cache] All dashboard caches invalidated")
+
+
+def invalidate_revenue_cache():
+    invalidate_client_cache()
+    invalidate_freelance_cache()
+    logger.debug("[Cache] All revenue-related caches invalidated")

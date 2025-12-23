@@ -5,7 +5,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
 from blueprints.monthly_review import auto_generate_monthly_review_if_needed, get_newly_generated_review
-from cache import cache, CACHE_KEY_DASHBOARD_STATS, CACHE_KEY_DASHBOARD_CHARTS, CACHE_KEY_MRR
+from cache import cache, CACHE_KEY_DASHBOARD_CHARTS, CACHE_KEY_MRR
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,13 +19,12 @@ def get_month_start(d):
     return d.replace(day=1)
 
 
-def get_cached_client_stats():
+def get_cached_client_stats(clients):
     cached_value, hit = cache.get(CACHE_KEY_MRR)
     if hit:
         logger.debug("[Dashboard] Using cached MRR/client stats")
         return cached_value
     
-    clients = Client.query_all()
     today = date.today()
     month_start = get_month_start(today)
     
@@ -63,7 +62,6 @@ def get_cached_client_stats():
     forecast_3_months = forecast_monthly * 3
     
     result = {
-        'clients': clients,
         'new_clients_month': new_clients_month,
         'project_revenue_month': float(project_revenue_month),
         'hosting_mrr': float(hosting_mrr),
@@ -164,8 +162,9 @@ def index():
     twelve_weeks_ago = get_week_start(today) - timedelta(weeks=11)
     outreach_result = supabase_client.table('outreach_logs').select('date').gte('date', twelve_weeks_ago.isoformat()).execute()
     
-    client_stats = get_cached_client_stats()
-    clients = client_stats['clients']
+    clients = Client.query_all()
+    
+    client_stats = get_cached_client_stats(clients)
     new_clients_month = client_stats['new_clients_month']
     project_revenue_month = client_stats['project_revenue_month']
     hosting_mrr = client_stats['hosting_mrr']

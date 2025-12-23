@@ -517,8 +517,10 @@
 {% endif %}
 {% endmacro %}
 
+<div id="dashboard-widgets">
 {% for widget_id in widget_order %}
 {% if widget_active.get(widget_id, True) %}
+<div class="widget-animate" style="opacity: 0;">
     {% if widget_id == 'followups' %}{{ render_followups() }}
     {% elif widget_id == 'gamification_stats' %}{{ render_gamification_stats() }}
     {% elif widget_id == 'daily_mission' %}{{ render_daily_mission() }}
@@ -532,8 +534,10 @@
     {% elif widget_id == 'outreach_deals_charts' %}{{ render_outreach_deals_charts() }}
     {% elif widget_id == 'revenue_chart' %}{{ render_revenue_chart() }}
     {% endif %}
+</div>
 {% endif %}
 {% endfor %}
+</div>
 
 <div id="calendarModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden">
     <div class="glass-card w-full max-w-5xl max-h-[90vh] overflow-hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mx-4" style="width: calc(100% - 2rem);">

@@ -95,6 +95,15 @@ Key table name mappings (some differ from legacy models):
 - Query limits: Apply limits (20-50) to list queries to prevent over-fetching
 - Query-level filtering: Apply status filters at database level instead of Python
 
+**In-Memory Caching (December 2025):**
+- Module: `cache.py` provides simple in-memory caching with TTL (30-60 seconds)
+- Cached data: Dashboard MRR/client stats, chart data, lifetime revenue
+- Invalidation: Automatic cache clear on client/freelance create/edit/delete
+- Functions: `invalidate_client_cache()`, `invalidate_freelance_cache()`, `invalidate_revenue_cache()`
+- Logging: Debug-level cache hit/miss logging for troubleshooting
+- Dashboard widgets: Staggered fade-in animation (`.widget-animate` class)
+- Skeleton CSS: Available via `.skeleton`, `.skeleton-text`, `.skeleton-number` classes
+
 ## Page Transitions (December 2025)
 - Swup.js integration for smooth, native-app-like page transitions
 - Fade + slide animation (0.3s) on content area only
