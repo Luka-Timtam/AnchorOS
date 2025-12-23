@@ -76,7 +76,8 @@ def create():
             'monthly_hosting_fee': float(request.form.get('monthly_hosting_fee') or 0),
             'saas_active': request.form.get('saas_active') == 'on',
             'monthly_saas_fee': float(request.form.get('monthly_saas_fee') or 0),
-            'notes': request.form.get('notes')
+            'notes': request.form.get('notes'),
+            'created_at': tz.now_iso()
         })
         invalidate_client_cache()
         flash('Client created successfully!', 'success')

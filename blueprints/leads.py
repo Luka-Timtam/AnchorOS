@@ -115,7 +115,8 @@ def create():
             'next_action_date': next_action.isoformat() if next_action else None,
             'has_website': has_website,
             'website_quality': website_quality,
-            'demo_site_built': request.form.get('demo_site_built') == 'on'
+            'demo_site_built': request.form.get('demo_site_built') == 'on',
+            'created_at': tz.now_iso()
         })
         flash('Lead created successfully!', 'success')
         return redirect(url_for('leads.index'))
@@ -280,7 +281,8 @@ def convert_to_client(id):
             'saas_active': request.form.get('saas_active') == 'on',
             'monthly_saas_fee': float(request.form.get('monthly_saas_fee') or 0),
             'notes': request.form.get('notes'),
-            'related_lead_id': lead.id
+            'related_lead_id': lead.id,
+            'created_at': tz.now_iso()
         })
         
         now = tz.now_iso()
