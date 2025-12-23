@@ -1104,6 +1104,10 @@ initWidgetModalListeners();
 
     function createRevenueChart(data, label) {
         if (revenueChart) revenueChart.destroy();
+        const isRevenue = label === 'Revenue';
+        const color = isRevenue ? '#31E0F7' : '#FB923C';
+        const bgColor = isRevenue ? 'rgba(49, 224, 247, 0.1)' : 'rgba(251, 146, 60, 0.1)';
+        
         revenueChart = new Chart(revenueCtx, {
             type: 'line',
             data: {
@@ -1111,13 +1115,13 @@ initWidgetModalListeners();
                 datasets: [{
                     label: label,
                     data: data,
-                    borderColor: '#31E0F7',
-                    backgroundColor: 'rgba(49, 224, 247, 0.1)',
+                    borderColor: color,
+                    backgroundColor: bgColor,
                     borderWidth: 2,
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: '#31E0F7',
-                    pointBorderColor: '#31E0F7',
+                    pointBackgroundColor: color,
+                    pointBorderColor: color,
                     pointRadius: 4,
                     pointHoverRadius: 6
                 }]
