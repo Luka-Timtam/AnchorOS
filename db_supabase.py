@@ -729,7 +729,7 @@ class ActivityLog(SupabaseModel):
             'description': description,
             'related_id': related_id,
             'related_object_type': related_object_type,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': tz.now_iso()
         })
 
 
@@ -798,13 +798,13 @@ class MonthlyReview(SupabaseModel):
         if existing:
             return MonthlyReview.update_by_id(existing.id, {
                 'content': content_json,
-                'generated_at': datetime.utcnow().isoformat()
+                'generated_at': tz.now_iso()
             })
         else:
             return MonthlyReview.insert({
                 'year_month': year_month,
                 'content': content_json,
-                'generated_at': datetime.utcnow().isoformat()
+                'generated_at': tz.now_iso()
             })
 
 

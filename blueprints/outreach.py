@@ -3,6 +3,7 @@ from db_supabase import OutreachLog, Lead, ActivityLog, get_supabase
 from datetime import datetime, date, timedelta
 from blueprints.gamification import add_xp, update_outreach_streak, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
+import timezone as tz
 
 outreach_bp = Blueprint('outreach', __name__, url_prefix='/outreach')
 
@@ -90,12 +91,12 @@ def create():
             if last_contacted:
                 from db_supabase import parse_datetime
                 last_dt = parse_datetime(last_contacted)
-                if last_dt and last_dt < datetime.utcnow() - timedelta(days=30):
+                if last_dt and last_dt < tz.now() - timedelta(days=30):
                     is_cold_lead_revival = True
             else:
                 is_cold_lead_revival = True
             
-            Lead.update_by_id(lead_id, {'last_contacted_at': datetime.utcnow().isoformat()})
+            Lead.update_by_id(lead_id, {'last_contacted_at': tz.now_iso()})
     
     log = OutreachLog.insert({
         'date': log_date.isoformat(),

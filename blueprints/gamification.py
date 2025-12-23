@@ -4,6 +4,7 @@ from db_supabase import (UserStats, Achievement, Goal, OutreachLog, Lead, Task, 
                          TokenTransaction, UserSettings, ActivityLog, WinsLog, BossBattle, 
                          RewardItem, RevenueReward, Client, FreelancingIncome, get_supabase)
 from datetime import datetime, date, timedelta
+import timezone as tz
 
 
 def is_paused():
@@ -120,7 +121,7 @@ def add_xp(amount, reason=""):
 
 def check_level_interval_rewards(current_level):
     level_rewards = LevelReward.query_filter({'is_active': True})
-    now = datetime.utcnow().isoformat()
+    now = tz.now_iso()
     
     for reward in level_rewards:
         interval = getattr(reward, 'level_interval', 0) or 0
@@ -144,7 +145,7 @@ def check_level_interval_rewards(current_level):
 
 def check_milestone_rewards(current_level):
     milestone_rewards = MilestoneReward.query_filter({'is_active': True})
-    now = datetime.utcnow().isoformat()
+    now = tz.now_iso()
     
     for reward in milestone_rewards:
         if getattr(reward, 'unlocked_at', None):
@@ -207,7 +208,7 @@ def check_revenue_rewards():
     RevenueReward.seed_defaults()
     lifetime_revenue = get_lifetime_revenue()
     revenue_rewards = RevenueReward.query_filter({'is_active': True})
-    now = datetime.utcnow().isoformat()
+    now = tz.now_iso()
     
     for reward in revenue_rewards:
         if getattr(reward, 'unlocked_at', None):
@@ -471,7 +472,7 @@ def calculate_consistency_score():
     if not is_paused():
         UserStats.update_by_id(stats.id, {
             'last_consistency_score': consistency_score,
-            'last_consistency_calculated_at': datetime.utcnow().isoformat()
+            'last_consistency_calculated_at': tz.now_iso()
         })
     else:
         consistency_score = getattr(stats, 'last_consistency_score', 0) or consistency_score
@@ -489,7 +490,7 @@ def calculate_consistency_score():
 
 def check_and_unlock_achievements():
     stats = UserStats.get_stats()
-    now = datetime.utcnow().isoformat()
+    now = tz.now_iso()
     
     streak = getattr(stats, 'current_outreach_streak_days', 0) or 0
     xp = getattr(stats, 'current_xp', 0) or 0
@@ -746,6 +747,6 @@ def add_win():
 def claim_reward(id):
     reward = UnlockedReward.get_by_id(id)
     if reward and not getattr(reward, 'claimed_at', None):
-        UnlockedReward.update_by_id(id, {'claimed_at': datetime.utcnow().isoformat()})
+        UnlockedReward.update_by_id(id, {'claimed_at': tz.now_iso()})
         flash('Reward claimed!', 'success')
     return redirect(url_for('gamification.index'))

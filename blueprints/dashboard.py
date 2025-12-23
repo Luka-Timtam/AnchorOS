@@ -6,6 +6,7 @@ from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
 from blueprints.monthly_review import auto_generate_monthly_review_if_needed, get_newly_generated_review
 from cache import cache, CACHE_KEY_DASHBOARD_CHARTS, CACHE_KEY_MRR
+import timezone as tz
 import logging
 
 logger = logging.getLogger(__name__)
@@ -264,7 +265,7 @@ def index():
     widget_active = settings.get_dashboard_active()
     widget_names = UserSettings.DEFAULT_WIDGET_NAMES
     
-    seven_days_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
+    seven_days_ago = (tz.now() - timedelta(days=7)).isoformat()
     revenue_rewards = RevenueReward.query_all()
     revenue_notifications = []
     for r in revenue_rewards:

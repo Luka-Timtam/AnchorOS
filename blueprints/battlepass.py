@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_supabase import get_supabase
 from datetime import datetime
 from blueprints.gamification import check_revenue_rewards, get_lifetime_revenue
+import timezone as tz
 
 battlepass_bp = Blueprint('battlepass', __name__, url_prefix='/battlepass')
 
@@ -144,7 +145,7 @@ def claim_level_reward(id):
         flash('This reward has already been claimed.', 'error')
     else:
         client.table('unlocked_rewards').update({
-            'claimed_at': datetime.utcnow().isoformat()
+            'claimed_at': tz.now_iso()
         }).eq('id', id).execute()
         flash(f"Claimed: {reward.get('reward_text', 'Reward')}! Enjoy your reward!", 'success')
     return redirect(url_for('battlepass.index'))
@@ -165,7 +166,7 @@ def claim_revenue_reward(id):
         flash('This reward has already been claimed.', 'error')
     else:
         client.table('revenue_rewards').update({
-            'claimed_at': datetime.utcnow().isoformat()
+            'claimed_at': tz.now_iso()
         }).eq('id', id).execute()
         flash(f"Claimed: {reward.get('reward_text', 'Reward')}! Enjoy your reward!", 'success')
     return redirect(url_for('battlepass.index'))

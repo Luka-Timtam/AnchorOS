@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_supabase import Client, Lead
 from datetime import datetime, date
 from cache import invalidate_client_cache
+import timezone as tz
 
 clients_bp = Blueprint('clients', __name__, url_prefix='/clients')
 
@@ -109,7 +110,7 @@ def edit(id):
             'saas_active': request.form.get('saas_active') == 'on',
             'monthly_saas_fee': float(request.form.get('monthly_saas_fee') or 0),
             'notes': request.form.get('notes'),
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': tz.now_iso()
         })
         invalidate_client_cache()
         flash('Client updated successfully!', 'success')

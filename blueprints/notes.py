@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from db_supabase import Note, UserStats, ActivityLog, XPLog, get_supabase
 from datetime import date, datetime
+import timezone as tz
 
 notes_bp = Blueprint('notes', __name__, url_prefix='/notes')
 
@@ -106,7 +107,7 @@ def new():
         
         is_first_today = not has_note_today()
         
-        now = datetime.utcnow().isoformat()
+        now = tz.now_iso()
         note = Note.insert({
             'title': title,
             'content': content,
@@ -164,7 +165,7 @@ def edit(id):
             'title': title,
             'content': content,
             'tags': tags if tags else '',
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': tz.now_iso()
         })
         
         flash('Note updated!', 'success')
@@ -197,7 +198,7 @@ def pin(id):
     if not is_pinned:
         pinned_today = has_pinned_today()
         
-        Note.update_by_id(id, {'pinned': True, 'updated_at': datetime.utcnow().isoformat()})
+        Note.update_by_id(id, {'pinned': True, 'updated_at': tz.now_iso()})
         
         if not pinned_today:
             user_stats = UserStats.get_stats()

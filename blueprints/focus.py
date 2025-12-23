@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime, date, timedelta
 from db_supabase import UserSettings, UserStats, UserTokens, FocusSession, ActivityLog, XPLog, get_supabase
+import timezone as tz
 
 focus_bp = Blueprint('focus', __name__, url_prefix='/focus')
 
@@ -15,7 +16,7 @@ def start_timer():
     if getattr(settings, 'focus_timer_active', False):
         return jsonify({'error': 'Timer already active'}), 400
     
-    end_time = datetime.utcnow() + timedelta(minutes=duration)
+    end_time = tz.now() + timedelta(minutes=duration)
     
     UserSettings.update_by_id(settings.id, {
         'focus_timer_active': True,
@@ -24,7 +25,7 @@ def start_timer():
     })
     
     session = FocusSession.insert({
-        'start_time': datetime.utcnow().isoformat(),
+        'start_time': tz.now_iso(),
         'duration_minutes': duration,
         'completed': False
     })
@@ -70,7 +71,7 @@ def check_timer():
             'remaining_seconds': 0
         })
     
-    now = datetime.utcnow()
+    now = tz.now()
     focus_end = getattr(settings, 'focus_timer_end', None)
     
     if focus_end:
@@ -109,7 +110,7 @@ def complete_session_internal(settings):
         session = result.data[0]
         FocusSession.update_by_id(session['id'], {
             'completed': True,
-            'end_time': datetime.utcnow().isoformat()
+            'end_time': tz.now_iso()
         })
     
     duration = getattr(settings, 'focus_timer_length', 25) or 25
@@ -147,15 +148,12 @@ def get_status():
             'active': False
         })
     
-    now = datetime.utcnow()
+    now = tz.now()
     focus_end = getattr(settings, 'focus_timer_end', None)
     
     if focus_end:
         if isinstance(focus_end, str):
-            try:
-                focus_end = datetime.fromisoformat(focus_end.replace('Z', '+00:00').replace('+00:00', ''))
-            except:
-                focus_end = None
+            focus_end = tz.parse_datetime_to_local(focus_end)
     
     if focus_end and now >= focus_end:
         remaining = 0

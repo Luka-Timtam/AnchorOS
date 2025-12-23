@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from db_supabase import get_supabase
 from datetime import datetime
+import timezone as tz
 
 outreach_templates_bp = Blueprint('outreach_templates', __name__, url_prefix='/outreach-templates')
 
@@ -49,7 +50,7 @@ def index():
 def new():
     if request.method == 'POST':
         client = get_supabase()
-        now = datetime.utcnow().isoformat()
+        now = tz.now_iso()
         template_data = {
             'name': request.form['name'],
             'category': request.form['category'],
@@ -96,7 +97,7 @@ def edit(id):
             'subcategory': request.form.get('subcategory', ''),
             'content': request.form['content'],
             'is_favourite': request.form.get('is_favourite') == 'on',
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': tz.now_iso()
         }
         client.table('outreach_templates').update(update_data).eq('id', id).execute()
         flash('Template updated successfully!', 'success')
@@ -128,7 +129,7 @@ def toggle_favourite(id):
     
     client.table('outreach_templates').update({
         'is_favourite': new_fav,
-        'updated_at': datetime.utcnow().isoformat()
+        'updated_at': tz.now_iso()
     }).eq('id', id).execute()
     
     return jsonify({'success': True, 'is_favourite': new_fav})

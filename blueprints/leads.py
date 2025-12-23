@@ -3,6 +3,7 @@ from db_supabase import Lead, OutreachLog, Client, ActivityLog, WinsLog, get_sup
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
+import timezone as tz
 
 leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
 
@@ -145,7 +146,7 @@ def edit(id):
             'has_website': has_website,
             'website_quality': website_quality,
             'demo_site_built': request.form.get('demo_site_built') == 'on',
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': tz.now_iso()
         })
         flash('Lead updated successfully!', 'success')
         return redirect(url_for('leads.detail', id=id))
@@ -164,7 +165,7 @@ def archive(id):
     lead = Lead.get_by_id(id)
     if not lead:
         abort(404)
-    Lead.update_by_id(id, {'archived_at': datetime.utcnow().isoformat()})
+    Lead.update_by_id(id, {'archived_at': tz.now_iso()})
     flash('Lead archived successfully!', 'success')
     return redirect(url_for('leads.index'))
 
@@ -191,7 +192,7 @@ def update_status(id):
         
         Lead.update_by_id(id, {
             'status': new_status,
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': tz.now_iso()
         })
         
         if old_status != new_status:
@@ -263,7 +264,7 @@ def convert_to_client(id):
             'related_lead_id': lead.id
         })
         
-        now = datetime.utcnow().isoformat()
+        now = tz.now_iso()
         Lead.update_by_id(id, {
             'status': 'closed_won',
             'converted_at': now,
@@ -316,7 +317,7 @@ def close_lost(id):
             close_reasons.append(f'Other: {other_reason}')
         close_reason_str = ', '.join(close_reasons) if close_reasons else None
         
-        now = datetime.utcnow().isoformat()
+        now = tz.now_iso()
         Lead.update_by_id(id, {
             'status': 'closed_lost',
             'close_reason': close_reason_str,

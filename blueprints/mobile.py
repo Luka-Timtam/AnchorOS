@@ -5,6 +5,7 @@ from db_supabase import (
     UserStats, UserSettings, ActivityLog, get_supabase
 )
 from blueprints.notes import get_all_tags
+import timezone as tz
 
 mobile_bp = Blueprint('mobile', __name__, url_prefix='/mobile')
 
@@ -145,8 +146,8 @@ def lead_new():
             'source': request.form.get('source', ''),
             'status': 'new',
             'notes': request.form.get('notes', ''),
-            'created_at': datetime.utcnow().isoformat(),
-            'updated_at': datetime.utcnow().isoformat()
+            'created_at': tz.now_iso(),
+            'updated_at': tz.now_iso()
         })
         ActivityLog.log_activity('lead_created', f'Created lead: {request.form.get("name")}', lead.id if lead else None, 'lead')
         flash('Lead added successfully', 'success')
@@ -172,8 +173,8 @@ def lead_outreach(lead_id):
         })
         
         update_data = {
-            'last_contacted_at': datetime.utcnow().isoformat(),
-            'updated_at': datetime.utcnow().isoformat()
+            'last_contacted_at': tz.now_iso(),
+            'updated_at': tz.now_iso()
         }
         
         if request.form.get('outcome') == 'booked_call':
@@ -228,8 +229,8 @@ def client_new():
             'project_type': request.form.get('project_type', 'website'),
             'status': 'active',
             'notes': request.form.get('notes', ''),
-            'created_at': datetime.utcnow().isoformat(),
-            'updated_at': datetime.utcnow().isoformat()
+            'created_at': tz.now_iso(),
+            'updated_at': tz.now_iso()
         })
         ActivityLog.log_activity('client_created', f'Created client: {request.form.get("name")}', client_obj.id if client_obj else None, 'client')
         flash('Client added successfully', 'success')
@@ -272,7 +273,7 @@ def task_new():
             'description': request.form.get('description', ''),
             'due_date': due_date,
             'status': 'open',
-            'created_at': datetime.utcnow().isoformat()
+            'created_at': tz.now_iso()
         })
         ActivityLog.log_activity('task_created', f'Created task: {request.form.get("title")}', task.id if task else None, 'task')
         flash('Task added', 'success')
@@ -346,7 +347,7 @@ def note_new():
             return render_template('mobile/note_form.html', title=title, content=content)
         
         tags = request.form.get('tags', '').strip()
-        now = datetime.utcnow().isoformat()
+        now = tz.now_iso()
         note = Note.insert({
             'title': title if title else 'Quick Note',
             'content': content,
@@ -394,7 +395,7 @@ def note_edit(note_id):
             'title': title if title else 'Quick Note',
             'content': content,
             'tags': tags if tags else '',
-            'updated_at': datetime.utcnow().isoformat()
+            'updated_at': tz.now_iso()
         })
         
         ActivityLog.log_activity('note_updated', f'Updated note: {title if title else "Quick Note"}', note_id, 'note')
@@ -430,7 +431,7 @@ def note_pin(note_id):
     is_pinned = getattr(note, 'pinned', False)
     Note.update_by_id(note_id, {
         'pinned': not is_pinned,
-        'updated_at': datetime.utcnow().isoformat()
+        'updated_at': tz.now_iso()
     })
     
     if is_pinned:
@@ -506,8 +507,8 @@ def quick_outreach():
         
         if lead_id:
             Lead.update_by_id(int(lead_id), {
-                'last_contacted_at': datetime.utcnow().isoformat(),
-                'updated_at': datetime.utcnow().isoformat()
+                'last_contacted_at': tz.now_iso(),
+                'updated_at': tz.now_iso()
             })
         
         add_xp(XP_RULES.get('outreach_log', 5), 'Outreach logged')
