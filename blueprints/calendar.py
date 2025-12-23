@@ -186,11 +186,11 @@ def calendar_data():
     if data['current_boss']:
         boss = data['current_boss']
         boss_data = {
-            'boss_name': getattr(boss, 'boss_name', ''),
-            'current_outreach': getattr(boss, 'current_outreach', 0),
-            'target_outreach': getattr(boss, 'target_outreach', 0),
-            'is_defeated': getattr(boss, 'is_defeated', False),
-            'reward_tokens': getattr(boss, 'reward_tokens', 0)
+            'description': getattr(boss, 'description', '') or 'Monthly Boss',
+            'progress': getattr(boss, 'progress_value', 0) or 0,
+            'target': getattr(boss, 'target_value', 1) or 1,
+            'is_completed': getattr(boss, 'is_completed', False),
+            'reward_tokens': getattr(boss, 'reward_tokens', 0) or 0
         }
     
     return jsonify({
