@@ -110,11 +110,21 @@ Key table name mappings (some differ from legacy models):
 - Cache keys: `CACHE_KEY_MRR` (45s), `CACHE_KEY_DASHBOARD_CHARTS` (60s), `CACHE_KEY_LIFETIME_REVENUE` (60s)
 - Cached data: Dashboard MRR/client stats (computed from fresh clients), chart data, lifetime revenue
 - Important: Never cache raw database objects - only computed metrics
-- Invalidation: Automatic cache clear on client/freelance create/edit/delete
+- Invalidation: Automatic cache clear on client/freelance create/edit/delete, also on lead-to-client conversion
 - Functions: `invalidate_client_cache()`, `invalidate_freelance_cache()`, `invalidate_revenue_cache()`
 - Logging: Debug-level cache hit/miss logging for troubleshooting
 - Dashboard widgets: Staggered fade-in animation (`.widget-animate` class)
 - Skeleton CSS: Available via `.skeleton`, `.skeleton-text`, `.skeleton-number` classes
+
+**Date Normalization (December 2025):**
+- Helper: `normalize_date()` in dashboard.py converts None, date objects, or ISO strings to date objects for safe comparison
+- Critical: Use this when comparing dates that may be either date objects or ISO strings from Supabase
+- Pattern: `if normalize_date(client.get('start_date')) >= month_start:` instead of direct comparison
+
+**Analytics "This Month" Section (December 2025):**
+- Displays current month metrics: project revenue, MRR, expected total, new clients, deals closed, outreach count
+- Shows new leads count separately in footer row
+- Uses green gradient styling (`from-green-500/10 to-emerald-500/5`) to distinguish from forecast section
 
 ## Page Transitions (December 2025)
 - Swup.js integration for smooth, native-app-like page transitions
