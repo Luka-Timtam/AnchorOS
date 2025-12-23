@@ -147,7 +147,7 @@
 {% macro render_gamification_stats() %}
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
     <a href="{{ url_for('gamification.index') }}" class="glass-card p-5 hover:border-aqua/50 group relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-aqua/10 to-cyan-500/5"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-aqua/10 to-cyan-500/5 pointer-events-none"></div>
         <div class="relative flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-aqua">XP</h3>
@@ -157,8 +157,8 @@
         </div>
     </a>
     
-    <a href="{{ url_for('rewards.index') }}" class="glass-card p-5 hover:border-yellow-400/50 group relative overflow-hidden shimmer-on-hover">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-amber-500/5"></div>
+    <a href="{{ url_for('rewards.index') }}" class="glass-card p-5 hover:border-yellow-400/50 group relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-amber-500/5 pointer-events-none"></div>
         <div class="relative flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-yellow-400">Tokens</h3>
@@ -169,7 +169,7 @@
     </a>
     
     <a href="{{ url_for('gamification.index') }}" class="glass-card p-5 hover:border-cinnabar/50 group relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-cinnabar/10 to-orange-500/5"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-cinnabar/10 to-orange-500/5 pointer-events-none"></div>
         <div class="relative flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-cinnabar">Streak</h3>
@@ -183,7 +183,7 @@
     </a>
     
     <a href="{{ url_for('gamification.index') }}" class="glass-card p-5 hover:border-green-400/50 group relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5 pointer-events-none"></div>
         <div class="relative flex items-center justify-between">
             <div>
                 <h3 class="text-lg font-semibold text-green-400">Consistency</h3>
