@@ -725,6 +725,23 @@ def delete_milestone_reward(id):
     return redirect(url_for('gamification.index'))
 
 
+@gamification_bp.route('/wins/add', methods=['POST'])
+def add_win():
+    title = request.form.get('title', '').strip()
+    description = request.form.get('description', '').strip()
+    
+    if title:
+        WinsLog.insert({
+            'title': title,
+            'description': description or None,
+        })
+        flash('Win added successfully!', 'success')
+    else:
+        flash('Win title is required.', 'error')
+    
+    return redirect(url_for('gamification.index'))
+
+
 @gamification_bp.route('/rewards/<int:id>/claim', methods=['POST'])
 def claim_reward(id):
     reward = UnlockedReward.get_by_id(id)
