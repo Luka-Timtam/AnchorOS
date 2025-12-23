@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_supabase import FreelancingIncome, get_supabase
 from datetime import date
 import calendar
+from cache import invalidate_freelance_cache
 
 freelancing_bp = Blueprint('freelancing', __name__, url_prefix='/freelancing')
 
@@ -128,6 +129,7 @@ def add():
             'amount': amount,
             'date_completed': job_date.isoformat()
         })
+        invalidate_freelance_cache()
         
         flash('Freelance income added successfully!', 'success')
         return redirect(url_for('freelancing.index'))
@@ -169,6 +171,7 @@ def edit(id):
             'amount': amount,
             'date_completed': job_date
         })
+        invalidate_freelance_cache()
         
         flash('Freelance income updated!', 'success')
         return redirect(url_for('freelancing.index'))
@@ -182,5 +185,6 @@ def delete(id):
     if not job:
         abort(404)
     FreelancingIncome.delete_by_id(id)
+    invalidate_freelance_cache()
     flash('Freelance income deleted', 'success')
     return redirect(url_for('freelancing.index'))

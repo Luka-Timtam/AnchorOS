@@ -164,6 +164,12 @@ def check_milestone_rewards(current_level):
 
 
 def get_lifetime_revenue():
+    from cache import cache, CACHE_KEY_LIFETIME_REVENUE
+    
+    cached_value, hit = cache.get(CACHE_KEY_LIFETIME_REVENUE)
+    if hit:
+        return cached_value
+    
     total_revenue = 0.0
     clients = Client.query_all()
     today = date.today()
@@ -193,6 +199,7 @@ def get_lifetime_revenue():
     for income in freelance_income:
         total_revenue += float(getattr(income, 'amount', 0) or 0)
     
+    cache.set(CACHE_KEY_LIFETIME_REVENUE, total_revenue, ttl=60)
     return total_revenue
 
 

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from db_supabase import Client, Lead
 from datetime import datetime, date
+from cache import invalidate_client_cache
 
 clients_bp = Blueprint('clients', __name__, url_prefix='/clients')
 
@@ -61,6 +62,7 @@ def create():
             'monthly_saas_fee': float(request.form.get('monthly_saas_fee') or 0),
             'notes': request.form.get('notes')
         })
+        invalidate_client_cache()
         flash('Client created successfully!', 'success')
         return redirect(url_for('clients.index'))
     
@@ -109,6 +111,7 @@ def edit(id):
             'notes': request.form.get('notes'),
             'updated_at': datetime.utcnow().isoformat()
         })
+        invalidate_client_cache()
         flash('Client updated successfully!', 'success')
         return redirect(url_for('clients.detail', id=id))
     
@@ -126,5 +129,6 @@ def delete(id):
     if not client:
         abort(404)
     Client.delete_by_id(id)
+    invalidate_client_cache()
     flash('Client deleted successfully!', 'success')
     return redirect(url_for('clients.index'))

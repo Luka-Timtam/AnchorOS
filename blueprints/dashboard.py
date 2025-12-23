@@ -5,6 +5,10 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
 from blueprints.monthly_review import auto_generate_monthly_review_if_needed, get_newly_generated_review
+from cache import cache, CACHE_KEY_DASHBOARD_STATS, CACHE_KEY_DASHBOARD_CHARTS, CACHE_KEY_MRR
+import logging
+
+logger = logging.getLogger(__name__)
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -14,13 +18,122 @@ def get_week_start(d):
 def get_month_start(d):
     return d.replace(day=1)
 
+
+def get_cached_client_stats():
+    cached_value, hit = cache.get(CACHE_KEY_MRR)
+    if hit:
+        logger.debug("[Dashboard] Using cached MRR/client stats")
+        return cached_value
+    
+    clients = Client.query_all()
+    today = date.today()
+    month_start = get_month_start(today)
+    
+    new_clients_month = 0
+    project_revenue_month = Decimal('0')
+    hosting_mrr = Decimal('0')
+    saas_mrr = Decimal('0')
+    
+    for c in clients:
+        start_date = getattr(c, 'start_date', '')
+        if isinstance(start_date, str) and start_date >= month_start.isoformat():
+            new_clients_month += 1
+            project_revenue_month += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
+        
+        if getattr(c, 'hosting_active', False):
+            hosting_mrr += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
+        if getattr(c, 'saas_active', False):
+            saas_mrr += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
+    
+    last_3_months_revenue = []
+    for i in range(1, 4):
+        m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+        m_end = (m_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        rev = Decimal('0')
+        for c in clients:
+            start_date = getattr(c, 'start_date', '')
+            if isinstance(start_date, str):
+                if m_start.isoformat() <= start_date <= m_end.isoformat():
+                    rev += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
+        last_3_months_revenue.append(float(rev))
+    
+    avg_project_revenue = sum(last_3_months_revenue) / 3 if last_3_months_revenue else 0
+    total_mrr = hosting_mrr + saas_mrr
+    forecast_monthly = float(total_mrr) + avg_project_revenue
+    forecast_3_months = forecast_monthly * 3
+    
+    result = {
+        'clients': clients,
+        'new_clients_month': new_clients_month,
+        'project_revenue_month': float(project_revenue_month),
+        'hosting_mrr': float(hosting_mrr),
+        'saas_mrr': float(saas_mrr),
+        'total_mrr': float(total_mrr),
+        'forecast_monthly': forecast_monthly,
+        'forecast_3_months': forecast_3_months
+    }
+    
+    cache.set(CACHE_KEY_MRR, result, ttl=45)
+    logger.debug("[Dashboard] Cached MRR/client stats")
+    return result
+
+
+def get_cached_chart_data(clients):
+    cached_value, hit = cache.get(CACHE_KEY_DASHBOARD_CHARTS)
+    if hit:
+        logger.debug("[Dashboard] Using cached chart data")
+        return cached_value
+    
+    today = date.today()
+    
+    monthly_revenue_data = []
+    monthly_mrr_data = []
+    month_labels = []
+    
+    for i in range(11, -1, -1):
+        m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+        if m_start.month == 12:
+            m_end = m_start.replace(year=m_start.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
+        
+        month_labels.append(m_start.strftime('%b %Y'))
+        
+        month_revenue = Decimal('0')
+        hosting_at_month = Decimal('0')
+        saas_at_month = Decimal('0')
+        
+        for c in clients:
+            start_date = getattr(c, 'start_date', '')
+            if isinstance(start_date, str):
+                if m_start.isoformat() <= start_date <= m_end.isoformat():
+                    month_revenue += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
+                if start_date <= m_end.isoformat():
+                    if getattr(c, 'hosting_active', False):
+                        hosting_at_month += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
+                    if getattr(c, 'saas_active', False):
+                        saas_at_month += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
+        
+        monthly_revenue_data.append(float(month_revenue))
+        monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
+    
+    result = {
+        'month_labels': month_labels,
+        'monthly_revenue_data': monthly_revenue_data,
+        'monthly_mrr_data': monthly_mrr_data
+    }
+    
+    cache.set(CACHE_KEY_DASHBOARD_CHARTS, result, ttl=60)
+    logger.debug("[Dashboard] Cached chart data")
+    return result
+
 @dashboard_bp.route('/')
 def index():
     today = date.today()
     week_start = get_week_start(today)
     month_start = get_month_start(today)
     
-    client = get_supabase()
+    supabase_client = get_supabase()
     
     leads = Lead.query_all()
     lead_counts_dict = {}
@@ -39,55 +152,27 @@ def index():
             if created_date >= month_start.isoformat():
                 new_leads_month += 1
     
-    # Use count queries for outreach stats
-    outreach_today_result = client.table('outreach_logs').select('id', count='exact').eq('date', today.isoformat()).execute()
+    outreach_today_result = supabase_client.table('outreach_logs').select('id', count='exact').eq('date', today.isoformat()).execute()
     outreach_today = outreach_today_result.count if outreach_today_result.count else len(outreach_today_result.data)
     
-    outreach_week_result = client.table('outreach_logs').select('id', count='exact').gte('date', week_start.isoformat()).execute()
+    outreach_week_result = supabase_client.table('outreach_logs').select('id', count='exact').gte('date', week_start.isoformat()).execute()
     outreach_week = outreach_week_result.count if outreach_week_result.count else len(outreach_week_result.data)
     
-    outreach_month_result = client.table('outreach_logs').select('id', count='exact').gte('date', month_start.isoformat()).execute()
+    outreach_month_result = supabase_client.table('outreach_logs').select('id', count='exact').gte('date', month_start.isoformat()).execute()
     outreach_month = outreach_month_result.count if outreach_month_result.count else len(outreach_month_result.data)
     
-    # Fetch outreach dates only for weekly chart data (12 weeks)
     twelve_weeks_ago = get_week_start(today) - timedelta(weeks=11)
-    outreach_result = client.table('outreach_logs').select('date').gte('date', twelve_weeks_ago.isoformat()).execute()
+    outreach_result = supabase_client.table('outreach_logs').select('date').gte('date', twelve_weeks_ago.isoformat()).execute()
     
-    clients = Client.query_all()
-    
-    new_clients_month = 0
-    project_revenue_month = Decimal('0')
-    hosting_mrr = Decimal('0')
-    saas_mrr = Decimal('0')
-    
-    for c in clients:
-        start_date = getattr(c, 'start_date', '')
-        if isinstance(start_date, str) and start_date >= month_start.isoformat():
-            new_clients_month += 1
-            project_revenue_month += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
-        
-        if getattr(c, 'hosting_active', False):
-            hosting_mrr += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
-        if getattr(c, 'saas_active', False):
-            saas_mrr += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
-    
-    total_mrr = hosting_mrr + saas_mrr
-    
-    last_3_months_revenue = []
-    for i in range(1, 4):
-        m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
-        m_end = (m_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        rev = Decimal('0')
-        for c in clients:
-            start_date = getattr(c, 'start_date', '')
-            if isinstance(start_date, str):
-                if m_start.isoformat() <= start_date <= m_end.isoformat():
-                    rev += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
-        last_3_months_revenue.append(float(rev))
-    
-    avg_project_revenue = sum(last_3_months_revenue) / 3 if last_3_months_revenue else 0
-    forecast_monthly = float(total_mrr) + avg_project_revenue
-    forecast_3_months = forecast_monthly * 3
+    client_stats = get_cached_client_stats()
+    clients = client_stats['clients']
+    new_clients_month = client_stats['new_clients_month']
+    project_revenue_month = client_stats['project_revenue_month']
+    hosting_mrr = client_stats['hosting_mrr']
+    saas_mrr = client_stats['saas_mrr']
+    total_mrr = client_stats['total_mrr']
+    forecast_monthly = client_stats['forecast_monthly']
+    forecast_3_months = client_stats['forecast_3_months']
     
     outreach_weekly_data = []
     deals_weekly_data = []
@@ -132,36 +217,10 @@ def index():
             elif next_action < today.isoformat():
                 followup_overdue += 1
     
-    monthly_revenue_data = []
-    monthly_mrr_data = []
-    month_labels = []
-    
-    for i in range(11, -1, -1):
-        m_start = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
-        if m_start.month == 12:
-            m_end = m_start.replace(year=m_start.year + 1, month=1, day=1) - timedelta(days=1)
-        else:
-            m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
-        
-        month_labels.append(m_start.strftime('%b %Y'))
-        
-        month_revenue = Decimal('0')
-        hosting_at_month = Decimal('0')
-        saas_at_month = Decimal('0')
-        
-        for c in clients:
-            start_date = getattr(c, 'start_date', '')
-            if isinstance(start_date, str):
-                if m_start.isoformat() <= start_date <= m_end.isoformat():
-                    month_revenue += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
-                if start_date <= m_end.isoformat():
-                    if getattr(c, 'hosting_active', False):
-                        hosting_at_month += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
-                    if getattr(c, 'saas_active', False):
-                        saas_at_month += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
-        
-        monthly_revenue_data.append(float(month_revenue))
-        monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
+    chart_data = get_cached_chart_data(clients)
+    month_labels = chart_data['month_labels']
+    monthly_revenue_data = chart_data['monthly_revenue_data']
+    monthly_mrr_data = chart_data['monthly_mrr_data']
     
     token_balance = UserTokens.get_balance()
     
