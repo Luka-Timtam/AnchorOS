@@ -711,6 +711,20 @@ def toggle_milestone_reward(id):
     return redirect(url_for('gamification.index'))
 
 
+@gamification_bp.route('/rewards/level/<int:id>/delete', methods=['POST'])
+def delete_level_reward(id):
+    LevelReward.delete_by_id(id)
+    flash('Level reward deleted successfully!', 'success')
+    return redirect(url_for('gamification.index'))
+
+
+@gamification_bp.route('/rewards/milestone/<int:id>/delete', methods=['POST'])
+def delete_milestone_reward(id):
+    MilestoneReward.delete_by_id(id)
+    flash('Milestone reward deleted successfully!', 'success')
+    return redirect(url_for('gamification.index'))
+
+
 @gamification_bp.route('/rewards/<int:id>/claim', methods=['POST'])
 def claim_reward(id):
     reward = UnlockedReward.get_by_id(id)
