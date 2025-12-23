@@ -86,14 +86,15 @@ def create():
         
         next_action = parse_date(request.form.get('next_action_date'))
         
+        # Truncate fields to database limits to prevent VARCHAR overflow errors
         lead = Lead.insert({
-            'name': request.form.get('name'),
-            'business_name': request.form.get('business_name'),
-            'niche': request.form.get('niche'),
-            'email': request.form.get('email'),
-            'phone': request.form.get('phone'),
-            'source': request.form.get('source'),
-            'status': request.form.get('status', 'new'),
+            'name': (request.form.get('name') or '')[:100],
+            'business_name': (request.form.get('business_name') or '')[:100],
+            'niche': (request.form.get('niche') or '')[:50],
+            'email': (request.form.get('email') or '')[:100],
+            'phone': (request.form.get('phone') or '')[:20],
+            'source': (request.form.get('source') or '')[:50],
+            'status': request.form.get('status', 'new')[:50],
             'notes': request.form.get('notes'),
             'next_action_date': next_action.isoformat() if next_action else None,
             'has_website': has_website,
@@ -134,13 +135,13 @@ def edit(id):
         next_action = parse_date(request.form.get('next_action_date'))
         
         Lead.update_by_id(id, {
-            'name': request.form.get('name'),
-            'business_name': request.form.get('business_name'),
-            'niche': request.form.get('niche'),
-            'email': request.form.get('email'),
-            'phone': request.form.get('phone'),
-            'source': request.form.get('source'),
-            'status': request.form.get('status'),
+            'name': (request.form.get('name') or '')[:100],
+            'business_name': (request.form.get('business_name') or '')[:100],
+            'niche': (request.form.get('niche') or '')[:50],
+            'email': (request.form.get('email') or '')[:100],
+            'phone': (request.form.get('phone') or '')[:20],
+            'source': (request.form.get('source') or '')[:50],
+            'status': (request.form.get('status') or '')[:50],
             'notes': request.form.get('notes'),
             'next_action_date': next_action.isoformat() if next_action else None,
             'has_website': has_website,
