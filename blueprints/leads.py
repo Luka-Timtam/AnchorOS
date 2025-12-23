@@ -3,6 +3,7 @@ from db_supabase import Lead, OutreachLog, Client, ActivityLog, WinsLog, get_sup
 from datetime import datetime, date
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 from blueprints.boss import update_boss_progress
+from cache import invalidate_client_cache
 import timezone as tz
 
 leads_bp = Blueprint('leads', __name__, url_prefix='/leads')
@@ -307,6 +308,7 @@ def convert_to_client(id):
             'timestamp': now
         })
         
+        invalidate_client_cache()
         flash('Lead converted to client successfully!', 'success')
         return redirect(url_for('clients.detail', id=client.id))
     
