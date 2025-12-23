@@ -2,6 +2,7 @@ import os
 from supabase import create_client, Client
 from datetime import datetime, date
 import json
+import timezone as tz
 
 _supabase_client: Client = None
 
@@ -46,31 +47,11 @@ def serialize_row(row: dict) -> dict:
 
 
 def parse_datetime(value):
-    if value is None:
-        return None
-    if isinstance(value, datetime):
-        return value
-    if isinstance(value, str):
-        try:
-            if 'T' in value:
-                return datetime.fromisoformat(value.replace('Z', '+00:00'))
-            return datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
-        except:
-            return None
-    return None
+    return tz.parse_datetime_to_local(value)
 
 
 def parse_date(value):
-    if value is None:
-        return None
-    if isinstance(value, date):
-        return value
-    if isinstance(value, str):
-        try:
-            return date.fromisoformat(value.split('T')[0])
-        except:
-            return None
-    return None
+    return tz.parse_date_only(value)
 
 
 class SupabaseModel:
