@@ -303,7 +303,8 @@ def convert_to_client(id):
             'title': f'Deal Won: {lead.name}',
             'description': f'Closed deal with {getattr(lead, "business_name", "") or lead.name}. Reason: {close_reason_str}',
             'xp_value': XP_RULES['lead_closed_won'],
-            'token_value': 0
+            'token_value': 0,
+            'timestamp': now
         })
         
         flash('Lead converted to client successfully!', 'success')
