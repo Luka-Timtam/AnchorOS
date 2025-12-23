@@ -40,7 +40,7 @@
             <div class="mb-4">
                 <div class="flex justify-between text-sm mb-2">
                     <span class="text-medium">Progress</span>
-                    <span class="text-high">{{ current_boss.progress_value }} / {{ current_boss.target_value }}</span>
+                    <span class="text-high">{{ current_boss.progress_value or 0 }} / {{ current_boss.target_value or 0 }}</span>
                 </div>
                 <div class="progress-bar-container h-4">
                     <div class="h-4 rounded-full transition-all duration-500 {% if current_boss.is_completed %}bg-green-500{% else %}progress-bar-cinnabar{% endif %}" 
@@ -51,7 +51,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="text-2xl">🪙</span>
-                    <span class="text-xl font-bold text-yellow-400">{{ current_boss.reward_tokens }} Tokens</span>
+                    <span class="text-xl font-bold text-yellow-400">{{ current_boss.reward_tokens or 0 }} Tokens</span>
                 </div>
                 {% if current_boss.is_completed %}
                 <span class="text-low text-sm">

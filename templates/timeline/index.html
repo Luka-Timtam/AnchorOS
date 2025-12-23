@@ -144,7 +144,13 @@
                             {{ activity.description }}
                         </p>
                         <p class="text-xs text-low mt-1">
-                            {{ activity.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
+                            {% if activity.timestamp %}
+                                {% if activity.timestamp is string %}
+                                    {{ activity.timestamp.split('T')[0] }}
+                                {% else %}
+                                    {{ activity.timestamp.strftime('%b %d, %Y at %I:%M %p') }}
+                                {% endif %}
+                            {% endif %}
                         </p>
                     </div>
                     {% if activity.related_id and activity.related_object_type %}
