@@ -1,35 +1,65 @@
 import os
+import logging
 from supabase import create_client, Client
 from datetime import datetime, date
 import json
 import timezone as tz
 
+logger = logging.getLogger(__name__)
+
 _supabase_client: Client = None
+_client_initialized: bool = False
 
 def get_supabase() -> Client:
-    global _supabase_client
-    if _supabase_client is None:
-        url = os.environ.get("SUPABASE_URL")
-        key = os.environ.get("SUPABASE_ANON_KEY")
-        
-        if not url or not key:
-            raise RuntimeError(
-                "Supabase credentials missing. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
-            )
-        
-        _supabase_client = create_client(url, key)
+    """
+    Returns the singleton Supabase client instance.
+    The client is created exactly once per application lifecycle.
+    Subsequent calls return the cached instance without any re-initialization.
+    """
+    global _supabase_client, _client_initialized
+    
+    if _supabase_client is not None:
+        return _supabase_client
+    
+    if _client_initialized:
+        raise RuntimeError("Supabase client was previously initialized but is now None. This should not happen.")
+    
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_ANON_KEY")
+    
+    if not url or not key:
+        raise RuntimeError(
+            "Supabase credentials missing. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
+        )
+    
+    logger.info("[Supabase] Creating client instance (this should happen once per app lifecycle)")
+    
+    _supabase_client = create_client(url, key)
+    _client_initialized = True
+    
+    logger.info("[Supabase] Client instance created successfully")
     
     return _supabase_client
 
 
 def check_connection():
+    """
+    Verifies database connectivity with a minimal query.
+    Uses the singleton client - does not create a new connection.
+    """
     try:
         client = get_supabase()
         result = client.table("user_stats").select("id").limit(1).execute()
+        logger.info("[Supabase] Connection verified successfully")
         return True
     except Exception as e:
-        print(f"Supabase connection error: {e}")
+        logger.error(f"[Supabase] Connection error: {e}")
         return False
+
+
+def is_client_initialized() -> bool:
+    """Returns True if the Supabase client has been initialized."""
+    return _client_initialized
 
 
 def serialize_value(value):

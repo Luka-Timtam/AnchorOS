@@ -95,6 +95,16 @@ Key table name mappings (some differ from legacy models):
 - Query limits: Apply limits (20-50) to list queries to prevent over-fetching
 - Query-level filtering: Apply status filters at database level instead of Python
 
+**Supabase Client Singleton (December 2025):**
+- Client initialized exactly once per app lifecycle via `get_supabase()` in `db_supabase.py`
+- Singleton pattern with `_supabase_client` module-level variable
+- `_client_initialized` flag prevents re-creation attempts
+- Logging: `[Supabase] Creating client instance` appears once on startup
+- Verification: `is_client_initialized()` function confirms singleton status
+- No dynamic schema/permission introspection - all table names are hardcoded
+- Flask session-based auth (not Supabase Auth) - no getUser()/getSession() calls
+- Client is reused across all routes, components, and page navigations
+
 **In-Memory Caching (December 2025):**
 - Module: `cache.py` provides simple in-memory caching with TTL (30-60 seconds)
 - Cache keys: `CACHE_KEY_MRR` (45s), `CACHE_KEY_DASHBOARD_CHARTS` (60s), `CACHE_KEY_LIFETIME_REVENUE` (60s)

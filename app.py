@@ -1,7 +1,14 @@
 import os
+import logging
 from datetime import timedelta
 from flask import Flask, redirect, url_for, session, request
 import timezone as tz
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
@@ -102,11 +109,13 @@ def create_app():
             return redirect(url_for('mobile.index'))
     
     with app.app_context():
-        from db_supabase import check_connection
+        from db_supabase import check_connection, is_client_initialized
+        logger.info("[App] Initializing Supabase client on app startup...")
         if not check_connection():
-            print("WARNING: Could not connect to Supabase. Please check SUPABASE_URL and SUPABASE_ANON_KEY environment variables.")
+            logger.warning("[App] Could not connect to Supabase. Please check SUPABASE_URL and SUPABASE_ANON_KEY environment variables.")
         else:
-            print("Supabase connection successful!")
+            logger.info("[App] Supabase connection successful!")
+            logger.info(f"[App] Supabase client initialized: {is_client_initialized()}")
     
     return app
 
