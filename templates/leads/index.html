@@ -68,7 +68,7 @@
         </div>
         <div>
             <label class="block text-sm font-medium text-medium mb-2">Sort By</label>
-            <select name="sort" class="w-full select-glass">
+            <select name="sort" class="w-full select-glass" onchange="this.form.submit()">
                 <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest First</option>
                 <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest First</option>
                 <option value="name_asc" {% if current_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
