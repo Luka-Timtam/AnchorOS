@@ -806,10 +806,11 @@ function openDayDetail(dateStr) {
                 }
                 if (data.mission) {
                     const mDone = data.mission.is_completed;
+                    const missionName = data.mission.mission_type || 'Daily Mission';
                     html += `<div><h4 class="text-sm font-medium text-purple-400 mb-3">Daily Mission</h4>
                         <div class="py-3">
-                            <p class="text-sm ${mDone ? 'text-green-400' : 'text-high'}">${data.mission.description}</p>
-                            <p class="text-xs text-low mt-2">${data.mission.progress}/${data.mission.target} - ${mDone ? 'Complete!' : 'In Progress'}</p>
+                            <p class="text-sm ${mDone ? 'text-green-400' : 'text-high'}">${missionName}</p>
+                            <p class="text-xs text-low mt-2">${data.mission.progress_count}/${data.mission.target_count} - ${mDone ? 'Complete!' : 'In Progress'}</p>
                         </div>
                     </div>`;
                 }
