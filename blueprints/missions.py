@@ -42,8 +42,20 @@ def index():
     
     week_ago = today - timedelta(days=7)
     client = get_supabase()
-    result = client.table('daily_missions').select('*').gte('mission_date', week_ago.isoformat()).lt('mission_date', today.isoformat()).order('mission_date', desc=True).execute()
-    past_missions = [DailyMission._parse_row(row) for row in result.data]
+    result = client.table('daily_missions').select('*').gte('mission_date', week_ago.isoformat()).lte('mission_date', today.isoformat()).order('mission_date', desc=True).execute()
+    past_missions = []
+    if result.data:
+        for row in result.data:
+            mission = DailyMission._parse_row(row)
+            # Convert mission_date string to date object for template formatting
+            mission_date = getattr(mission, 'mission_date', None)
+            if mission_date:
+                if isinstance(mission_date, str):
+                    mission.mission_date = date.fromisoformat(mission_date.split('T')[0])
+                elif hasattr(mission_date, 'date'):
+                    # If it's a datetime object, extract the date
+                    mission.mission_date = mission_date.date()
+            past_missions.append(mission)
     
     token_balance = UserTokens.get_balance()
     
