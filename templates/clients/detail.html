@@ -63,11 +63,11 @@
                 </div>
                 <div>
                     <p class="text-sm text-medium mb-1">Created</p>
-                    <p class="font-medium text-high">{{ client.created_at.strftime('%b %d, %Y') }}</p>
+                    <p class="font-medium text-high">{{ client.created_at.strftime('%b %d, %Y') if client.created_at else '-' }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-medium mb-1">Updated</p>
-                    <p class="font-medium text-high">{{ client.updated_at.strftime('%b %d, %Y') }}</p>
+                    <p class="font-medium text-high">{{ client.updated_at.strftime('%b %d, %Y') if client.updated_at else '-' }}</p>
                 </div>
             </div>
         </div>
