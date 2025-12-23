@@ -148,27 +148,38 @@ function toggleWebsiteQuality() {
     }
 }
 
-// Limit website quality selections to 3 max
+// Limit website quality selections to 3 max - prevent selecting 4th
 document.addEventListener('DOMContentLoaded', function() {
     const checkboxes = document.querySelectorAll('.website-quality-checkbox');
     
-    function updateCheckboxDisabledState() {
-        const checkedCount = document.querySelectorAll('.website-quality-checkbox:checked').length;
-        checkboxes.forEach(checkbox => {
-            if (checkedCount >= 3) {
-                checkbox.disabled = !checkbox.checked;
-            } else {
-                checkbox.disabled = false;
-            }
-        });
-    }
-    
     checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateCheckboxDisabledState);
+        checkbox.addEventListener('change', function() {
+            const checkedCount = document.querySelectorAll('.website-quality-checkbox:checked').length;
+            
+            // If trying to check a 4th box, uncheck it immediately
+            if (checkedCount > 3) {
+                this.checked = false;
+                return;
+            }
+            
+            // Update disabled state
+            checkboxes.forEach(cb => {
+                if (checkedCount >= 3) {
+                    cb.disabled = !cb.checked;
+                } else {
+                    cb.disabled = false;
+                }
+            });
+        });
     });
     
-    // Set initial state
-    updateCheckboxDisabledState();
+    // Set initial disabled state on load
+    const initialCheckedCount = document.querySelectorAll('.website-quality-checkbox:checked').length;
+    if (initialCheckedCount >= 3) {
+        checkboxes.forEach(cb => {
+            cb.disabled = !cb.checked;
+        });
+    }
 });
 </script>
 {% endblock %}
