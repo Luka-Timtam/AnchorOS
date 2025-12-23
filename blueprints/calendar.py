@@ -5,6 +5,26 @@ from calendar import monthrange
 
 calendar_bp = Blueprint('calendar', __name__, url_prefix='/calendar')
 
+MISSION_TYPE_NAMES = {
+    'outreach': 'Complete outreach activities',
+    'tasks': 'Complete tasks from your list',
+    'follow_ups': 'Follow up with leads',
+    'message_old_leads': 'Message dormant leads',
+    'log_revenue': 'Log revenue entries',
+    'add_notes': 'Add notes to leads',
+    'update_leads': 'Update lead information',
+}
+
+def get_mission_display_name(mission):
+    """Get a human-readable name for a mission, handling null values"""
+    if not mission:
+        return 'Daily Mission'
+    description = getattr(mission, 'description', None)
+    if description:
+        return description
+    mission_type = getattr(mission, 'mission_type', '') or ''
+    return MISSION_TYPE_NAMES.get(mission_type, mission_type.replace('_', ' ').title() or 'Daily Mission')
+
 def get_month_data(year, month):
     first_day = date(year, month, 1)
     _, days_in_month = monthrange(year, month)
@@ -219,9 +239,28 @@ def day_detail(date_str):
     mission_result = client.table('daily_missions').select('*').eq('mission_date', target_date.isoformat()).execute()
     mission = DailyMission._parse_row(mission_result.data[0]) if mission_result.data else None
     
+    today = date.today()
+    is_past = target_date < today
+    
+    mission_data = None
+    if mission:
+        is_completed = getattr(mission, 'is_completed', False)
+        progress = getattr(mission, 'progress_count', 0) or 0
+        target = getattr(mission, 'target_count', 1) or 1
+        
+        mission_data = {
+            'id': getattr(mission, 'id', 0),
+            'description': get_mission_display_name(mission),
+            'is_completed': is_completed,
+            'progress_count': progress,
+            'target_count': target,
+            'is_expired': is_past and not is_completed
+        }
+    
     return jsonify({
         'date': date_str,
         'date_formatted': target_date.strftime('%B %d, %Y'),
+        'is_past': is_past,
         'tasks': [{
             'id': getattr(t, 'id', 0),
             'title': getattr(t, 'title', ''),
@@ -234,13 +273,7 @@ def day_detail(date_str):
             'business_name': getattr(l, 'business_name', '') or '',
             'status': getattr(l, 'status', '')
         } for l in leads],
-        'mission': {
-            'id': getattr(mission, 'id', 0),
-            'mission_type': getattr(mission, 'mission_type', ''),
-            'is_completed': getattr(mission, 'is_completed', False),
-            'progress_count': getattr(mission, 'progress_count', 0),
-            'target_count': getattr(mission, 'target_count', 0)
-        } if mission else None
+        'mission': mission_data
     })
 
 @calendar_bp.route('/task/<int:task_id>/complete', methods=['POST'])
