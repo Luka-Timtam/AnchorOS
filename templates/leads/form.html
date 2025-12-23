@@ -85,14 +85,14 @@
             </div>
             
             <div id="website_quality_container" class="{% if not lead or not lead.has_website %}hidden{% endif %} mb-4">
-                <label class="block text-sm font-medium text-medium mb-2">Website Quality Issues (select all that apply)</label>
+                <label class="block text-sm font-medium text-medium mb-2">Website Quality Issues (select up to 3)</label>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {% set current_issues = (lead.website_quality.split(',') if lead and lead.website_quality else []) %}
                     {% for quality in website_qualities %}
                     {% if quality != 'no_website' %}
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" name="website_quality" value="{{ quality }}"
-                            class="w-4 h-4 rounded border-white/20 bg-white/10 text-aqua focus:ring-aqua/50"
+                            class="website-quality-checkbox w-4 h-4 rounded border-white/20 bg-white/10 text-aqua focus:ring-aqua/50"
                             {% if quality in current_issues %}checked{% endif %}>
                         <span class="text-sm text-medium">{{ quality.replace('_', ' ').title() }}</span>
                     </label>
@@ -147,5 +147,19 @@ function toggleWebsiteQuality() {
         qualityContainer.classList.add('hidden');
     }
 }
+
+// Limit website quality selections to 3 max
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.website-quality-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checkedBoxes = document.querySelectorAll('.website-quality-checkbox:checked');
+            if (checkedBoxes.length > 3) {
+                this.checked = false;
+                alert('You can select up to 3 website quality issues');
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

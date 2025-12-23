@@ -82,7 +82,9 @@ def create():
     if request.method == 'POST':
         has_website = request.form.get('has_website') == 'yes'
         quality_issues = request.form.getlist('website_quality') if has_website else []
-        website_quality = ','.join(quality_issues) if quality_issues else ('no_website' if not has_website else '')
+        # Limit to first 3 issues and truncate to 50 chars max to prevent VARCHAR overflow
+        website_quality = ','.join(quality_issues[:3]) if quality_issues else ('no_website' if not has_website else '')
+        website_quality = website_quality[:50]
         
         next_action = parse_date(request.form.get('next_action_date'))
         
@@ -130,7 +132,9 @@ def edit(id):
     if request.method == 'POST':
         has_website = request.form.get('has_website') == 'yes'
         quality_issues = request.form.getlist('website_quality') if has_website else []
-        website_quality = ','.join(quality_issues) if quality_issues else ('no_website' if not has_website else '')
+        # Limit to first 3 issues and truncate to 50 chars max to prevent VARCHAR overflow
+        website_quality = ','.join(quality_issues[:3]) if quality_issues else ('no_website' if not has_website else '')
+        website_quality = website_quality[:50]
         
         next_action = parse_date(request.form.get('next_action_date'))
         
