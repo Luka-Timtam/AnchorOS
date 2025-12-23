@@ -236,6 +236,25 @@ class Lead(SupabaseModel):
         if not hasattr(self, 'close_reason') or not self.close_reason:
             return []
         return [r.strip() for r in self.close_reason.split(',') if r.strip()]
+    
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        # Parse datetime fields
+        datetime_fields = ['created_at', 'updated_at', 'converted_at', 'archived_at', 'closed_at', 'last_contacted_at']
+        for field in datetime_fields:
+            if hasattr(obj, field) and getattr(obj, field):
+                setattr(obj, field, parse_datetime(getattr(obj, field)))
+        # Parse date fields
+        date_fields = ['next_action_date']
+        for field in date_fields:
+            if hasattr(obj, field) and getattr(obj, field):
+                value = getattr(obj, field)
+                if isinstance(value, str):
+                    setattr(obj, field, parse_date(value))
+        return obj
 
 
 class Client(SupabaseModel):
@@ -248,6 +267,25 @@ class Client(SupabaseModel):
     @staticmethod
     def status_choices():
         return ['active', 'completed', 'paused', 'cancelled']
+    
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        # Parse datetime fields
+        datetime_fields = ['created_at', 'updated_at']
+        for field in datetime_fields:
+            if hasattr(obj, field) and getattr(obj, field):
+                setattr(obj, field, parse_datetime(getattr(obj, field)))
+        # Parse date fields
+        date_fields = ['start_date']
+        for field in date_fields:
+            if hasattr(obj, field) and getattr(obj, field):
+                value = getattr(obj, field)
+                if isinstance(value, str):
+                    setattr(obj, field, parse_date(value))
+        return obj
 
 
 class OutreachLog(SupabaseModel):
@@ -260,6 +298,18 @@ class OutreachLog(SupabaseModel):
     @staticmethod
     def outcome_choices():
         return ['contacted', 'booked_call', 'no_response', 'closed_won', 'closed_lost', 'follow_up_set']
+    
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        # Parse datetime/date fields
+        if hasattr(obj, 'date') and getattr(obj, 'date'):
+            value = getattr(obj, 'date')
+            if isinstance(value, str):
+                setattr(obj, 'date', parse_date(value))
+        return obj
 
 
 class Task(SupabaseModel):
@@ -268,6 +318,20 @@ class Task(SupabaseModel):
     @staticmethod
     def status_choices():
         return ['open', 'in_progress', 'done']
+    
+    @classmethod
+    def _parse_row(cls, row: dict):
+        if row is None:
+            return None
+        obj = cls(**row)
+        # Parse datetime/date fields
+        if hasattr(obj, 'due_date') and getattr(obj, 'due_date'):
+            value = getattr(obj, 'due_date')
+            if isinstance(value, str):
+                setattr(obj, 'due_date', parse_date(value))
+        if hasattr(obj, 'created_at') and getattr(obj, 'created_at'):
+            setattr(obj, 'created_at', parse_datetime(getattr(obj, 'created_at')))
+        return obj
 
 
 class UserSettings(SupabaseModel):
