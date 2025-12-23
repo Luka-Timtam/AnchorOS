@@ -1150,11 +1150,19 @@ initWidgetModalListeners();
                 if (showingMrr) {
                     toggleKnob.classList.add('translate-x-5');
                     toggleKnob.classList.remove('translate-x-0');
+                    toggle.classList.remove('bg-aqua');
+                    toggle.classList.add('bg-orange-500');
+                    toggle.classList.remove('focus:ring-aqua/50');
+                    toggle.classList.add('focus:ring-orange-500/50');
                     createRevenueChart(revenueData.mrr, 'MRR');
                     titleEl.textContent = 'MRR Growth (Last 12 Months)';
                 } else {
                     toggleKnob.classList.remove('translate-x-5');
                     toggleKnob.classList.add('translate-x-0');
+                    toggle.classList.add('bg-aqua');
+                    toggle.classList.remove('bg-orange-500');
+                    toggle.classList.add('focus:ring-aqua/50');
+                    toggle.classList.remove('focus:ring-orange-500/50');
                     createRevenueChart(revenueData.revenue, 'Revenue');
                     titleEl.textContent = 'Monthly Revenue (Last 12 Months)';
                 }
