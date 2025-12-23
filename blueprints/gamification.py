@@ -433,10 +433,23 @@ def check_all_goals():
     check_weekly_goal()
     check_monthly_revenue_goal()
 
+def count_weekdays_in_range(start_date, end_date):
+    """Count weekdays (Mon-Fri) in a date range, inclusive"""
+    weekdays = 0
+    current = start_date
+    while current <= end_date:
+        if current.weekday() < 5:  # Monday=0 through Friday=4
+            weekdays += 1
+        current += timedelta(days=1)
+    return weekdays
+
 def calculate_consistency_score():
     stats = UserStats.get_stats()
     today = date.today()
     week_ago = today - timedelta(days=7)
+    
+    # Count only weekdays in the past 7 days for consistency calculations
+    weekdays_in_range = count_weekdays_in_range(week_ago, today)
     
     daily_goal = Goal.get_first({'goal_type': 'daily_outreach'})
     daily_target = (getattr(daily_goal, 'target_value', 0) or 0) if daily_goal else 0
@@ -448,7 +461,8 @@ def calculate_consistency_score():
     client = get_supabase()
     result = client.table('outreach_logs').select('id', count='exact').gte('date', week_ago.isoformat()).execute()
     outreach_count = result.count if result.count else len(result.data)
-    outreach_goal = daily_target * 7
+    # Use weekdays instead of full 7 days for outreach goal
+    outreach_goal = daily_target * weekdays_in_range
     outreach_pct = min(100, (outreach_count / outreach_goal * 100)) if outreach_goal > 0 else 0
     
     leads_result = client.table('leads').select('id', count='exact').filter('next_action_date', 'not.is', 'null').gte('next_action_date', week_ago.isoformat()).lte('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').execute()

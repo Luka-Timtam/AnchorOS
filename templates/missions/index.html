@@ -5,8 +5,8 @@
 {% block content %}
 <div class="space-y-6">
     <div>
-        <a href="{{ url_for('rewards.index') }}" class="back-button">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="{{ url_for('rewards.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-medium hover:text-high hover:bg-white/10 hover:border-aqua/30 transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
             <span class="text-sm font-medium">Back to Rewards Shop</span>
@@ -28,13 +28,21 @@
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-high">Today's Mission</h2>
             <span class="pill
-                {% if status == 'Completed' %}pill-success
+                {% if is_weekend %}pill-neutral
+                {% elif status == 'Completed' %}pill-success
                 {% elif status == 'Expired' %}pill-neutral
                 {% else %}pill-aqua{% endif %}">
-                {{ status }}
+                {% if is_weekend %}Weekend{% else %}{{ status }}{% endif %}
             </span>
         </div>
 
+        {% if is_weekend %}
+        <div class="text-center py-8">
+            <div class="text-6xl mb-4">🌴</div>
+            <p class="text-xl text-high mb-2">No missions on weekends!</p>
+            <p class="text-medium">Take a well-deserved break. Missions resume on Monday.</p>
+        </div>
+        {% else %}
         <div class="mb-6">
             <p class="text-lg text-high mb-3">{{ mission.description }}</p>
             <div class="flex items-center space-x-2">
@@ -74,6 +82,7 @@
                 {% endif %}
             </p>
         </div>
+        {% endif %}
         {% endif %}
     </div>
 

@@ -22,7 +22,7 @@ The application is built with Python 3 and Flask, utilizing **Supabase** (Postgr
 *   **CRM Modules:** Full CRUD for Leads, Clients, Outreach, and Tasks, with detailed tracking and filtering capabilities. Includes lead conversion workflows and comprehensive close reason tracking.
 *   **Gamification:** XP system with levels, streaks, achievements, and a reward system (level, milestone, and unlockable rewards). Features a "Wins Log" for tracking significant accomplishments and monthly performance reviews.
 *   **Token System & Reward Shop:** In-app currency for purchasing customizable rewards, with a transaction history. Full CRUD: create new rewards, edit existing rewards (name, cost, description), toggle active/inactive, delete, and view transaction history.
-*   **Daily Missions & Boss Fights:** Gamified challenges to encourage consistent engagement and reward completion.
+*   **Daily Missions & Boss Fights:** Gamified challenges to encourage consistent engagement and reward completion. Daily missions are **weekday-only** (Monday-Friday) - no missions are generated on weekends, and weekends don't count against consistency scores.
 *   **Productivity Tools:** Focus Session Timer (Pomodoro-style), Mini Notebook with tagging and pinning, and customizable Goals for daily, weekly, and monthly targets.
 *   **Freelancing:** Dedicated section for tracking side income from photography, one-off jobs, consulting, side projects, and cash work. Includes category-based organization, analytics charts (monthly income and category breakdown), and automatic integration with lifetime revenue calculations.
 *   **Communication Aids:** Outreach Templates for efficient email, DM, and call script management.

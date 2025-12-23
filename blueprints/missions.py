@@ -8,10 +8,38 @@ missions_bp = Blueprint('missions', __name__, url_prefix='/missions')
 @missions_bp.route('/')
 def index():
     today = date.today()
+    is_weekend = today.weekday() >= 5  # Saturday=5, Sunday=6
     
     mission = DailyMission.get_today_mission()
-    if not mission:
+    if not mission and not is_weekend:
         mission = DailyMission.create_today_mission()
+    
+    # Handle weekend case where there's no mission
+    if is_weekend or mission is None:
+        token_balance = UserTokens.get_balance()
+        
+        # Still get past missions for display
+        week_ago = today - timedelta(days=7)
+        client = get_supabase()
+        result = client.table('daily_missions').select('*').gte('mission_date', week_ago.isoformat()).lte('mission_date', today.isoformat()).order('mission_date', desc=True).execute()
+        past_missions = []
+        if result.data:
+            for row in result.data:
+                m = DailyMission._parse_row(row)
+                mission_date_val = getattr(m, 'mission_date', None)
+                if mission_date_val:
+                    if isinstance(mission_date_val, str):
+                        m.mission_date = date.fromisoformat(mission_date_val.split('T')[0])
+                past_missions.append(m)
+        
+        return render_template('missions/index.html',
+            mission=None,
+            progress_pct=0,
+            status='Weekend',
+            past_missions=past_missions,
+            token_balance=token_balance,
+            is_weekend=True
+        )
     
     target = getattr(mission, 'target_count', 0) or 0
     progress = getattr(mission, 'progress_count', 0) or 0
@@ -64,5 +92,6 @@ def index():
         progress_pct=progress_pct,
         status=status,
         past_missions=past_missions,
-        token_balance=token_balance
+        token_balance=token_balance,
+        is_weekend=False
     )

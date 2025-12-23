@@ -613,17 +613,32 @@ class DailyMission(SupabaseModel):
     __tablename__ = 'daily_missions'
     
     @staticmethod
+    def is_weekday(check_date=None):
+        """Check if a date is a weekday (Monday=0 through Friday=4)"""
+        if check_date is None:
+            check_date = date.today()
+        return check_date.weekday() < 5
+    
+    @staticmethod
     def get_today_mission():
-        today = date.today().isoformat()
-        mission = DailyMission.get_first({'mission_date': today})
+        today = date.today()
+        # No missions on weekends
+        if not DailyMission.is_weekday(today):
+            return None
+        mission = DailyMission.get_first({'mission_date': today.isoformat()})
         return mission
     
     @staticmethod
     def create_today_mission():
         import random
-        today = date.today().isoformat()
+        today = date.today()
         
-        existing = DailyMission.get_first({'mission_date': today})
+        # Don't create missions on weekends
+        if not DailyMission.is_weekday(today):
+            return None
+        
+        today_str = today.isoformat()
+        existing = DailyMission.get_first({'mission_date': today_str})
         if existing:
             return existing
         
@@ -635,7 +650,7 @@ class DailyMission(SupabaseModel):
         selected = random.choice(mission_types)
         
         return DailyMission.insert({
-            'mission_date': today,
+            'mission_date': today_str,
             'mission_type': selected['type'],
             'description': selected['description'],
             'target_count': selected['target'],
