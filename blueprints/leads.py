@@ -23,6 +23,7 @@ def index():
     source_filter = request.args.get('source', '')
     search = request.args.get('search', '')
     next_action_filter = request.args.get('next_action', '')
+    sort_by = request.args.get('sort', 'newest')
     
     client = get_supabase()
     query = client.table('leads').select('*').is_('converted_at', 'null').is_('archived_at', 'null')
@@ -40,7 +41,19 @@ def index():
     elif next_action_filter == 'overdue':
         query = query.lt('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")')
     
-    result = query.order('created_at', desc=True).execute()
+    # Apply sorting
+    if sort_by == 'oldest':
+        query = query.order('created_at', desc=False)
+    elif sort_by == 'name_asc':
+        query = query.order('name', desc=False)
+    elif sort_by == 'name_desc':
+        query = query.order('name', desc=True)
+    elif sort_by == 'status':
+        query = query.order('status', desc=False)
+    else:  # default to 'newest'
+        query = query.order('created_at', desc=True)
+    
+    result = query.execute()
     leads = [Lead._parse_row(row) for row in result.data]
     
     converted_result = client.table('leads').select('*').filter('converted_at', 'not.is', 'null').order('converted_at', desc=True).execute()
@@ -64,7 +77,8 @@ def index():
         current_niche=niche_filter,
         current_source=source_filter,
         current_search=search,
-        current_next_action=next_action_filter
+        current_next_action=next_action_filter,
+        current_sort=sort_by
     )
 
 def get_existing_niches():

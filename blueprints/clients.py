@@ -20,6 +20,20 @@ def index():
     project_type_filter = request.args.get('project_type', '')
     hosting_filter = request.args.get('hosting_active', '')
     saas_filter = request.args.get('saas_active', '')
+    sort_by = request.args.get('sort', 'newest')
+    
+    # Determine sort order
+    order_by = 'created_at'
+    order_desc = True
+    if sort_by == 'oldest':
+        order_by = 'created_at'
+        order_desc = False
+    elif sort_by == 'name_asc':
+        order_by = 'name'
+        order_desc = False
+    elif sort_by == 'name_desc':
+        order_by = 'name'
+        order_desc = True
     
     filters = {}
     if status_filter:
@@ -31,7 +45,7 @@ def index():
     if saas_filter:
         filters['saas_active'] = saas_filter == 'yes'
     
-    clients = Client.query_filter(filters, order_by='created_at', order_desc=True) if filters else Client.query_all(order_by='created_at', order_desc=True)
+    clients = Client.query_filter(filters, order_by=order_by, order_desc=order_desc) if filters else Client.query_all(order_by=order_by, order_desc=order_desc)
     
     return render_template('clients/index.html',
         clients=clients,
@@ -40,7 +54,8 @@ def index():
         current_status=status_filter,
         current_project_type=project_type_filter,
         current_hosting=hosting_filter,
-        current_saas=saas_filter
+        current_saas=saas_filter,
+        current_sort=sort_by
     )
 
 @clients_bp.route('/create', methods=['GET', 'POST'])
