@@ -20,6 +20,19 @@ def get_month_start(d):
     return d.replace(day=1)
 
 
+def normalize_date(d):
+    """Convert date object or ISO string to date object for comparison."""
+    if d is None:
+        return None
+    if isinstance(d, date):
+        return d
+    if isinstance(d, str):
+        try:
+            return date.fromisoformat(d.split('T')[0])
+        except (ValueError, AttributeError):
+            return None
+    return None
+
 def get_cached_client_stats(clients):
     cached_value, hit = cache.get(CACHE_KEY_MRR)
     if hit:
@@ -35,8 +48,8 @@ def get_cached_client_stats(clients):
     saas_mrr = Decimal('0')
     
     for c in clients:
-        start_date = getattr(c, 'start_date', '')
-        if isinstance(start_date, str) and start_date >= month_start.isoformat():
+        start_date = normalize_date(getattr(c, 'start_date', None))
+        if start_date and start_date >= month_start:
             new_clients_month += 1
             project_revenue_month += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
         
@@ -51,10 +64,9 @@ def get_cached_client_stats(clients):
         m_end = (m_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         rev = Decimal('0')
         for c in clients:
-            start_date = getattr(c, 'start_date', '')
-            if isinstance(start_date, str):
-                if m_start.isoformat() <= start_date <= m_end.isoformat():
-                    rev += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
+            start_date = normalize_date(getattr(c, 'start_date', None))
+            if start_date and m_start <= start_date <= m_end:
+                rev += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
         last_3_months_revenue.append(float(rev))
     
     avg_project_revenue = sum(last_3_months_revenue) / 3 if last_3_months_revenue else 0
@@ -103,11 +115,11 @@ def get_cached_chart_data(clients):
         saas_at_month = Decimal('0')
         
         for c in clients:
-            start_date = getattr(c, 'start_date', '')
-            if isinstance(start_date, str):
-                if m_start.isoformat() <= start_date <= m_end.isoformat():
+            start_date = normalize_date(getattr(c, 'start_date', None))
+            if start_date:
+                if m_start <= start_date <= m_end:
                     month_revenue += Decimal(str(getattr(c, 'amount_charged', 0) or 0))
-                if start_date <= m_end.isoformat():
+                if start_date <= m_end:
                     if getattr(c, 'hosting_active', False):
                         hosting_at_month += Decimal(str(getattr(c, 'monthly_hosting_fee', 0) or 0))
                     if getattr(c, 'saas_active', False):

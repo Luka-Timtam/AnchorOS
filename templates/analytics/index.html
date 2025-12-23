@@ -71,6 +71,47 @@
     </form>
 </div>
 
+<div class="glass-card p-6 mb-6 bg-gradient-to-r from-green-500/10 to-emerald-500/5 border-green-500/20">
+    <h2 class="text-xl font-bold text-high mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        This Month: {{ this_month_name }}
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p class="text-sm text-medium">Project Revenue</p>
+            <p class="text-2xl font-bold text-green-400">${{ "%.2f"|format(this_month_project_revenue) }}</p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p class="text-sm text-medium">Current MRR</p>
+            <p class="text-2xl font-bold text-aqua">${{ "%.2f"|format(current_mrr) }}</p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p class="text-sm text-medium">Expected Total</p>
+            <p class="text-2xl font-bold text-green-400">${{ "%.2f"|format(this_month_expected) }}</p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p class="text-sm text-medium">New Clients</p>
+            <p class="text-2xl font-bold text-aqua">{{ this_month_new_clients }}</p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p class="text-sm text-medium">Deals Closed</p>
+            <p class="text-2xl font-bold text-green-400">{{ this_month_deals }}</p>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
+            <p class="text-sm text-medium">Outreach</p>
+            <p class="text-2xl font-bold text-aqua">{{ this_month_outreach }}</p>
+        </div>
+    </div>
+    <div class="mt-4 pt-4 border-t border-white/10">
+        <div class="flex justify-between items-center text-sm">
+            <span class="text-medium">New Leads This Month</span>
+            <span class="text-high font-semibold">{{ this_month_new_leads }}</span>
+        </div>
+    </div>
+</div>
+
 <div class="glass-card p-6 mb-6 bg-gradient-to-r from-aqua/10 to-cyan-500/5">
     <h2 class="text-xl font-bold text-high mb-4">3-Month Revenue Forecast</h2>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">

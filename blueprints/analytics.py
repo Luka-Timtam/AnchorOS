@@ -152,6 +152,25 @@ def index():
     forecast_monthly = current_mrr + avg_project_revenue
     forecast_3_months = forecast_monthly * 3
     
+    month_start = today.replace(day=1)
+    this_month_revenue_result = client.table('clients').select('amount_charged').gte('start_date', month_start.isoformat()).lte('start_date', today.isoformat()).execute()
+    this_month_project_revenue = sum(float(r.get('amount_charged') or 0) for r in this_month_revenue_result.data)
+    
+    this_month_clients_result = client.table('clients').select('id', count='exact').gte('start_date', month_start.isoformat()).lte('start_date', today.isoformat()).execute()
+    this_month_new_clients = this_month_clients_result.count if this_month_clients_result.count else len(this_month_clients_result.data)
+    
+    this_month_outreach_result = client.table('outreach_logs').select('id', count='exact').gte('date', month_start.isoformat()).lte('date', today.isoformat()).execute()
+    this_month_outreach = this_month_outreach_result.count if this_month_outreach_result.count else len(this_month_outreach_result.data)
+    
+    this_month_deals_result = client.table('leads').select('id', count='exact').eq('status', 'closed_won').gte('closed_at', f'{month_start.isoformat()}T00:00:00').execute()
+    this_month_deals = this_month_deals_result.count if this_month_deals_result.count else len(this_month_deals_result.data)
+    
+    this_month_leads_result = client.table('leads').select('id', count='exact').gte('created_at', f'{month_start.isoformat()}T00:00:00').execute()
+    this_month_new_leads = this_month_leads_result.count if this_month_leads_result.count else len(this_month_leads_result.data)
+    
+    this_month_expected = this_month_project_revenue + current_mrr
+    this_month_name = today.strftime('%B %Y')
+    
     chart_data = {
         'monthLabels': month_labels,
         'monthlyRevenue': monthly_revenue_data,
@@ -186,7 +205,14 @@ def index():
         current_mrr=current_mrr,
         avg_project_revenue=avg_project_revenue,
         followup_today=followup_today,
-        followup_overdue=followup_overdue
+        followup_overdue=followup_overdue,
+        this_month_name=this_month_name,
+        this_month_project_revenue=this_month_project_revenue,
+        this_month_new_clients=this_month_new_clients,
+        this_month_outreach=this_month_outreach,
+        this_month_deals=this_month_deals,
+        this_month_new_leads=this_month_new_leads,
+        this_month_expected=this_month_expected
     )
 
 
