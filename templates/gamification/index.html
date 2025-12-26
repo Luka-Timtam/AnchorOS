@@ -330,7 +330,15 @@
             <div class="flex-1">
                 <div class="flex items-center justify-between">
                     <div class="font-semibold text-high">{{ win.title }}</div>
-                    <div class="text-xs text-low">{{ win.timestamp.strftime('%b %d, %Y at %H:%M') }}</div>
+                    <div class="text-xs text-low">
+                        {% if win.timestamp %}
+                            {% if win.timestamp is string %}
+                                {{ win.timestamp | string | replace('T', ' ') | truncate(16, True, '') }}
+                            {% else %}
+                                {{ win.timestamp.strftime('%b %d, %Y at %H:%M') }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
                 {% if win.description %}
                 <div class="text-sm text-medium mt-1">{{ win.description }}</div>
