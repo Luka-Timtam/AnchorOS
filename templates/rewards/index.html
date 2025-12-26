@@ -95,7 +95,15 @@
                     <span class="text-high">{{ t.reason }}</span>
                     <div class="text-right">
                         <span class="text-cinnabar font-medium">{{ t.amount }} tokens</span>
-                        <div class="text-xs text-low">{{ t.created_at.strftime('%b %d, %Y') }}</div>
+                        <div class="text-xs text-low">
+                            {% if t.created_at %}
+                                {% if t.created_at is string %}
+                                    {{ t.created_at | string | replace('T', ' ') | truncate(10, True, '') }}
+                                {% else %}
+                                    {{ t.created_at.strftime('%b %d, %Y') }}
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -115,7 +123,15 @@
                         <span class="{% if t.amount > 0 %}text-green-400{% else %}text-cinnabar{% endif %} font-medium">
                             {% if t.amount > 0 %}+{% endif %}{{ t.amount }}
                         </span>
-                        <div class="text-xs text-low">{{ t.created_at.strftime('%b %d') }}</div>
+                        <div class="text-xs text-low">
+                            {% if t.created_at %}
+                                {% if t.created_at is string %}
+                                    {{ t.created_at | string | replace('T', ' ') | truncate(5, True, '') }}
+                                {% else %}
+                                    {{ t.created_at.strftime('%b %d') }}
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
