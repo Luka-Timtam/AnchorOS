@@ -100,7 +100,7 @@ def add_xp(amount, reason=""):
     new_level = get_level_from_xp(current_xp)
     
     UserStats.update_by_id(stats.id, {'current_xp': current_xp, 'current_level': new_level})
-    XPLog.insert({'amount': amount, 'reason': reason})
+    XPLog.insert({'amount': amount, 'reason': reason, 'created_at': tz.now_iso()})
     
     check_and_unlock_achievements()
     
@@ -585,7 +585,9 @@ def get_xp_this_week():
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
     
-    logs = XPLog.query_all()
+    client = get_supabase()
+    result = client.table('xp_logs').select('*').gte('created_at', f'{week_start.isoformat()}T00:00:00').execute()
+    logs = result.data if result.data else []
     
     daily_xp = {}
     for i in range(7):
@@ -593,11 +595,16 @@ def get_xp_this_week():
         daily_xp[day.isoformat()] = 0
     
     for log in logs:
-        created = getattr(log, 'created_at', '')
-        if isinstance(created, str):
-            log_date = created.split('T')[0]
+        created = log.get('created_at', '')
+        if created:
+            if isinstance(created, str):
+                log_date = created.split('T')[0]
+            elif hasattr(created, 'isoformat'):
+                log_date = created.isoformat().split('T')[0]
+            else:
+                continue
             if log_date in daily_xp:
-                daily_xp[log_date] += getattr(log, 'amount', 0) or 0
+                daily_xp[log_date] += log.get('amount', 0) or 0
     
     return list(daily_xp.values())
 
