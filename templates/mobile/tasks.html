@@ -36,12 +36,12 @@
                 Due: {{ task.due_date.strftime('%d %b') }}
             </div>
             {% endif %}
+            {% if task.lead %}
+            <div class="text-xs text-aqua mt-1 truncate">Lead: {{ task.lead.name }}</div>
+            {% elif task.client %}
+            <div class="text-xs text-green-400 mt-1 truncate">Client: {{ task.client.name }}</div>
+            {% endif %}
         </div>
-        {% if task.related_lead_id %}
-        <span class="pill text-xs bg-white/10 text-medium">Lead</span>
-        {% elif task.related_client_id %}
-        <span class="pill text-xs pill-success">Client</span>
-        {% endif %}
     </div>
     {% endfor %}
 {% else %}

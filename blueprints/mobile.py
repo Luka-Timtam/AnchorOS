@@ -256,6 +256,10 @@ def tasks():
     
     task_list = [Task._parse_row(row) for row in result.data]
     
+    # Load related entities
+    from blueprints.tasks import _load_related_entities
+    task_list = _load_related_entities(task_list)
+    
     return render_template('mobile/tasks.html', tasks=task_list, filter_type=filter_type, today=today)
 
 

@@ -13,6 +13,20 @@ def parse_date(date_str):
     except ValueError:
         return None
 
+def _load_related_entities(tasks):
+    """Load related lead/client objects for tasks."""
+    for task in tasks:
+        if hasattr(task, 'related_lead_id') and task.related_lead_id:
+            task.lead = Lead.get_by_id(task.related_lead_id)
+        else:
+            task.lead = None
+        
+        if hasattr(task, 'related_client_id') and task.related_client_id:
+            task.client = Client.get_by_id(task.related_client_id)
+        else:
+            task.client = None
+    return tasks
+
 @tasks_bp.route('/')
 def index():
     today = date.today()
@@ -36,15 +50,19 @@ def index():
     
     result = query.order('due_date', desc=False, nullsfirst=False).order('created_at', desc=True).execute()
     tasks = [Task._parse_row(row) for row in result.data]
+    tasks = _load_related_entities(tasks)
     
     completed_result = client.table('tasks').select('*').eq('status', 'done').order('created_at', desc=True).execute()
     completed_tasks = [Task._parse_row(row) for row in completed_result.data]
+    completed_tasks = _load_related_entities(completed_tasks)
     
     overdue_result = client.table('tasks').select('*').lt('due_date', today.isoformat()).neq('status', 'done').order('due_date', desc=False).execute()
     overdue_tasks = [Task._parse_row(row) for row in overdue_result.data]
+    overdue_tasks = _load_related_entities(overdue_tasks)
     
     today_result = client.table('tasks').select('*').eq('due_date', today.isoformat()).order('created_at', desc=True).execute()
     today_tasks = [Task._parse_row(row) for row in today_result.data]
+    today_tasks = _load_related_entities(today_tasks)
     
     leads = Lead.query_all(order_by='name')
     clients = Client.query_all(order_by='name')
