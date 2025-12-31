@@ -3,6 +3,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, date, timedelta
+import timezone as tz
 from flask import Blueprint, request, jsonify, session
 from db_supabase import get_supabase
 
@@ -10,7 +11,7 @@ internal_bp = Blueprint('internal', __name__, url_prefix='/internal')
 
 def get_summary_data():
     client = get_supabase()
-    today = date.today()
+    today = tz.today()
     yesterday = today - timedelta(days=1)
     
     followups_result = client.table('leads').select('id', count='exact').eq('next_action_date', today.isoformat()).filter('status', 'not.in', '("closed_won","closed_lost")').execute()
@@ -61,7 +62,7 @@ def get_summary_data():
 
 def get_weekly_data():
     client = get_supabase()
-    today = date.today()
+    today = tz.today()
     last_week_start = today - timedelta(days=today.weekday() + 7)
     last_week_end = last_week_start + timedelta(days=6)
     
@@ -91,7 +92,7 @@ def get_weekly_data():
 
 
 def build_daily_email(data, include_weekly=False, weekly_data=None):
-    today = date.today()
+    today = tz.today()
     
     html = f"""
     <html>
@@ -182,7 +183,7 @@ def run_daily_summary():
     if not session.get('authenticated') and (not auth_token or provided_token != auth_token):
         return jsonify({'error': 'Unauthorized'}), 401
     
-    today = date.today()
+    today = tz.today()
     day_of_week = today.weekday()
     
     if day_of_week >= 5:

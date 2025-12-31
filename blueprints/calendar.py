@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, abort
 from db_supabase import Lead, Task, DailyMission, BossBattle, get_supabase
 from datetime import datetime, date, timedelta
+import timezone as tz
 from calendar import monthrange
 
 calendar_bp = Blueprint('calendar', __name__, url_prefix='/calendar')
@@ -115,7 +116,7 @@ def get_month_data(year, month):
             }
     
     calendar_days = []
-    today = date.today()
+    today = tz.today()
     
     for i in range(start_weekday):
         day_num = prev_days_in_month - start_weekday + 1 + i
@@ -174,8 +175,8 @@ def get_month_data(year, month):
 
 @calendar_bp.route('')
 def index():
-    year = request.args.get('year', type=int, default=date.today().year)
-    month = request.args.get('month', type=int, default=date.today().month)
+    year = request.args.get('year', type=int, default=tz.today().year)
+    month = request.args.get('month', type=int, default=tz.today().month)
     
     if month < 1:
         month = 12
@@ -190,8 +191,8 @@ def index():
 
 @calendar_bp.route('/data')
 def calendar_data():
-    year = request.args.get('year', type=int, default=date.today().year)
-    month = request.args.get('month', type=int, default=date.today().month)
+    year = request.args.get('year', type=int, default=tz.today().year)
+    month = request.args.get('month', type=int, default=tz.today().month)
     
     if month < 1:
         month = 12
@@ -239,7 +240,7 @@ def day_detail(date_str):
     mission_result = client.table('daily_missions').select('*').eq('mission_date', target_date.isoformat()).execute()
     mission = DailyMission._parse_row(mission_result.data[0]) if mission_result.data else None
     
-    today = date.today()
+    today = tz.today()
     is_past = target_date < today
     
     mission_data = None
@@ -283,8 +284,8 @@ def complete_task(task_id):
 
 @calendar_bp.route('/mini')
 def mini_data():
-    year = request.args.get('year', type=int, default=date.today().year)
-    month = request.args.get('month', type=int, default=date.today().month)
+    year = request.args.get('year', type=int, default=tz.today().year)
+    month = request.args.get('month', type=int, default=tz.today().month)
     data = get_month_data(year, month)
     
     mini_days = []

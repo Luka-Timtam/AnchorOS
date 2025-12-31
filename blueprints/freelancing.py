@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from db_supabase import FreelancingIncome, get_supabase
 from datetime import date
+import timezone as tz
 import calendar
 from cache import clear_all_cache
 
@@ -119,7 +120,7 @@ def add():
             flash('Invalid amount', 'error')
             return render_template('freelancing/form.html', job=None, categories=category_choices())
         
-        job_date = date.today()
+        job_date = tz.today()
         if date_str:
             try:
                 job_date = date.fromisoformat(date_str)
@@ -163,7 +164,7 @@ def edit(id):
             return render_template('freelancing/form.html', job=job, categories=category_choices())
         
         date_str = request.form.get('date') or request.form.get('date_completed')
-        job_date = getattr(job, 'date_completed', date.today().isoformat())
+        job_date = getattr(job, 'date_completed', tz.today().isoformat())
         if date_str:
             try:
                 job_date = date.fromisoformat(date_str).isoformat()

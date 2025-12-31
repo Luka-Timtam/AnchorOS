@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from db_supabase import Task, Lead, Client, ActivityLog, get_supabase
 from datetime import datetime, date
+import timezone as tz
 from blueprints.gamification import add_xp, XP_RULES, TOKEN_RULES, add_tokens, update_mission_progress
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
@@ -29,7 +30,7 @@ def _load_related_entities(tasks):
 
 @tasks_bp.route('/')
 def index():
-    today = date.today()
+    today = tz.today()
     
     status_filter = request.args.get('status', '')
     due_filter = request.args.get('due', '')

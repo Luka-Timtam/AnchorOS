@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 from db_supabase import ActivityLog, get_supabase
 from datetime import date, timedelta
+import timezone as tz
 
 timeline_bp = Blueprint('timeline', __name__, url_prefix='/timeline')
 
@@ -42,7 +43,7 @@ def index():
 
 
 def group_activities_by_day(activities):
-    today = date.today()
+    today = tz.today()
     yesterday = today - timedelta(days=1)
     week_start = today - timedelta(days=today.weekday())
     last_week_start = week_start - timedelta(days=7)

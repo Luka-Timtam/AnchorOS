@@ -23,7 +23,7 @@ def get_month_start(d):
 
 @outreach_bp.route('/')
 def index():
-    today = date.today()
+    today = tz.today()
     week_start = get_week_start(today)
     month_start = get_month_start(today)
     
@@ -76,7 +76,7 @@ def index():
 
 @outreach_bp.route('/create', methods=['POST'])
 def create():
-    log_date = parse_date(request.form.get('date')) or date.today()
+    log_date = parse_date(request.form.get('date')) or tz.today()
     lead_id = request.form.get('lead_id')
     lead_id = int(lead_id) if lead_id else None
     

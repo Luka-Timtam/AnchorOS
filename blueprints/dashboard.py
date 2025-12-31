@@ -39,7 +39,7 @@ def get_cached_client_stats(clients):
         logger.debug("[Dashboard] Using cached MRR/client stats")
         return cached_value
     
-    today = date.today()
+    today = tz.today()
     month_start = get_month_start(today)
     
     new_clients_month = 0
@@ -95,7 +95,7 @@ def get_cached_chart_data(clients):
         logger.debug("[Dashboard] Using cached chart data")
         return cached_value
     
-    today = date.today()
+    today = tz.today()
     
     monthly_revenue_data = []
     monthly_mrr_data = []
@@ -140,7 +140,7 @@ def get_cached_chart_data(clients):
 
 @dashboard_bp.route('/')
 def index():
-    today = date.today()
+    today = tz.today()
     week_start = get_week_start(today)
     month_start = get_month_start(today)
     

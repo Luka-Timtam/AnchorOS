@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from db_supabase import get_supabase, UserSettings
 from datetime import datetime, date, timedelta
+import timezone as tz
 from decimal import Decimal
 import json
 
@@ -18,7 +19,7 @@ def get_month_start(d):
 @analytics_bp.route('/')
 def index():
     client = get_supabase()
-    today = date.today()
+    today = tz.today()
     settings = UserSettings.get_settings()
     
     start_date_str = request.args.get('start_date', '')
@@ -247,7 +248,7 @@ def settings():
 @analytics_bp.route('/flex')
 def flex():
     client = get_supabase()
-    today = date.today()
+    today = tz.today()
     
     total_revenue_result = client.table('clients').select('amount_charged').execute()
     total_revenue = sum(float(r.get('amount_charged') or 0) for r in total_revenue_result.data)

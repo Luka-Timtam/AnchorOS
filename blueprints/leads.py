@@ -18,7 +18,7 @@ def parse_date(date_str):
 
 @leads_bp.route('/')
 def index():
-    today = date.today()
+    today = tz.today()
     status_filter = request.args.get('status', '')
     niche_filter = request.args.get('niche', '')
     source_filter = request.args.get('source', '')
@@ -257,7 +257,7 @@ def convert_to_client(id):
             return render_template('leads/convert.html',
                 lead=lead,
                 project_types=Client.project_type_choices(),
-                today=date.today().isoformat(),
+                today=tz.today().isoformat(),
                 win_reasons=Lead.win_reason_choices()
             )
         
@@ -266,7 +266,7 @@ def convert_to_client(id):
             close_reasons.append(f'Other: {other_reason}')
         close_reason_str = ', '.join(close_reasons) if close_reasons else None
         
-        start_date = parse_date(request.form.get('start_date')) or date.today()
+        start_date = parse_date(request.form.get('start_date')) or tz.today()
         
         client = Client.insert({
             'name': request.form.get('name'),
@@ -315,7 +315,7 @@ def convert_to_client(id):
     return render_template('leads/convert.html',
         lead=lead,
         project_types=Client.project_type_choices(),
-        today=date.today().isoformat(),
+        today=tz.today().isoformat(),
         win_reasons=Lead.win_reason_choices()
     )
 

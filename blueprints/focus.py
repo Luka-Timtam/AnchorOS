@@ -174,7 +174,7 @@ def get_stats():
     sessions = FocusSession.query_filter({'completed': True})
     total_minutes = sum(getattr(s, 'duration_minutes', 0) or 0 for s in sessions)
     
-    today = date.today().isoformat()
+    today = tz.today().isoformat()
     client = get_supabase()
     result = client.table('focus_sessions').select('*').gte('start_time', f'{today}T00:00:00').eq('completed', True).execute()
     today_sessions = len(result.data)

@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_supabase import (MonthlyReview, XPLog, TokenTransaction, OutreachLog, Lead, 
                          DailyMission, BossBattle, UserStats, WinsLog, ActivityLog, Client, get_supabase)
 from datetime import datetime, date, timedelta
+import timezone as tz
 from collections import Counter
 
 monthly_review_bp = Blueprint('monthly_review', __name__)
@@ -170,7 +171,7 @@ def generate_review_content(year_month):
 
 
 def auto_generate_monthly_review_if_needed():
-    today = date.today()
+    today = tz.today()
     
     if today.month == 12:
         next_month_first = date(today.year + 1, 1, 1)
@@ -195,7 +196,7 @@ def auto_generate_monthly_review_if_needed():
 
 
 def get_newly_generated_review():
-    today = date.today()
+    today = tz.today()
     
     if today.month == 12:
         next_month_first = date(today.year + 1, 1, 1)
@@ -225,7 +226,7 @@ def index():
     reviews = MonthlyReview.query_all(order_by='year_month', order_desc=True)
     existing_months = {getattr(r, 'year_month', '') for r in reviews}
     
-    today = date.today()
+    today = tz.today()
     current_year = today.year
     current_month = today.month
     

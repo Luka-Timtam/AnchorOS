@@ -80,7 +80,7 @@ def add_tokens(amount, reason=""):
 
 
 def update_mission_progress(mission_type, count=1):
-    today = date.today()
+    today = tz.today()
     mission = DailyMission.get_first({'mission_date': today.isoformat(), 'mission_type': mission_type})
     if mission and not getattr(mission, 'is_completed', False):
         new_progress = (getattr(mission, 'progress_count', 0) or 0) + count
@@ -174,7 +174,7 @@ def get_lifetime_revenue():
     
     total_revenue = 0.0
     clients = Client.query_all()
-    today = date.today()
+    today = tz.today()
     
     for client in clients:
         total_revenue += float(getattr(client, 'amount_charged', 0) or 0)
@@ -251,7 +251,7 @@ def get_upcoming_rewards(current_level):
 
 def update_outreach_streak():
     stats = UserStats.get_stats()
-    today = date.today()
+    today = tz.today()
     yesterday = today - timedelta(days=1)
     
     last_outreach = getattr(stats, 'last_outreach_date', None)
@@ -324,7 +324,7 @@ def update_outreach_streak():
 
 
 def check_daily_goal():
-    today = date.today()
+    today = tz.today()
     
     daily_goal = Goal.get_first({'goal_type': 'daily_outreach'})
     if not daily_goal or (getattr(daily_goal, 'target_value', 0) or 0) <= 0:
@@ -354,7 +354,7 @@ def check_daily_goal():
 
 
 def check_weekly_goal():
-    today = date.today()
+    today = tz.today()
     week_start = today - timedelta(days=today.weekday())
     
     weekly_goal = Goal.get_first({'goal_type': 'weekly_outreach'})
@@ -391,7 +391,7 @@ def check_weekly_goal():
 
 
 def check_monthly_revenue_goal():
-    today = date.today()
+    today = tz.today()
     month_start = today.replace(day=1)
     
     monthly_goal = Goal.get_first({'goal_type': 'monthly_revenue'})
@@ -446,7 +446,7 @@ def count_weekdays_in_range(start_date, end_date):
 
 def calculate_consistency_score():
     stats = UserStats.get_stats()
-    today = date.today()
+    today = tz.today()
     week_ago = today - timedelta(days=7)
     
     # Count only weekdays in the past 7 days for consistency calculations
@@ -539,7 +539,7 @@ def check_and_unlock_achievements():
             Achievement.update_by_id(deals_10.id, {'unlocked_at': now})
 
 def get_recommended_goal(goal_type):
-    today = date.today()
+    today = tz.today()
     client = get_supabase()
     
     if goal_type == 'daily_outreach':
@@ -583,7 +583,7 @@ def get_recommended_goal(goal_type):
     return 0
 
 def get_xp_this_week():
-    today = date.today()
+    today = tz.today()
     week_start = today - timedelta(days=today.weekday())
     
     client = get_supabase()

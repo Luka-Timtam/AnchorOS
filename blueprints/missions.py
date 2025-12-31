@@ -1,13 +1,14 @@
 from flask import Blueprint, render_template
 from db_supabase import DailyMission, UserTokens, get_supabase
 from datetime import date, timedelta
+import timezone as tz
 
 missions_bp = Blueprint('missions', __name__, url_prefix='/missions')
 
 
 @missions_bp.route('/')
 def index():
-    today = date.today()
+    today = tz.today()
     is_weekend = today.weekday() >= 5  # Saturday=5, Sunday=6
     
     mission = DailyMission.get_today_mission()

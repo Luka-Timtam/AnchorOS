@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, flash
 from db_supabase import BossBattle, ActivityLog, WinsLog, UserTokens, get_supabase
 from datetime import date
+import timezone as tz
 
 boss_bp = Blueprint('boss', __name__)
 
 
 def get_current_month():
-    return date.today().strftime('%Y-%m')
+    return tz.today().strftime('%Y-%m')
 
 
 @boss_bp.route('/boss')

@@ -61,7 +61,7 @@ def index():
 @clients_bp.route('/create', methods=['GET', 'POST'])
 def create():
     if request.method == 'POST':
-        start_date = parse_date(request.form.get('start_date')) or date.today()
+        start_date = parse_date(request.form.get('start_date')) or tz.today()
         
         client = Client.insert({
             'name': request.form.get('name'),
@@ -88,7 +88,7 @@ def create():
         statuses=Client.status_choices(),
         project_types=Client.project_type_choices(),
         action='Create',
-        today=date.today().isoformat()
+        today=tz.today().isoformat()
     )
 
 @clients_bp.route('/<int:id>')
@@ -108,9 +108,9 @@ def edit(id):
     if request.method == 'POST':
         start_date = parse_date(request.form.get('start_date'))
         if not start_date:
-            start_date = getattr(client, 'start_date', date.today())
+            start_date = getattr(client, 'start_date', tz.today())
             if isinstance(start_date, str):
-                start_date = parse_date(start_date) or date.today()
+                start_date = parse_date(start_date) or tz.today()
         
         Client.update_by_id(id, {
             'name': request.form.get('name'),
@@ -137,7 +137,7 @@ def edit(id):
         statuses=Client.status_choices(),
         project_types=Client.project_type_choices(),
         action='Edit',
-        today=date.today().isoformat()
+        today=tz.today().isoformat()
     )
 
 @clients_bp.route('/<int:id>/delete', methods=['POST'])

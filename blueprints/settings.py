@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from db_supabase import (UserSettings, ActivityLog, Lead, Client, Task, Note, 
                          FreelancingIncome, OutreachLog, UserStats, get_supabase)
 from datetime import date, timedelta
+import timezone as tz
 import csv
 import io
 import zipfile
@@ -32,10 +33,10 @@ def pause_activate():
         flash('A reason is required to activate pause mode.', 'error')
         return redirect(url_for('settings.index'))
     
-    pause_end = date.today() + timedelta(days=duration)
+    pause_end = tz.today() + timedelta(days=duration)
     UserSettings.update_by_id(settings.id, {
         'pause_active': True,
-        'pause_start': date.today().isoformat(),
+        'pause_start': tz.today().isoformat(),
         'pause_end': pause_end.isoformat(),
         'pause_reason': reason
     })
@@ -51,7 +52,7 @@ def pause_end():
     
     stats = UserStats.get_stats()
     if stats and (getattr(stats, 'current_outreach_streak_days', 0) or 0) > 0:
-        yesterday = (date.today() - timedelta(days=1)).isoformat()
+        yesterday = (tz.today() - timedelta(days=1)).isoformat()
         UserStats.update_by_id(stats.id, {'last_outreach_date': yesterday})
     
     UserSettings.update_by_id(settings.id, {
@@ -191,7 +192,7 @@ def export_all_data():
         analytics_writer.writerow(['Total Outreach Logs', total_outreach])
         analytics_writer.writerow(['Total Revenue', total_revenue])
         analytics_writer.writerow(['Deals Won', closed_won_count])
-        analytics_writer.writerow(['Export Date', date.today().isoformat()])
+        analytics_writer.writerow(['Export Date', tz.today().isoformat()])
         zip_file.writestr('analytics_summary.csv', analytics_buffer.getvalue())
     
     zip_buffer.seek(0)
@@ -202,6 +203,6 @@ def export_all_data():
         zip_buffer.getvalue(),
         mimetype='application/zip',
         headers={
-            'Content-Disposition': f'attachment; filename=anchoros_export_{date.today().isoformat()}.zip'
+            'Content-Disposition': f'attachment; filename=anchoros_export_{tz.today().isoformat()}.zip'
         }
     )

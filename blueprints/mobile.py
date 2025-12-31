@@ -18,7 +18,7 @@ def is_mobile_device():
 
 @mobile_bp.route('/')
 def index():
-    today = date.today()
+    today = tz.today()
     today_str = today.isoformat()
     stats = UserStats.get_stats()
     settings = UserSettings.get_settings()
@@ -169,7 +169,7 @@ def lead_outreach(lead_id):
             'type': request.form.get('type', 'email'),
             'outcome': request.form.get('outcome', 'contacted'),
             'notes': request.form.get('notes', ''),
-            'date': date.today().isoformat()
+            'date': tz.today().isoformat()
         })
         
         update_data = {
@@ -242,7 +242,7 @@ def client_new():
 
 @mobile_bp.route('/tasks')
 def tasks():
-    today = date.today()
+    today = tz.today()
     today_str = today.isoformat()
     filter_type = request.args.get('filter', 'today')
     client = get_supabase()
@@ -270,7 +270,7 @@ def task_new():
         if due_date:
             due_date = datetime.strptime(due_date, '%Y-%m-%d').date().isoformat()
         else:
-            due_date = date.today().isoformat()
+            due_date = tz.today().isoformat()
         
         task = Task.insert({
             'title': request.form.get('title'),
@@ -310,7 +310,7 @@ def task_complete(task_id):
 
 @mobile_bp.route('/calendar')
 def calendar():
-    today = date.today()
+    today = tz.today()
     today_str = today.isoformat()
     client = get_supabase()
     
@@ -448,7 +448,7 @@ def note_pin(note_id):
 
 @mobile_bp.route('/freelancing')
 def freelancing():
-    today = date.today()
+    today = tz.today()
     current_month_start = today.replace(day=1).isoformat()
     client = get_supabase()
     
@@ -476,7 +476,7 @@ def freelancing_new():
         if date_completed:
             date_completed = datetime.strptime(date_completed, '%Y-%m-%d').date().isoformat()
         else:
-            date_completed = date.today().isoformat()
+            date_completed = tz.today().isoformat()
         
         entry = FreelancingIncome.insert({
             'title': request.form.get('title', 'Freelance Work'),
@@ -506,7 +506,7 @@ def quick_outreach():
             'type': request.form.get('type', 'email'),
             'outcome': request.form.get('outcome', 'contacted'),
             'notes': request.form.get('notes', ''),
-            'date': date.today().isoformat()
+            'date': tz.today().isoformat()
         })
         
         if lead_id:
