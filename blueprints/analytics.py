@@ -290,7 +290,7 @@ def flex():
     highest_streak = stats.get('longest_outreach_streak_days', 0)
     current_streak = stats.get('current_outreach_streak_days', 0)
     
-    xp_result = client.table('xp_log').select('amount').execute()
+    xp_result = client.table('xp_logs').select('amount').execute()
     total_xp = sum(r.get('amount', 0) for r in xp_result.data)
     
     outreach_result = client.table('outreach_logs').select('id', count='exact').execute()
