@@ -101,13 +101,16 @@ def index():
 @freelancing_bp.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
+        title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
         category = request.form.get('category', 'other')
         amount = request.form.get('amount', 0)
-        date_str = request.form.get('date')
+        date_str = request.form.get('date') or request.form.get('date_completed')
+        client_name = request.form.get('client_name', '').strip()
+        notes = request.form.get('notes', '').strip()
         
-        if not description:
-            flash('Description is required', 'error')
+        if not title:
+            flash('Title is required', 'error')
             return render_template('freelancing/form.html', job=None, categories=category_choices())
         
         try:
@@ -124,10 +127,13 @@ def add():
                 pass
         
         FreelancingIncome.insert({
+            'title': title,
             'description': description,
             'category': category,
             'amount': amount,
-            'date_completed': job_date.isoformat()
+            'date_completed': job_date.isoformat(),
+            'client_name': client_name,
+            'notes': notes
         })
         clear_all_cache()
         
@@ -144,8 +150,11 @@ def edit(id):
         abort(404)
     
     if request.method == 'POST':
+        title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
         category = request.form.get('category', 'other')
+        client_name = request.form.get('client_name', '').strip()
+        notes = request.form.get('notes', '').strip()
         
         try:
             amount = float(request.form.get('amount', 0))
@@ -153,7 +162,7 @@ def edit(id):
             flash('Invalid amount', 'error')
             return render_template('freelancing/form.html', job=job, categories=category_choices())
         
-        date_str = request.form.get('date')
+        date_str = request.form.get('date') or request.form.get('date_completed')
         job_date = getattr(job, 'date_completed', date.today().isoformat())
         if date_str:
             try:
@@ -161,15 +170,18 @@ def edit(id):
             except ValueError:
                 pass
         
-        if not description:
-            flash('Description is required', 'error')
+        if not title:
+            flash('Title is required', 'error')
             return render_template('freelancing/form.html', job=job, categories=category_choices())
         
         FreelancingIncome.update_by_id(id, {
+            'title': title,
             'description': description,
             'category': category,
             'amount': amount,
-            'date_completed': job_date
+            'date_completed': job_date,
+            'client_name': client_name,
+            'notes': notes
         })
         clear_all_cache()
         
