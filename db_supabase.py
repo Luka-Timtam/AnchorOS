@@ -420,7 +420,7 @@ class UserSettings(SupabaseModel):
     def check_pause_expiry(self):
         if hasattr(self, 'pause_active') and self.pause_active and hasattr(self, 'pause_end') and self.pause_end:
             pause_end = parse_date(self.pause_end)
-            if pause_end and date.today() > pause_end:
+            if pause_end and tz.today() > pause_end:
                 self.pause_active = False
                 self.pause_start = None
                 self.pause_end = None
@@ -444,7 +444,7 @@ class UserSettings(SupabaseModel):
         if hasattr(self, 'pause_active') and self.pause_active and hasattr(self, 'pause_end') and self.pause_end:
             pause_end = parse_date(self.pause_end)
             if pause_end:
-                delta = (pause_end - date.today()).days
+                delta = (pause_end - tz.today()).days
                 return max(0, delta)
         return 0
 
@@ -690,12 +690,12 @@ class DailyMission(SupabaseModel):
     def is_weekday(check_date=None):
         """Check if a date is a weekday (Monday=0 through Friday=4)"""
         if check_date is None:
-            check_date = date.today()
+            check_date = tz.today()
         return check_date.weekday() < 5
     
     @staticmethod
     def get_today_mission():
-        today = date.today()
+        today = tz.today()
         # No missions on weekends
         if not DailyMission.is_weekday(today):
             return None
@@ -705,7 +705,7 @@ class DailyMission(SupabaseModel):
     @staticmethod
     def create_today_mission():
         import random
-        today = date.today()
+        today = tz.today()
         
         # Don't create missions on weekends
         if not DailyMission.is_weekday(today):
@@ -738,7 +738,7 @@ class BossBattle(SupabaseModel):
     
     @staticmethod
     def get_current_month():
-        return date.today().strftime('%Y-%m')
+        return tz.today().strftime('%Y-%m')
     
     @staticmethod
     def get_current_battle():
