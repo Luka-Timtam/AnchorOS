@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 from db_supabase import (Lead, Client, OutreachLog, UserSettings, UserStats, UserTokens, 
-                         DailyMission, BossBattle, ActivityLog, RevenueReward, get_supabase)
+                         DailyMission, BossBattle, ActivityLog, RevenueReward, FreelancingIncome, get_supabase)
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from blueprints.gamification import calculate_consistency_score
@@ -89,7 +89,7 @@ def get_cached_client_stats(clients):
     return result
 
 
-def get_cached_chart_data(clients):
+def get_cached_chart_data(clients, freelance_jobs=None):
     cached_value, hit = cache.get(CACHE_KEY_DASHBOARD_CHARTS)
     if hit:
         logger.debug("[Dashboard] Using cached chart data")
@@ -97,8 +97,12 @@ def get_cached_chart_data(clients):
     
     today = tz.today()
     
+    if freelance_jobs is None:
+        freelance_jobs = FreelancingIncome.query_all()
+    
     monthly_revenue_data = []
     monthly_mrr_data = []
+    monthly_total_data = []
     month_labels = []
     
     for i in range(11, -1, -1):
@@ -113,6 +117,7 @@ def get_cached_chart_data(clients):
         month_revenue = Decimal('0')
         hosting_at_month = Decimal('0')
         saas_at_month = Decimal('0')
+        freelance_month = Decimal('0')
         
         for c in clients:
             start_date = normalize_date(getattr(c, 'start_date', None))
@@ -125,13 +130,23 @@ def get_cached_chart_data(clients):
                     if getattr(c, 'saas_active', False):
                         saas_at_month += Decimal(str(getattr(c, 'monthly_saas_fee', 0) or 0))
         
+        for job in freelance_jobs:
+            job_date = normalize_date(getattr(job, 'date_completed', None))
+            if job_date and m_start <= job_date <= m_end:
+                freelance_month += Decimal(str(getattr(job, 'amount', 0) or 0))
+        
+        mrr_month = hosting_at_month + saas_at_month
+        total_month = month_revenue + mrr_month + freelance_month
+        
         monthly_revenue_data.append(float(month_revenue))
-        monthly_mrr_data.append(float(hosting_at_month + saas_at_month))
+        monthly_mrr_data.append(float(mrr_month))
+        monthly_total_data.append(float(total_month))
     
     result = {
         'month_labels': month_labels,
         'monthly_revenue_data': monthly_revenue_data,
-        'monthly_mrr_data': monthly_mrr_data
+        'monthly_mrr_data': monthly_mrr_data,
+        'monthly_total_data': monthly_total_data
     }
     
     cache.set(CACHE_KEY_DASHBOARD_CHARTS, result, ttl=60)
@@ -238,6 +253,7 @@ def index():
     month_labels = chart_data['month_labels']
     monthly_revenue_data = chart_data['monthly_revenue_data']
     monthly_mrr_data = chart_data['monthly_mrr_data']
+    monthly_total_data = chart_data['monthly_total_data']
     
     token_balance = UserTokens.get_balance()
     
@@ -322,6 +338,7 @@ def index():
         month_labels=month_labels,
         monthly_revenue_data=monthly_revenue_data,
         monthly_mrr_data=monthly_mrr_data,
+        monthly_total_data=monthly_total_data,
         token_balance=token_balance,
         daily_mission=daily_mission,
         mission_progress_pct=mission_progress_pct,

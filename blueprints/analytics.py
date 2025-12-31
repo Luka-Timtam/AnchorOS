@@ -57,6 +57,8 @@ def index():
     followup_overdue = followup_overdue_result.count if followup_overdue_result.count else len(followup_overdue_result.data)
     
     monthly_revenue_data = []
+    monthly_freelance_data = []
+    monthly_total_revenue_data = []
     month_labels = []
     
     for i in range(11, -1, -1):
@@ -70,7 +72,12 @@ def index():
         
         revenue_result = client.table('clients').select('amount_charged').gte('start_date', m_start.isoformat()).lte('start_date', m_end.isoformat()).execute()
         month_revenue = sum(float(r.get('amount_charged') or 0) for r in revenue_result.data)
+        
+        freelance_result = client.table('freelance_jobs').select('amount').gte('date_completed', m_start.isoformat()).lte('date_completed', m_end.isoformat()).execute()
+        month_freelance = sum(float(r.get('amount') or 0) for r in freelance_result.data)
+        
         monthly_revenue_data.append(float(month_revenue))
+        monthly_freelance_data.append(float(month_freelance))
     
     hosting_mrr_data = []
     saas_mrr_data = []
@@ -92,6 +99,11 @@ def index():
         hosting_mrr_data.append(float(hosting_at_month))
         saas_mrr_data.append(float(saas_at_month))
         total_mrr_data.append(float(hosting_at_month + saas_at_month))
+    
+    for i in range(12):
+        monthly_total_revenue_data.append(
+            monthly_revenue_data[i] + total_mrr_data[i] + monthly_freelance_data[i]
+        )
     
     outreach_weekly_data = []
     deals_weekly_data = []
@@ -157,6 +169,9 @@ def index():
     this_month_revenue_result = client.table('clients').select('amount_charged').gte('start_date', month_start.isoformat()).lte('start_date', today.isoformat()).execute()
     this_month_project_revenue = sum(float(r.get('amount_charged') or 0) for r in this_month_revenue_result.data)
     
+    this_month_freelance_result = client.table('freelance_jobs').select('amount').gte('date_completed', month_start.isoformat()).lte('date_completed', today.isoformat()).execute()
+    this_month_freelance_revenue = sum(float(r.get('amount') or 0) for r in this_month_freelance_result.data)
+    
     this_month_clients_result = client.table('clients').select('id', count='exact').gte('start_date', month_start.isoformat()).lte('start_date', today.isoformat()).execute()
     this_month_new_clients = this_month_clients_result.count if this_month_clients_result.count else len(this_month_clients_result.data)
     
@@ -169,12 +184,14 @@ def index():
     this_month_leads_result = client.table('leads').select('id', count='exact').gte('created_at', f'{month_start.isoformat()}T00:00:00').lte('created_at', f'{today.isoformat()}T23:59:59').execute()
     this_month_new_leads = this_month_leads_result.count if this_month_leads_result.count else len(this_month_leads_result.data)
     
-    this_month_expected = this_month_project_revenue + current_mrr
+    this_month_total_revenue = this_month_project_revenue + current_mrr + this_month_freelance_revenue
     this_month_name = today.strftime('%B %Y')
     
     chart_data = {
         'monthLabels': month_labels,
         'monthlyRevenue': monthly_revenue_data,
+        'monthlyFreelance': monthly_freelance_data,
+        'monthlyTotalRevenue': monthly_total_revenue_data,
         'hostingMrr': hosting_mrr_data,
         'saasMrr': saas_mrr_data,
         'totalMrr': total_mrr_data,
@@ -209,11 +226,12 @@ def index():
         followup_overdue=followup_overdue,
         this_month_name=this_month_name,
         this_month_project_revenue=this_month_project_revenue,
+        this_month_freelance_revenue=this_month_freelance_revenue,
+        this_month_total_revenue=this_month_total_revenue,
         this_month_new_clients=this_month_new_clients,
         this_month_outreach=this_month_outreach,
         this_month_deals=this_month_deals,
-        this_month_new_leads=this_month_new_leads,
-        this_month_expected=this_month_expected
+        this_month_new_leads=this_month_new_leads
     )
 
 
