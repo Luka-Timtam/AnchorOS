@@ -1,6 +1,5 @@
 import time
 import logging
-from functools import wraps
 
 logger = logging.getLogger(__name__)
 
@@ -30,25 +29,14 @@ class InMemoryCache:
         }
         logger.debug(f"[Cache SET] {key} (TTL: {ttl}s)")
     
-    def invalidate(self, key):
-        if key in self._cache:
-            del self._cache[key]
-            logger.debug(f"[Cache INVALIDATE] {key}")
-    
-    def invalidate_prefix(self, prefix):
-        keys_to_delete = [k for k in self._cache if k.startswith(prefix)]
-        for key in keys_to_delete:
-            del self._cache[key]
-        if keys_to_delete:
-            logger.debug(f"[Cache INVALIDATE PREFIX] {prefix} ({len(keys_to_delete)} keys)")
-    
     def clear(self):
         count = len(self._cache)
         self._cache = {}
-        logger.debug(f"[Cache CLEAR] {count} entries removed")
+        if count > 0:
+            logger.debug(f"[Cache CLEAR] {count} entries removed")
 
 
-cache = InMemoryCache(default_ttl=30)
+cache = InMemoryCache(default_ttl=60)
 
 
 CACHE_KEY_LIFETIME_REVENUE = 'dashboard:lifetime_revenue'
@@ -56,26 +44,5 @@ CACHE_KEY_DASHBOARD_CHARTS = 'dashboard:charts'
 CACHE_KEY_MRR = 'dashboard:mrr'
 
 
-def invalidate_client_cache():
-    cache.invalidate(CACHE_KEY_MRR)
-    cache.invalidate(CACHE_KEY_LIFETIME_REVENUE)
-    cache.invalidate(CACHE_KEY_DASHBOARD_CHARTS)
-    logger.debug("[Cache] Client-related caches invalidated")
-
-
-def invalidate_freelance_cache():
-    cache.invalidate(CACHE_KEY_LIFETIME_REVENUE)
-    cache.invalidate(CACHE_KEY_DASHBOARD_CHARTS)
-    cache.invalidate(CACHE_KEY_MRR)
-    logger.debug("[Cache] Freelance-related caches invalidated")
-
-
-def invalidate_all_dashboard_cache():
-    cache.invalidate_prefix('dashboard:')
-    logger.debug("[Cache] All dashboard caches invalidated")
-
-
-def invalidate_revenue_cache():
-    invalidate_client_cache()
-    invalidate_freelance_cache()
-    logger.debug("[Cache] All revenue-related caches invalidated")
+def clear_all_cache():
+    cache.clear()

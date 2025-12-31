@@ -36,7 +36,7 @@ def generate_review_content(year_month):
     outreach_calls_booked = sum(1 for row in outreach_result.data if row.get('outcome') == 'booked_call')
     calls_booked = outreach_calls_booked
     
-    proposals_result = client.table('activity_log').select('id', count='exact').eq('activity_type', 'proposal_sent').execute()
+    proposals_result = client.table('activity_log').select('id', count='exact').eq('action_type', 'proposal_sent').execute()
     proposals_sent = len(proposals_result.data)
     
     leads_result = client.table('leads').select('*').execute()

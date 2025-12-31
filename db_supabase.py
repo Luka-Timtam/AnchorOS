@@ -7,6 +7,11 @@ import timezone as tz
 
 logger = logging.getLogger(__name__)
 
+
+def _clear_cache():
+    from cache import clear_all_cache
+    clear_all_cache()
+
 _supabase_client: Client = None
 _client_initialized: bool = False
 
@@ -158,6 +163,7 @@ class SupabaseModel:
         serialized = serialize_row(data)
         result = client.table(cls.__tablename__).insert(serialized).execute()
         if result.data:
+            _clear_cache()
             return cls._parse_row(result.data[0])
         return None
     
@@ -167,6 +173,7 @@ class SupabaseModel:
         serialized = serialize_row(data)
         result = client.table(cls.__tablename__).update(serialized).eq("id", id).execute()
         if result.data:
+            _clear_cache()
             return cls._parse_row(result.data[0])
         return None
     
@@ -174,6 +181,7 @@ class SupabaseModel:
     def delete_by_id(cls, id):
         client = get_supabase()
         client.table(cls.__tablename__).delete().eq("id", id).execute()
+        _clear_cache()
     
     def save(self):
         client = get_supabase()
@@ -187,6 +195,7 @@ class SupabaseModel:
             result = client.table(self.__tablename__).insert(data).execute()
         
         if result.data:
+            _clear_cache()
             for key, value in result.data[0].items():
                 setattr(self, key, value)
         return self
@@ -195,6 +204,7 @@ class SupabaseModel:
         if hasattr(self, 'id') and self.id:
             client = get_supabase()
             client.table(self.__tablename__).delete().eq("id", self.id).execute()
+            _clear_cache()
 
 
 class Lead(SupabaseModel):

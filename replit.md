@@ -106,13 +106,13 @@ Key table name mappings (some differ from legacy models):
 - Client is reused across all routes, components, and page navigations
 
 **In-Memory Caching (December 2025):**
-- Module: `cache.py` provides simple in-memory caching with TTL (30-60 seconds)
-- Cache keys: `CACHE_KEY_MRR` (45s), `CACHE_KEY_DASHBOARD_CHARTS` (60s), `CACHE_KEY_LIFETIME_REVENUE` (60s)
-- Cached data: Dashboard MRR/client stats (computed from fresh clients), chart data, lifetime revenue
-- Important: Never cache raw database objects - only computed metrics
-- Invalidation: Automatic cache clear on client/freelance create/edit/delete, also on lead-to-client conversion
-- Functions: `invalidate_client_cache()`, `invalidate_freelance_cache()`, `invalidate_revenue_cache()`
-- Logging: Debug-level cache hit/miss logging for troubleshooting
+- Module: `cache.py` provides simple in-memory caching with 60-second TTL
+- Cache keys: `CACHE_KEY_MRR`, `CACHE_KEY_DASHBOARD_CHARTS`, `CACHE_KEY_LIFETIME_REVENUE`
+- Cached data: Dashboard MRR/client stats, chart data, lifetime revenue (computed metrics only)
+- Global cache invalidation: `clear_all_cache()` clears entire cache after ANY database write
+- Automatic: All `SupabaseModel` write methods (insert, update_by_id, delete_by_id, save, delete) call `_clear_cache()` on success
+- Lazy rebuild: Cache is repopulated on next read request, not eagerly refetched
+- Correctness over performance: Never show stale data; acceptable to refetch once after writes
 - Dashboard widgets: Staggered fade-in animation (`.widget-animate` class)
 - Skeleton CSS: Available via `.skeleton`, `.skeleton-text`, `.skeleton-number` classes
 
