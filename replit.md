@@ -134,6 +134,17 @@ Key table name mappings (some differ from legacy models):
 - Form submissions bypass transitions to prevent issues
 - Page scripts reinitialize on content replace via `swup.hooks.on('content:replace')`
 
+**Navigation Prefetching (December 2025):**
+- Module: `static/js/nav-prefetch.js` provides hover-based prefetching for main navigation
+- Prefetchable routes: Dashboard (/), Leads (/leads), Clients (/clients), Tasks (/tasks), Notes (/notes)
+- Debounce: 150ms delay before triggering prefetch to avoid wasted requests
+- Network awareness: Skips prefetch on slow connections (2G, save-data mode)
+- Idle detection: Only prefetches when user has been active within last 5 seconds
+- Cache: 60-second TTL for prefetched content
+- Single prefetch: Cancels previous prefetch when hovering new item
+- Graceful degradation: Falls back to normal navigation if prefetch fails
+- Debug: `window.navPrefetch.getCacheSize()` and `window.navPrefetch.clearCache()` available
+
 ## Mobile Companion Mode (December 2025)
 Separate mobile companion interface at `/mobile/` with its own routing, templates, and navigation.
 
