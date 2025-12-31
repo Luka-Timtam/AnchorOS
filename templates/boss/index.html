@@ -55,7 +55,7 @@
                 </div>
                 {% if current_boss.is_completed %}
                 <span class="text-low text-sm">
-                    Completed {{ current_boss.completed_at.strftime('%b %d, %Y') if current_boss.completed_at else '' }}
+                    Completed {{ current_boss.completed_at[:10] if current_boss.completed_at else '' }}
                 </span>
                 {% endif %}
             </div>
@@ -110,7 +110,7 @@
                         <span>+{{ boss.reward_tokens }}</span>
                         <span class="text-lg">🪙</span>
                     </span>
-                    <p class="text-xs text-low">{{ boss.completed_at.strftime('%b %d') if boss.completed_at else '' }}</p>
+                    <p class="text-xs text-low">{{ boss.completed_at[:10] if boss.completed_at else '' }}</p>
                     {% else %}
                     <span class="text-low text-sm">Not completed</span>
                     <p class="text-xs text-low">{{ boss.progress_value }}/{{ boss.target_value }}</p>

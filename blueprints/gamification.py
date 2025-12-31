@@ -111,7 +111,8 @@ def add_xp(amount, reason=""):
             'title': f'Level Up to {new_level}',
             'description': f'Reached Level {new_level} after gaining XP.',
             'xp_value': amount,
-            'token_value': 0
+            'token_value': 0,
+            'timestamp': tz.now_iso()
         })
         check_level_interval_rewards(new_level)
         check_milestone_rewards(new_level)

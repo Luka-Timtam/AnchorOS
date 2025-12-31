@@ -88,7 +88,7 @@
                         <span class="text-2xl">📊</span>
                         <div>
                             <h4 class="text-xl font-bold text-high group-hover:text-aqua transition-colors">{{ review.label }}</h4>
-                            <p class="text-sm text-low">Generated {{ review.generated_at.strftime('%b %d, %Y at %H:%M') }}</p>
+                            <p class="text-sm text-low">Generated {{ review.generated_at[:16] if review.generated_at else 'N/A' }}</p>
                         </div>
                     </div>
                 </div>

@@ -83,7 +83,7 @@
                             </div>
                             <div>
                                 <h4 class="font-semibold text-purple-400 line-through">{{ reward.reward_text }}</h4>
-                                <p class="text-sm text-medium">${{ "{:,.0f}".format(reward.target) }} - Claimed {{ reward.claimed_at.strftime('%b %d, %Y') }}</p>
+                                <p class="text-sm text-medium">${{ "{:,.0f}".format(reward.target) }} - Claimed {{ reward.claimed_at[:10] | replace('-', '/') if reward.claimed_at else 'N/A' }}</p>
                             </div>
                         </div>
                         <span class="px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-medium">Claimed</span>

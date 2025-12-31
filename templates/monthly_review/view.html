@@ -15,7 +15,7 @@
                 <span class="text-3xl">📊</span>
                 <h1 class="text-3xl font-bold text-high">{{ label }} Review</h1>
             </div>
-            <p class="text-medium ml-8">Generated {{ review.generated_at.strftime('%B %d, %Y at %H:%M') }}</p>
+            <p class="text-medium ml-8">Generated {{ review.generated_at[:16] if review.generated_at else 'N/A' }}</p>
         </div>
         <div class="flex gap-3 ml-8 lg:ml-0">
             <form method="POST" action="{{ url_for('monthly_review.regenerate', year_month=review.year_month) }}" class="inline" data-swup-form>
