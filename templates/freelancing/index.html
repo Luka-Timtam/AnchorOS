@@ -133,7 +133,7 @@
                         {{ job.client_name or '-' }}
                     </td>
                     <td data-label="Date" class="py-4 px-6 text-medium">
-                        {{ job.date_completed.strftime('%b %d, %Y') if job.date_completed else '-' }}
+                        {{ job.date_completed[:10] if job.date_completed else '-' }}
                     </td>
                     <td data-label="Amount" class="py-4 px-6 text-right">
                         <span class="text-green-400 font-semibold">${{ "{:,.2f}".format(job.amount) }}</span>
