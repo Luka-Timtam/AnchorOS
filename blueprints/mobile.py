@@ -54,8 +54,19 @@ def index():
     month_income = sum(float(row.get('amount', 0) or 0) for row in freelance_result.data)
     
     six_months_ago = (today - timedelta(days=180)).isoformat()
-    freelance_6mo = client.table('freelance_jobs').select('amount').gte('date_completed', six_months_ago).execute()
-    total_6mo = sum(float(row.get('amount', 0) or 0) for row in freelance_6mo.data)
+    
+    # Freelance 6mo
+    freance_6mo = client.table('freelance_jobs').select('amount').gte('date_completed', six_months_ago).execute()
+    total_freelance_6mo = sum(float(row.get('amount', 0) or 0) for row in freance_6mo.data)
+    
+    # Project revenue 6mo
+    project_6mo = client.table('clients').select('amount_charged').gte('start_date', six_months_ago).execute()
+    total_project_6mo = sum(float(row.get('amount_charged', 0) or 0) for row in project_6mo.data)
+    
+    # MRR (simplification: use current MRR for previous months as historical MRR isn't fully tracked per month here)
+    total_mrr_6mo = mrr * 6
+    
+    total_6mo = total_freelance_6mo + total_project_6mo + total_mrr_6mo
     avg_monthly = float(total_6mo) / 6 if total_6mo else 0
     
     # Count clients this month (safe - only returns count)
