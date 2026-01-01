@@ -244,9 +244,9 @@ def index():
         if next_action and status not in ['closed_won', 'closed_lost'] and not converted:
             if isinstance(next_action, str):
                 next_action = next_action.split('T')[0]
-            if next_action == today.isoformat():
+            if next_action == today.isoformat() or (isinstance(next_action, date) and next_action == today):
                 followup_today += 1
-            elif next_action < today.isoformat():
+            elif (isinstance(next_action, str) and next_action < today.isoformat()) or (isinstance(next_action, date) and next_action < today):
                 followup_overdue += 1
     
     chart_data = get_cached_chart_data(clients)
