@@ -1,7 +1,7 @@
 {% extends "mobile/base.html" %}
 
-{% block title %}Freelancing - AnchorOS{% endblock %}
-{% block page_title %}Freelancing{% endblock %}
+{% block title %}Income - AnchorOS{% endblock %}
+{% block page_title %}Income{% endblock %}
 
 {% block header_actions %}
 <a href="{{ url_for('mobile.freelancing_new') }}" class="quick-action text-sm">
@@ -13,24 +13,78 @@
 {% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-2 gap-3 mb-6">
-    <div class="stat-card">
-        <div class="stat-value text-green-400">${{ "%.0f"|format(month_total) }}</div>
-        <div class="stat-label">This Month</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-value text-aqua">${{ "%.0f"|format(all_time_total) }}</div>
-        <div class="stat-label">All Time</div>
+<div class="stat-card mb-4 bg-gradient-to-r from-green-500/20 to-emerald-500/10 border-green-500/30">
+    <div class="text-center">
+        <div class="stat-value text-2xl text-green-400">${{ "%.0f"|format(total_this_month) }}</div>
+        <div class="stat-label">Total This Month</div>
     </div>
 </div>
 
-{% if entries %}
-<h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Recent Income</h2>
-{% for entry in entries %}
-<div class="mobile-card">
-    <div class="flex items-center justify-between mb-2">
+<div class="grid grid-cols-3 gap-2 mb-6">
+    <div class="stat-card text-center">
+        <div class="stat-value text-base text-aqua">${{ "%.0f"|format(project_month) }}</div>
+        <div class="stat-label text-xs">Projects</div>
+    </div>
+    <div class="stat-card text-center">
+        <div class="stat-value text-base text-purple-400">${{ "%.0f"|format(total_mrr) }}</div>
+        <div class="stat-label text-xs">MRR</div>
+    </div>
+    <div class="stat-card text-center">
+        <div class="stat-value text-base text-yellow-400">${{ "%.0f"|format(freelance_month) }}</div>
+        <div class="stat-label text-xs">Freelance</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-3 mb-6">
+    <div class="stat-card">
+        <div class="stat-value text-lg text-high">${{ "%.0f"|format(lifetime_revenue) }}</div>
+        <div class="stat-label">Lifetime Revenue</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value text-lg text-purple-400">${{ "%.0f"|format(total_mrr) }}</div>
+        <div class="stat-label">Monthly Recurring</div>
+    </div>
+</div>
+
+{% if total_mrr > 0 %}
+<div class="mobile-card mb-4">
+    <h3 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">MRR Breakdown</h3>
+    <div class="space-y-2">
+        <div class="flex items-center justify-between">
+            <span class="text-medium">Hosting</span>
+            <span class="text-high font-medium">${{ "%.2f"|format(hosting_mrr) }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+            <span class="text-medium">SaaS</span>
+            <span class="text-high font-medium">${{ "%.2f"|format(saas_mrr) }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if recent_projects %}
+<h2 class="text-sm font-semibold text-medium uppercase tracking-wide mb-3">Recent Projects</h2>
+{% for project in recent_projects %}
+<div class="mobile-card mb-2">
+    <div class="flex items-center justify-between">
+        <div class="font-medium text-high">{{ project.name }}</div>
+        <div class="text-aqua font-bold">${{ "%.0f"|format(project.amount_charged or 0) }}</div>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="flex items-center justify-between mb-3 mt-6">
+    <h2 class="text-sm font-semibold text-medium uppercase tracking-wide">Freelance Income</h2>
+    <a href="{{ url_for('mobile.freelancing_new') }}" class="text-xs text-aqua">+ Add</a>
+</div>
+
+{% if freelance_entries %}
+{% for entry in freelance_entries %}
+<div class="mobile-card mb-2">
+    <div class="flex items-center justify-between mb-1">
         <div class="font-medium text-high">{{ entry.title }}</div>
-        <div class="text-green-400 font-bold">${{ "%.2f"|format(entry.amount) }}</div>
+        <div class="text-yellow-400 font-bold">${{ "%.2f"|format(entry.amount) }}</div>
     </div>
     <div class="flex items-center justify-between text-sm">
         <span class="text-medium">{{ entry.client_name or 'No client' }}</span>
@@ -42,10 +96,10 @@
 </div>
 {% endfor %}
 {% else %}
-<div class="text-center py-12">
-    <div class="text-4xl mb-3">💰</div>
-    <div class="text-medium">No income logged this month</div>
-    <a href="{{ url_for('mobile.freelancing_new') }}" class="btn-primary mt-4 inline-flex">Log Income</a>
+<div class="text-center py-8 mobile-card">
+    <div class="text-3xl mb-2">💼</div>
+    <div class="text-medium text-sm">No freelance income this month</div>
+    <a href="{{ url_for('mobile.freelancing_new') }}" class="btn-primary mt-3 inline-flex text-sm">Log Income</a>
 </div>
 {% endif %}
 {% endblock %}

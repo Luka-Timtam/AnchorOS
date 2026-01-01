@@ -463,20 +463,46 @@ def freelancing():
     current_month_start = today.replace(day=1).isoformat()
     client = get_supabase()
     
-    # Fetch current month entries for display
-    result = client.table('freelance_jobs').select('*').gte('date_completed', current_month_start).order('date_completed', desc=True).execute()
-    entries = [FreelancingIncome._parse_row(row) for row in result.data]
+    # Freelance this month
+    freelance_result = client.table('freelance_jobs').select('*').gte('date_completed', current_month_start).order('date_completed', desc=True).execute()
+    freelance_entries = [FreelancingIncome._parse_row(row) for row in freelance_result.data]
+    freelance_month = sum(float(getattr(e, 'amount', 0) or 0) for e in freelance_entries)
     
-    month_total = sum(float(getattr(e, 'amount', 0) or 0) for e in entries)
+    # Project revenue this month
+    project_result = client.table('clients').select('amount_charged,name,start_date').gte('start_date', current_month_start).order('start_date', desc=True).execute()
+    project_month = sum(float(row.get('amount_charged', 0) or 0) for row in project_result.data)
+    recent_projects = project_result.data[:5]
     
-    # Only fetch amount for all-time total (safe - only sums values)
-    all_result = client.table('freelance_jobs').select('amount').execute()
-    all_time_total = sum(float(row.get('amount', 0) or 0) for row in all_result.data)
+    # MRR from active clients
+    mrr_result = client.table('clients').select('monthly_hosting_fee,monthly_saas_fee,hosting_active,saas_active').eq('status', 'active').execute()
+    hosting_mrr = sum(float(row.get('monthly_hosting_fee', 0) or 0) for row in mrr_result.data if row.get('hosting_active'))
+    saas_mrr = sum(float(row.get('monthly_saas_fee', 0) or 0) for row in mrr_result.data if row.get('saas_active'))
+    total_mrr = hosting_mrr + saas_mrr
+    
+    # Total this month
+    total_this_month = freelance_month + project_month + total_mrr
+    
+    # All-time totals
+    all_freelance = client.table('freelance_jobs').select('amount').execute()
+    all_time_freelance = sum(float(row.get('amount', 0) or 0) for row in all_freelance.data)
+    
+    all_projects = client.table('clients').select('amount_charged').execute()
+    all_time_projects = sum(float(row.get('amount_charged', 0) or 0) for row in all_projects.data)
+    
+    # Lifetime revenue (projects + freelance, MRR is recurring so not counted in lifetime the same way)
+    lifetime_revenue = all_time_freelance + all_time_projects
     
     return render_template('mobile/freelancing.html',
-        entries=entries,
-        month_total=month_total,
-        all_time_total=float(all_time_total)
+        freelance_entries=freelance_entries,
+        freelance_month=freelance_month,
+        project_month=project_month,
+        recent_projects=recent_projects,
+        total_mrr=total_mrr,
+        hosting_mrr=hosting_mrr,
+        saas_mrr=saas_mrr,
+        total_this_month=total_this_month,
+        lifetime_revenue=lifetime_revenue,
+        all_time_freelance=all_time_freelance
     )
 
 
