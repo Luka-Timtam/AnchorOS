@@ -122,8 +122,8 @@
 
 {% macro render_followups() %}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <a href="{{ url_for('leads.index', next_action='today') }}" class="glass-card p-5 hover:border-yellow-500/50 group">
-        <div class="flex items-center justify-between">
+    <a href="{{ url_for('leads.index', next_action='today') }}" class="glass-card p-5 hover:border-yellow-500/50 group transition-all duration-300 hover:z-10 relative overflow-hidden">
+        <div class="flex items-center justify-between pointer-events-none">
             <div>
                 <h3 class="text-lg font-semibold text-yellow-400">Follow Up Today</h3>
                 <p class="text-sm text-medium">Leads needing attention</p>
@@ -132,8 +132,8 @@
         </div>
     </a>
     
-    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="glass-card p-5 hover:border-cinnabar/50 group">
-        <div class="flex items-center justify-between">
+    <a href="{{ url_for('leads.index', next_action='overdue') }}" class="glass-card p-5 hover:border-cinnabar/50 group transition-all duration-300 hover:z-10 relative overflow-hidden">
+        <div class="flex items-center justify-between pointer-events-none">
             <div>
                 <h3 class="text-lg font-semibold text-cinnabar">Overdue Follow Ups</h3>
                 <p class="text-sm text-medium">Past due date</p>
@@ -399,20 +399,20 @@
 
 {% macro render_lead_stats() %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-aqua/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">New Leads (Week)</h3>
         <p class="text-3xl font-bold text-aqua">{{ new_leads_week }}</p>
     </div>
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-aqua/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">New Leads (Month)</h3>
         <p class="text-3xl font-bold text-aqua">{{ new_leads_month }}</p>
     </div>
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-green-400/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">New Clients (Month)</h3>
         <p class="text-3xl font-bold text-green-400">{{ new_clients_month }}</p>
     </div>
     {% if settings.show_project_revenue_widget %}
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-green-400/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">Project Revenue (Month)</h3>
         <p class="text-3xl font-bold text-green-400">${{ "%.2f"|format(project_revenue_month) }}</p>
     </div>
@@ -423,15 +423,15 @@
 {% macro render_outreach_stats() %}
 {% if settings.show_outreach_widget %}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-aqua/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">Outreach Today</h3>
         <p class="text-3xl font-bold text-aqua">{{ outreach_today }}</p>
     </div>
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-aqua/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">Outreach This Week</h3>
         <p class="text-3xl font-bold text-aqua">{{ outreach_week }}</p>
     </div>
-    <div class="glass-card p-5">
+    <div class="glass-card p-5 transition-all duration-300 hover:z-10 hover:border-aqua/50 relative overflow-hidden group">
         <h3 class="text-sm font-medium text-medium mb-1">Outreach This Month</h3>
         <p class="text-3xl font-bold text-aqua">{{ outreach_month }}</p>
     </div>
