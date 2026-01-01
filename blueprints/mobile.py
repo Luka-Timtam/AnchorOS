@@ -36,6 +36,14 @@ def index():
     clients_count_result = client.table('clients').select('id', count='exact').eq('status', 'active').execute()
     total_clients = clients_count_result.count if clients_count_result.count else len(clients_count_result.data)
     
+    # Get MRR from active clients - only fetch needed columns for sum (safe)
+    active_clients = client.table('clients').select('monthly_hosting_fee,monthly_saas_fee,hosting_active,saas_active').eq('status', 'active').execute()
+    mrr = sum(
+        float(row.get('monthly_hosting_fee', 0) or 0) for row in active_clients.data if row.get('hosting_active')
+    ) + sum(
+        float(row.get('monthly_saas_fee', 0) or 0) for row in active_clients.data if row.get('saas_active')
+    )
+    
     # Count today's outreach (safe - only returns count)
     outreach_count_result = client.table('outreach_logs').select('id', count='exact').eq('date', today_str).execute()
     today_outreach = outreach_count_result.count if outreach_count_result.count else len(outreach_count_result.data)
