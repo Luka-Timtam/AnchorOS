@@ -233,8 +233,8 @@
 {% macro render_boss_battle() %}
 {% if current_boss %}
 <a href="{{ url_for('boss.index') }}" class="block glass-card p-5 mb-6 relative overflow-hidden group {% if current_boss.is_completed %}hover:border-green-500/50{% else %}hover:border-cinnabar/50{% endif %}">
-    <div class="absolute inset-0 {% if current_boss.is_completed %}bg-gradient-to-r from-green-500/20 to-emerald-600/10{% else %}bg-gradient-to-r from-cinnabar/20 to-orange-600/10{% endif %}"></div>
-    <div class="absolute inset-0 {% if not current_boss.is_completed %}animate-pulse-glow{% endif %} bg-gradient-to-r {% if current_boss.is_completed %}from-green-500/5{% else %}from-cinnabar/5{% endif %} to-transparent"></div>
+    <div class="absolute inset-0 {% if current_boss.is_completed %}bg-gradient-to-r from-green-500/20 to-emerald-600/10{% else %}bg-gradient-to-r from-cinnabar/20 to-orange-600/10{% endif %} pointer-events-none"></div>
+    <div class="absolute inset-0 {% if not current_boss.is_completed %}animate-pulse-glow{% endif %} bg-gradient-to-r {% if current_boss.is_completed %}from-green-500/5{% else %}from-cinnabar/5{% endif %} to-transparent pointer-events-none"></div>
     <div class="relative">
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-3">
@@ -269,7 +269,7 @@
 
 {% macro render_focus_session() %}
 <div id="focusSessionCard" class="glass-card p-5 mb-6 relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-aqua/10 to-cyan-500/5"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-aqua/10 to-cyan-500/5 pointer-events-none"></div>
     <div class="relative flex items-center justify-between">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-aqua/20 flex items-center justify-center">

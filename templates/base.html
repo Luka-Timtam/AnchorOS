@@ -63,7 +63,10 @@
             transition: all 0.3s ease;
         }
         
-        .glass-card:hover {
+        a.glass-card:hover,
+        button.glass-card:hover,
+        .glass-card[onclick]:hover,
+        .glass-card.interactive:hover {
             background: rgba(255, 255, 255, 0.10);
             border-color: rgba(49, 224, 247, 0.3);
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
